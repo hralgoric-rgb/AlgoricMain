@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <g transform="translate(20 20)">
+    <circle r="8" fill="#ff6b6b" stroke="white" stroke-width="2" transform="translate(0 -16)"/>
+    <path d="M0,-16 L-7,-6 L7,-6 Z" fill="#ff6b6b" transform="translate(0 -2)"/>
+  </g>
+</svg> 

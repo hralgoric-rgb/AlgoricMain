@@ -1,0 +1,25 @@
+/* Map z-index overrides */
+.leaflet-container {
+  z-index: 10 !important;
+}
+
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20 !important;
+}
+
+.filter-modal-overlay {
+  z-index: 9999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.filter-modal {
+  z-index: 10000 !important;
+} 

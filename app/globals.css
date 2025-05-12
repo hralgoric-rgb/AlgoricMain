@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --primary: #FF6600;
+  --primary-light: #FF8533;
+  --primary-dark: #CC5200;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #FFFFFF;
+    --primary: #FF6600;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 24 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 80%;
+    --accent: 24 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 24 50% 30%;
+    --input: 24 20% 20%;
+    --ring: 24 100% 50%;
+    --chart-1: 24 100% 50%;
+    --chart-2: 24 100% 55%;
+    --chart-3: 24 100% 45%;
+    --chart-4: 24 100% 50%;
+    --chart-5: 24 100% 55%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 24 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 80%;
+    --accent: 24 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 24 50% 30%;
+    --input: 24 20% 20%;
+    --ring: 24 100% 50%;
+    --chart-1: 24 100% 50%;
+    --chart-2: 24 100% 55%;
+    --chart-3: 24 100% 45%;
+    --chart-4: 24 100% 50%;
+    --chart-5: 24 100% 55%;
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent;
+  }
+  
+  .gradient-bg {
+    @apply bg-gradient-to-r from-black via-orange-900 to-black;
+  }
+  
+  .luxury-card {
+    @apply bg-black border border-orange-500/30 rounded-lg shadow-sm hover:shadow-orange-500/20 transition-all overflow-hidden;
+  }
+  
+  .luxury-button {
+    @apply px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-medium rounded-md hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 transform hover:-translate-y-0.5;
+  }
+  
+  .luxury-button-outline {
+    @apply px-6 py-3 border border-orange-500 text-orange-500 font-medium rounded-md hover:bg-orange-500 hover:text-white transition-all duration-300;
+  }
+  
+  .elite-hover {
+    @apply transition-all duration-300 hover:opacity-85;
+  }
+  
+  .feature-icon-container {
+    @apply bg-gradient-to-br from-orange-500 to-orange-600 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20;
+  }
+
+  .search-tab-active {
+    @apply text-orange-500 font-semibold border-b-2 border-orange-500;
+  }
+  
+  .search-tab-inactive {
+    @apply text-orange-500/60 font-medium hover:text-orange-500 transition-colors;
+  }
+  
+  .search-tabs-container {
+    @apply flex w-full overflow-x-auto no-scrollbar pb-2 whitespace-nowrap;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* 3D Effect Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Hide scrollbar but maintain functionality */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+/* Add these to your existing utility classes */
