@@ -1,5 +1,5 @@
 // API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/users";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://100gaj-ohjsmh7d4-daksh-guptas-projects-f5e8cc0c.vercel.app";
 
 // Helper function for API requests
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
