@@ -321,6 +321,19 @@ export default function Home() {
     <main className="min-h-screen bg-black text-white">
       <Navbar />
       <SubNavbar items={navItems} />
+      {/* Mobile Navigation Dots - Alternative to SubNavbar on mobile */}
+      {/* <div className="fixed bottom-4 left-0 right-0 z-40 flex justify-center md:hidden">
+        <div className="bg-black/70 backdrop-blur-sm rounded-full py-2 px-4 flex space-x-3">
+          {navItems.map((item, index) => (
+            <a
+              key={index}
+              href={item.href}
+              className="w-3 h-3 rounded-full bg-gray-500 hover:bg-orange-500 transition-colors duration-200"
+              aria-label={item.label}
+            />
+          ))}
+        </div>
+      </div> */}
 
       {/* Hero Section with background paths */}
       <section id="home" className="relative overflow-hidden">
@@ -331,7 +344,7 @@ export default function Home() {
       </section>
 
       {/* Featured Properties Section */}
-      <section className="pt-16 pb-24 bg-gradient-to-b from-black to-gray-900 relative">
+      <section className="pt-20 md:pt-16 pb-16 md:pb-24 bg-gradient-to-b from-black to-gray-900 relative">
         {/* Decorative background elements for continuity */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.05),transparent_70%)]"></div>
@@ -356,7 +369,7 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="lg:w-1/2"
+              className="w-full lg:w-1/2"
             >
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-br from-orange-500/10 to-transparent rounded-3xl blur-xl opacity-70"></div>
@@ -369,9 +382,9 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="lg:w-1/2"
+              className="w-full lg:w-1/2 mt-12 lg:mt-0"
             >
-              <div className="text-center lg:text-left mb-8">
+              <div className="text-center lg:text-left mb-8 px-4 lg:px-0">
                 <motion.h2
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -386,13 +399,13 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.6 }}
                   viewport={{ once: true }}
-                  className="text-xl text-gray-300 mt-4 max-w-2xl mx-auto lg:mx-0"
+                  className="text-base md:text-xl text-gray-300 mt-4 max-w-2xl mx-auto lg:mx-0 px-4 lg:px-0"
                 >
                   Discover properties that match your style, from modern
                   apartments to luxury villas.
                 </motion.p>
 
-                <div className="mt-8 space-y-8">
+                <div className="mt-8 space-y-6 md:space-y-8 px-4 lg:px-0">
                   <motion.div
                     initial={{ opacity: 0, x: -50 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -477,10 +490,10 @@ export default function Home() {
       {/* Trending Localities Section */}
       <section
         id="localities"
-        className="py-14 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden mb-0"
+        className="py-10 md:py-14 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden mb-0"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 md:mb-12 px-4 md:px-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -497,7 +510,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-white mb-6"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 px-4 md:px-0"
             >
               Trending Localities
             </motion.h2>
@@ -506,7 +519,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
-              className="text-lg text-gray-300 max-w-2xl mx-auto"
+              className="text-base md:text-lg text-gray-300 max-w-2xl mx-auto px-4 md:px-0"
             >
               Discover the most sought-after neighborhoods with excellent
               amenities, connectivity, and investment potential
@@ -514,7 +527,7 @@ export default function Home() {
           </div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 max-w-6xl mx-auto mb-10"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10 max-w-6xl mx-auto mb-10"
             variants={{
               hidden: { opacity: 0 },
               show: {
@@ -584,7 +597,7 @@ export default function Home() {
       {/* Popular Builders Section */}
       <section
         id="builders"
-        className="py-24 bg-white relative overflow-hidden"
+        className="py-12 md:py-24 bg-white relative overflow-hidden"
       >
         {/* Background patterns */}
         <div className="absolute inset-0 overflow-hidden opacity-5">
@@ -604,7 +617,7 @@ export default function Home() {
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 md:mb-16 px-4 md:px-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -621,7 +634,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-5xl font-bold text-gray-900 mb-6"
+              className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 mb-6 px-4 md:px-0"
             >
               Premium Builders & Developers
             </motion.h2>
@@ -632,8 +645,8 @@ export default function Home() {
               viewport={{ once: true }}
               className="text-lg text-gray-600 max-w-2xl mx-auto"
             >
-              Partner with India`&apos;`s most reputable builders known for their
-              quality construction, timely delivery, and innovative design
+              Partner with India`&apos;`s most reputable builders known for
+              their quality construction, timely delivery, and innovative design
               principles
             </motion.p>
           </div>
@@ -682,7 +695,7 @@ export default function Home() {
       {/* Popular Agents Section */}
       <section
         id="agents"
-        className="py-24 bg-gradient-to-br from-zinc-950 to-black relative overflow-hidden"
+        className="py-12 md:py-24 bg-gradient-to-br from-zinc-950 to-black relative overflow-hidden"
       >
         {/* Background patterns */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -726,7 +739,7 @@ export default function Home() {
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto px-4">
             {popularAgents.map((agent, index) => (
               <motion.div
                 key={index}
@@ -737,7 +750,7 @@ export default function Home() {
                 className="group relative"
               >
                 {/* Card with hover effect */}
-                <div className="relative rounded-xl overflow-hidden aspect-[3/4] shadow-xl">
+                <div className="relative rounded-xl overflow-hidden aspect-[3/4] shadow-xl h-[350px] sm:h-auto">
                   {/* Image container with gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"></div>
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
@@ -847,7 +860,7 @@ export default function Home() {
       {/* AI Tools Section */}
       <section
         id="ai-tools"
-        className="py-24 bg-white relative overflow-hidden"
+        className="py-12 md:py-24 bg-white relative overflow-hidden"
       >
         {/* Background patterns */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -901,7 +914,7 @@ export default function Home() {
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
             {aiTools.map((tool, index) => (
               <motion.div
                 key={index}
@@ -995,13 +1008,13 @@ export default function Home() {
       {/* Features Section */}
       <section
         id="features"
-        className="py-16 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden"
+        className="py-12 md:py-16 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-white text-4xl font-bold text-center mb-10">
             Why Choose Us?
           </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto mt-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-6xl mx-auto mt-10 md:mt-20 px-4 md:px-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -1136,7 +1149,7 @@ export default function Home() {
       {/* How It Works Section */}
       <section
         id="process"
-        className="py-24 bg-gradient-to-b from-gray-900 to-black text-white relative overflow-hidden"
+        className="py-12 md:py-24 bg-gradient-to-b from-gray-900 to-black text-white relative overflow-hidden"
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
@@ -1172,7 +1185,7 @@ export default function Home() {
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 max-w-5xl mx-auto px-4 md:px-0">
             {[
               {
                 number: "01",
@@ -1294,7 +1307,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: true }}
-            className="mt-16 mb-10 text-center"
+            className="mt-16 mb-16 text-center"
           >
             <Link
               href="/search"

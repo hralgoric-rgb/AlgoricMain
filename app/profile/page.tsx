@@ -1,15 +1,15 @@
-"use client"
-import Image from "next/image"
-import type React from "react"
+"use client";
+import Image from "next/image";
+import type React from "react";
 
-import { motion } from "framer-motion"
-import Navbar from "../components/navbar"
-import Footer from "../components/footer"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { motion } from "framer-motion";
+import Navbar from "../components/navbar";
+import Footer from "../components/footer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Edit,
   LogOut,
@@ -27,85 +27,88 @@ import {
   User,
   Home,
   Briefcase,
-} from "lucide-react"
-import { useState, useEffect } from "react"
-import { UserAPI } from "../lib/api-helpers"
-import { useRouter } from "next/navigation"
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { UserAPI } from "../lib/api-helpers";
+import { useRouter } from "next/navigation";
 
-import axios from "axios"
-import { toast } from "sonner"
+import axios from "axios";
+import { toast } from "sonner";
 
 interface Property {
-  _id: string
-  title: string
-  images: string[]
-  description: string
-  price: number
-  listingType: string
-  verified: boolean
+  _id: string;
+  title: string;
+  images: string[];
+  description: string;
+  price: number;
+  listingType: string;
+  verified: boolean;
   owner?: {
-    name: string
-    email: string
-    phone?: string
-  }
+    name: string;
+    email: string;
+    phone?: string;
+  };
 }
 
 interface UserProfileData {
-  _id: string
-  name: string
-  email: string
-  role: string
-  image?: string
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  image?: string;
   address?: {
-    street?: string
-    city?: string
-    state?: string
-    zipCode?: string
-    country?: string
-  }
-  phone?: string
-  bio?: string
-  isAgent?: boolean
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  phone?: string;
+  bio?: string;
+  isAgent?: boolean;
   agentInfo?: {
-    licenseNumber?: string
-    agency?: string
-    experience?: number
-    specializations?: string[]
-    languages?: string[]
-    rating?: number
-    reviewCount?: number
-    verified?: boolean
-    listings?: number
-    sales?: number
-  }
-  properties?: Property[]
-  lastActive?: string
+    licenseNumber?: string;
+    agency?: string;
+    experience?: number;
+    specializations?: string[];
+    languages?: string[];
+    rating?: number;
+    reviewCount?: number;
+    verified?: boolean;
+    listings?: number;
+    sales?: number;
+  };
+  properties?: Property[];
+  lastActive?: string;
 }
 
 export default function UserProfile() {
-
-  const router = useRouter()
+  const router = useRouter();
 
   // State for user data
-  const [user, setUser] = useState<UserProfileData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [user, setUser] = useState<UserProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // State for properties
-  const [properties, setProperties] = useState<Property[]>([])
-  const [isPropertiesLoading, setIsPropertiesLoading] = useState(true)
-  const [assignedProperties, setAssignedProperties] = useState<Property[]>([])
-  const [isAssignedPropertiesLoading, setIsAssignedPropertiesLoading] = useState(true)
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [isPropertiesLoading, setIsPropertiesLoading] = useState(true);
+  const [assignedProperties, setAssignedProperties] = useState<Property[]>([]);
+  const [isAssignedPropertiesLoading, setIsAssignedPropertiesLoading] =
+    useState(true);
 
-  const [isDeletePropertyModalOpen, setIsDeletePropertyModalOpen] = useState(false)
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false)
-  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null)
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false)
-  const [token, setToken] = useState<string | null>(null)
+  const [isDeletePropertyModalOpen, setIsDeletePropertyModalOpen] =
+    useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(
+    null,
+  );
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     // Only run this on the client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const authToken = sessionStorage.getItem("authToken");
       if (authToken) {
         setToken(authToken);
@@ -123,23 +126,23 @@ export default function UserProfile() {
     state: "",
     zipCode: "",
     country: "",
-  })
+  });
 
   // Fetch user profile data
   useEffect(() => {
     const fetchUserProfile = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const data = await UserAPI.getProfile()
-        setUser(data)
-        if(data.isAgent){
+        const data = await UserAPI.getProfile();
+        setUser(data);
+        if (data.isAgent) {
           // Fetch assigned properties if user is an agent
-          const response = await axios.get('/api/properties/assigned', {
+          const response = await axios.get("/api/properties/assigned", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          
+
           if (response.data.success) {
             setAssignedProperties(response.data.properties);
           }
@@ -155,112 +158,118 @@ export default function UserProfile() {
           state: data.address?.state || "",
           zipCode: data.address?.zipCode || "",
           country: data.address?.country || "India",
-        })
+        });
 
-        setError("")
+        setError("");
       } catch (err) {
-        console.error("Failed to fetch user profile:", err)
-        setError("Failed to load user profile. Please try again later.")
+        console.error("Failed to fetch user profile:", err);
+        setError("Failed to load user profile. Please try again later.");
       } finally {
-        setLoading(false)
-        setIsAssignedPropertiesLoading(false)
+        setLoading(false);
+        setIsAssignedPropertiesLoading(false);
       }
-    }
+    };
 
-    fetchUserProfile()
-  }, [])
+    fetchUserProfile();
+  }, []);
 
   // Fetch user properties
   useEffect(() => {
     const fetchUserProperties = async () => {
-      setIsPropertiesLoading(true)
+      setIsPropertiesLoading(true);
       try {
         // Fetch user properties from API
         const response = await axios.get("/api/properties/user", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
+        });
 
         if (response.data.success) {
-          setProperties(response.data.properties)
+          setProperties(response.data.properties);
         } else {
-          throw new Error(response.data.error || "Failed to fetch properties")
+          throw new Error(response.data.error || "Failed to fetch properties");
         }
       } catch (err) {
-        console.error("Failed to fetch user properties:", err)
+        console.error("Failed to fetch user properties:", err);
         // Keep using placeholder data in case of error
-        toast.error("Failed to load properties. Please try again later.")
+        toast.error("Failed to load properties. Please try again later.");
       } finally {
-        setIsPropertiesLoading(false)
+        setIsPropertiesLoading(false);
       }
-    }
+    };
 
     // Only fetch properties if user is logged in
     if (!loading && user) {
-      fetchUserProperties()
+      fetchUserProperties();
     }
-  }, [loading, user, token])
+  }, [loading, user, token]);
 
   const openAddPropertyModal = () => {
     // Redirect to the property creation page
-    router.push("/sell")
-  }
+    router.push("/sell");
+  };
 
   const openDeletePropertyModal = (property: Property) => {
-    setPropertyToDelete(property)
-    setIsDeletePropertyModalOpen(true)
-  }
+    setPropertyToDelete(property);
+    setIsDeletePropertyModalOpen(true);
+  };
 
   const closeDeletePropertyModal = () => {
-    setPropertyToDelete(null)
-    setIsDeletePropertyModalOpen(false)
-  }
+    setPropertyToDelete(null);
+    setIsDeletePropertyModalOpen(false);
+  };
 
-  const openEditProfileModal = () => setIsEditProfileModalOpen(true)
-  const closeEditProfileModal = () => setIsEditProfileModalOpen(false)
+  const openEditProfileModal = () => setIsEditProfileModalOpen(true);
+  const closeEditProfileModal = () => setIsEditProfileModalOpen(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
   const handleDeleteProperty = async () => {
     if (!propertyToDelete || !propertyToDelete._id) {
-      toast.error("Invalid property ID")
-      return
+      toast.error("Invalid property ID");
+      return;
     }
 
-    setIsDeleteLoading(true)
+    setIsDeleteLoading(true);
     try {
       // Call API to delete the property
-      const response = await axios.delete(`/api/properties/${propertyToDelete._id}`)
+      const response = await axios.delete(
+        `/api/properties/${propertyToDelete._id}`,
+      );
 
       if (response.data.success) {
         // Remove the property from the local state
-        setProperties((prev) => prev.filter((p) => p._id !== propertyToDelete._id))
+        setProperties((prev) =>
+          prev.filter((p) => p._id !== propertyToDelete._id),
+        );
 
-        toast.success("Property deleted successfully")
+        toast.success("Property deleted successfully");
 
-        closeDeletePropertyModal()
+        closeDeletePropertyModal();
       } else {
-        throw new Error(response.data.error || "Failed to delete property")
+        throw new Error(response.data.error || "Failed to delete property");
       }
     } catch (err) {
-      console.error("Error deleting property:", err)
-      toast.error("Failed to delete property. Please try again.")
+      console.error("Error deleting property:", err);
+      toast.error("Failed to delete property. Please try again.");
     } finally {
-      setIsDeleteLoading(false)
+      setIsDeleteLoading(false);
     }
-  }
+  };
 
   const handleEditProperty = (propertyId: string) => {
     // Navigate to the property edit page
-    router.push(`/edit-property/${propertyId}`)
-  }
+    router.push(`/edit-property/${propertyId}`);
+  };
 
   const handleEditProfile = async () => {
     try {
@@ -276,10 +285,10 @@ export default function UserProfile() {
           zipCode: formData.zipCode,
           country: formData.country || "India",
         },
-      }
+      };
 
       // Call the API to update the profile
-      const response = await UserAPI.updateProfile(updateData)
+      const response = await UserAPI.updateProfile(updateData);
 
       if (response.success) {
         // Update the local user state with new data
@@ -296,20 +305,20 @@ export default function UserProfile() {
               zipCode: formData.zipCode,
               country: formData.country || "India",
             },
-          })
+          });
         }
 
         // Show success message
-        toast.success("Profile updated successfully")
+        toast.success("Profile updated successfully");
 
         // Close the modal
-        closeEditProfileModal()
+        closeEditProfileModal();
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
-      toast.error("Failed to update profile. Please try again.")
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile. Please try again.");
     }
-  }
+  };
 
   // Animation variants
   const fadeIn = {
@@ -319,7 +328,7 @@ export default function UserProfile() {
       y: 0,
       transition: { duration: 0.6 },
     },
-  }
+  };
 
   const staggerContainer = {
     hidden: { opacity: 0 },
@@ -329,7 +338,7 @@ export default function UserProfile() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   // Render loading state if data is being fetched
   if (loading) {
@@ -347,7 +356,7 @@ export default function UserProfile() {
         </div>
         <Footer />
       </main>
-    )
+    );
   }
 
   // If there's an error or no user data, show a message
@@ -357,15 +366,20 @@ export default function UserProfile() {
         <Navbar />
         <div className="flex flex-col justify-center items-center h-[80vh]">
           <div className="bg-red-500/10 p-8 rounded-xl border border-red-500/20 mb-6">
-            <p className="text-xl text-red-500 font-medium">{error || "Failed to load user profile"}</p>
+            <p className="text-xl text-red-500 font-medium">
+              {error || "Failed to load user profile"}
+            </p>
           </div>
-          <Button onClick={() => window.location.reload()} className="bg-orange-500 hover:bg-orange-600 text-white">
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
             Try Again
           </Button>
         </div>
         <Footer />
       </main>
-    )
+    );
   }
 
   return (
@@ -375,15 +389,36 @@ export default function UserProfile() {
       {/* Hero Section with Parallax Effect */}
       <section className="relative h-[70vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <Image src="/hero.avif" alt="Luxury real estate" fill priority className="object-cover opacity-40" />
+          <Image
+            src="/hero.avif"
+            alt="Luxury real estate"
+            fill
+            priority
+            className="object-cover opacity-40"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black/70 z-10"></div>
 
           {/* Animated Patterns */}
           <div className="absolute inset-0 z-5 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full">
-              <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-                  <path d="M 8 0 L 0 0 0 8" fill="none" stroke="white" strokeWidth="0.5" />
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <pattern
+                  id="grid"
+                  width="8"
+                  height="8"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 8 0 L 0 0 0 8"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="0.5"
+                  />
                 </pattern>
                 <rect width="100%" height="100%" fill="url(#grid)" />
               </svg>
@@ -406,7 +441,10 @@ export default function UserProfile() {
                 className="mb-8"
               >
                 <Avatar className="w-32 h-32 border-4 border-orange-500 shadow-lg shadow-orange-500/20">
-                  <AvatarImage src={user.image || "/avatar.jpg"} alt={user.name} />
+                  <AvatarImage
+                    src={user.image || "/avatar.jpg"}
+                    alt={user.name}
+                  />
                   <AvatarFallback className="text-4xl font-bold text-white bg-gradient-to-br from-orange-500 to-orange-700">
                     {user.name.charAt(0)}
                   </AvatarFallback>
@@ -421,7 +459,10 @@ export default function UserProfile() {
               >
                 <h1 className="text-5xl md:text-6xl font-bold mb-2">
                   <span className="text-white">{user.name.split(" ")[0]}</span>
-                  <span className="text-orange-500"> {user.name.split(" ").slice(1).join(" ")}</span>
+                  <span className="text-orange-500">
+                    {" "}
+                    {user.name.split(" ").slice(1).join(" ")}
+                  </span>
                 </h1>
 
                 <div className="flex items-center justify-center gap-2 mb-4">
@@ -436,7 +477,8 @@ export default function UserProfile() {
                 </div>
 
                 <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                  {user.bio || "Welcome to your personalized real estate dashboard."}
+                  {user.bio ||
+                    "Welcome to your personalized real estate dashboard."}
                 </p>
               </motion.div>
             </div>
@@ -449,7 +491,13 @@ export default function UserProfile() {
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
         >
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d="M12 5V19M12 19L19 12M12 19L5 12"
               stroke="white"
@@ -480,7 +528,9 @@ export default function UserProfile() {
                   <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Building className="w-6 h-6 text-orange-500" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-1">{user.agentInfo.listings || 0}</h3>
+                  <h3 className="text-3xl font-bold text-white mb-1">
+                    {user.agentInfo.listings || 0}
+                  </h3>
                   <p className="text-gray-400">Active Listings</p>
                 </motion.div>
 
@@ -491,7 +541,9 @@ export default function UserProfile() {
                   <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Home className="w-6 h-6 text-orange-500" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-1">{user.agentInfo.sales || 0}</h3>
+                  <h3 className="text-3xl font-bold text-white mb-1">
+                    {user.agentInfo.sales || 0}
+                  </h3>
                   <p className="text-gray-400">Properties Sold</p>
                 </motion.div>
 
@@ -502,7 +554,9 @@ export default function UserProfile() {
                   <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Star className="w-6 h-6 text-orange-500" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-1">{user.agentInfo.rating || 0}</h3>
+                  <h3 className="text-3xl font-bold text-white mb-1">
+                    {user.agentInfo.rating || 0}
+                  </h3>
                   <p className="text-gray-400">Average Rating</p>
                 </motion.div>
 
@@ -513,7 +567,9 @@ export default function UserProfile() {
                   <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Calendar className="w-6 h-6 text-orange-500" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-1">{user.agentInfo.experience || 0}</h3>
+                  <h3 className="text-3xl font-bold text-white mb-1">
+                    {user.agentInfo.experience || 0}
+                  </h3>
                   <p className="text-gray-400">Years Experience</p>
                 </motion.div>
               </div>
@@ -534,10 +590,13 @@ export default function UserProfile() {
           >
             <motion.div variants={fadeIn} className="text-center mb-12">
               <div className="inline-block bg-orange-500/10 px-6 py-2 rounded-full mb-4">
-                <span className="text-orange-500 font-medium tracking-wider">DASHBOARD</span>
+                <span className="text-orange-500 font-medium tracking-wider">
+                  DASHBOARD
+                </span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Manage Your <span className="text-orange-500">Real Estate</span> Portfolio
+                Manage Your <span className="text-orange-500">Real Estate</span>{" "}
+                Portfolio
               </h2>
             </motion.div>
 
@@ -579,28 +638,39 @@ export default function UserProfile() {
                         {/* Contact Information */}
                         <div className="p-8 bg-gray-900/50 border-r border-gray-800">
                           <h3 className="text-xl font-semibold text-orange-500 mb-6 flex items-center">
-                            <User className="w-5 h-5 mr-2" /> Contact Information
+                            <User className="w-5 h-5 mr-2" /> Contact
+                            Information
                           </h3>
 
                           <div className="space-y-6">
                             <div>
-                              <p className="text-gray-400 text-sm mb-1">Email</p>
-                              <p className="text-white font-medium">{user.email}</p>
+                              <p className="text-gray-400 text-sm mb-1">
+                                Email
+                              </p>
+                              <p className="text-white font-medium">
+                                {user.email}
+                              </p>
                             </div>
 
                             {user.phone && (
                               <div>
-                                <p className="text-gray-400 text-sm mb-1">Phone</p>
+                                <p className="text-gray-400 text-sm mb-1">
+                                  Phone
+                                </p>
                                 <div className="flex items-center">
                                   <Phone className="w-4 h-4 mr-2 text-orange-500" />
-                                  <p className="text-white font-medium">{user.phone}</p>
+                                  <p className="text-white font-medium">
+                                    {user.phone}
+                                  </p>
                                 </div>
                               </div>
                             )}
 
                             {(user.address?.city || user.address?.state) && (
                               <div>
-                                <p className="text-gray-400 text-sm mb-1">Location</p>
+                                <p className="text-gray-400 text-sm mb-1">
+                                  Location
+                                </p>
                                 <div className="flex items-start">
                                   <MapPin className="w-4 h-4 mr-2 text-orange-500 mt-1" />
                                   <p className="text-white font-medium">
@@ -635,7 +705,8 @@ export default function UserProfile() {
                             <h3 className="text-xl font-semibold text-orange-500 flex items-center">
                               {user.isAgent ? (
                                 <>
-                                  <Award className="w-5 h-5 mr-2" /> Agent Profile
+                                  <Award className="w-5 h-5 mr-2" /> Agent
+                                  Profile
                                 </>
                               ) : (
                                 <>
@@ -654,9 +725,11 @@ export default function UserProfile() {
 
                           {user.bio && (
                             <div className="mb-8">
-                              <p className="text-gray-400 text-sm mb-2">About</p>
+                              <p className="text-gray-400 text-sm mb-2">
+                                About
+                              </p>
                               <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 italic text-gray-300">
-                              `&quot;`{user.bio}`&quot;`
+                                `&quot;`{user.bio}`&quot;`
                               </div>
                             </div>
                           )}
@@ -668,9 +741,13 @@ export default function UserProfile() {
                                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50">
                                     <div className="flex items-center mb-2">
                                       <Building className="w-4 h-4 text-orange-500 mr-2" />
-                                      <p className="text-gray-400 text-sm">Agency</p>
+                                      <p className="text-gray-400 text-sm">
+                                        Agency
+                                      </p>
                                     </div>
-                                    <p className="text-white font-medium">{user.agentInfo.agency}</p>
+                                    <p className="text-white font-medium">
+                                      {user.agentInfo.agency}
+                                    </p>
                                   </div>
                                 )}
 
@@ -678,45 +755,61 @@ export default function UserProfile() {
                                   <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50">
                                     <div className="flex items-center mb-2">
                                       <Award className="w-4 h-4 text-orange-500 mr-2" />
-                                      <p className="text-gray-400 text-sm">License</p>
+                                      <p className="text-gray-400 text-sm">
+                                        License
+                                      </p>
                                     </div>
-                                    <p className="text-white font-medium">{user.agentInfo.licenseNumber}</p>
+                                    <p className="text-white font-medium">
+                                      {user.agentInfo.licenseNumber}
+                                    </p>
                                   </div>
                                 )}
                               </div>
 
-                              {user.agentInfo.specializations && user.agentInfo.specializations.length > 0 && (
-                                <div>
-                                  <p className="text-gray-400 text-sm mb-3">Specializations</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {user.agentInfo.specializations.map((spec, index) => (
-                                      <Badge
-                                        key={index}
-                                        className="bg-orange-500/10 text-orange-400 border border-orange-500/30"
-                                      >
-                                        {spec}
-                                      </Badge>
-                                    ))}
+                              {user.agentInfo.specializations &&
+                                user.agentInfo.specializations.length > 0 && (
+                                  <div>
+                                    <p className="text-gray-400 text-sm mb-3">
+                                      Specializations
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {user.agentInfo.specializations.map(
+                                        (spec, index) => (
+                                          <Badge
+                                            key={index}
+                                            className="bg-orange-500/10 text-orange-400 border border-orange-500/30"
+                                          >
+                                            {spec}
+                                          </Badge>
+                                        ),
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {user.agentInfo.languages && user.agentInfo.languages.length > 0 && (
-                                <div>
-                                  <p className="text-gray-400 text-sm mb-3">Languages</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {user.agentInfo.languages.map((lang, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-center bg-gray-800/50 rounded-full px-3 py-1"
-                                      >
-                                        <Globe className="w-3 h-3 text-orange-500 mr-2" />
-                                        <span className="text-sm">{lang}</span>
-                                      </div>
-                                    ))}
+                              {user.agentInfo.languages &&
+                                user.agentInfo.languages.length > 0 && (
+                                  <div>
+                                    <p className="text-gray-400 text-sm mb-3">
+                                      Languages
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {user.agentInfo.languages.map(
+                                        (lang, index) => (
+                                          <div
+                                            key={index}
+                                            className="flex items-center bg-gray-800/50 rounded-full px-3 py-1"
+                                          >
+                                            <Globe className="w-3 h-3 text-orange-500 mr-2" />
+                                            <span className="text-sm">
+                                              {lang}
+                                            </span>
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
                             </div>
                           )}
                         </div>
@@ -754,13 +847,18 @@ export default function UserProfile() {
                             <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                               <Home className="w-8 h-8 text-orange-500" />
                             </div>
-                            <h4 className="text-xl font-medium text-white mb-2">No properties found</h4>
-                            <p className="text-gray-400 mb-6">You haven`&apos;`t listed any properties yet.</p>
+                            <h4 className="text-xl font-medium text-white mb-2">
+                              No properties found
+                            </h4>
+                            <p className="text-gray-400 mb-6">
+                              You haven&apos;t listed any properties yet.
+                            </p>
                             <Button
                               onClick={openAddPropertyModal}
-                              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white gap-2"
+                              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white gap-2 mr-2"
                             >
-                              <Plus className="w-4 h-4" /> List your first property
+                              <Plus className="w-4 h-4" /> List your first
+                              property
                             </Button>
                           </div>
                         </div>
@@ -778,7 +876,9 @@ export default function UserProfile() {
                               <Card className="overflow-hidden h-full border-0 bg-gray-900 group-hover:shadow-lg group-hover:shadow-orange-500/10 transition-all duration-300">
                                 <div className="relative h-48">
                                   <Image
-                                    src={property.images?.[0] || "/placeholder.svg"}
+                                    src={
+                                      property.images?.[0] || "/placeholder.svg"
+                                    }
                                     alt={property.title}
                                     fill
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -794,18 +894,22 @@ export default function UserProfile() {
                                     >
                                       {property.verified ? (
                                         <span className="flex items-center gap-1">
-                                          <CheckCircle className="w-3 h-3" /> Verified
+                                          <CheckCircle className="w-3 h-3" />{" "}
+                                          Verified
                                         </span>
                                       ) : (
                                         <span className="flex items-center gap-1">
-                                          <XCircle className="w-3 h-3" /> Not Verified
+                                          <XCircle className="w-3 h-3" /> Not
+                                          Verified
                                         </span>
                                       )}
                                     </Badge>
                                   </div>
                                   <div className="absolute bottom-2 left-2">
                                     <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0">
-                                      {property.listingType === "sale" ? "For Sale" : "For Rent"}
+                                      {property.listingType === "sale"
+                                        ? "For Sale"
+                                        : "For Rent"}
                                     </Badge>
                                   </div>
                                 </div>
@@ -814,7 +918,9 @@ export default function UserProfile() {
                                     <h4 className="text-xl font-semibold text-orange-500 mb-2 group-hover:text-orange-400 transition-colors">
                                       {property.title}
                                     </h4>
-                                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">{property.description}</p>
+                                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                                      {property.description}
+                                    </p>
                                     <p className="text-2xl font-bold text-white">
                                       ₹ {property.price?.toLocaleString() || 0}
                                     </p>
@@ -824,7 +930,9 @@ export default function UserProfile() {
                                       variant="outline"
                                       size="sm"
                                       className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
-                                      onClick={() => handleEditProperty(property._id)}
+                                      onClick={() =>
+                                        handleEditProperty(property._id)
+                                      }
                                     >
                                       <Edit className="w-3 h-3 mr-1" /> Edit
                                     </Button>
@@ -832,7 +940,9 @@ export default function UserProfile() {
                                       variant="outline"
                                       size="sm"
                                       className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors gap-1"
-                                      onClick={() => openDeletePropertyModal(property)}
+                                      onClick={() =>
+                                        openDeletePropertyModal(property)
+                                      }
                                     >
                                       <Trash2 className="w-3 h-3" /> Remove
                                     </Button>
@@ -853,7 +963,8 @@ export default function UserProfile() {
                       <CardHeader className="pb-0">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                           <h3 className="text-2xl font-semibold text-orange-500 flex items-center">
-                            <Briefcase className="w-5 h-5 mr-2" /> Assigned Properties
+                            <Briefcase className="w-5 h-5 mr-2" /> Assigned
+                            Properties
                           </h3>
                         </div>
                       </CardHeader>
@@ -871,80 +982,97 @@ export default function UserProfile() {
                               <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Briefcase className="w-8 h-8 text-orange-500" />
                               </div>
-                              <h4 className="text-xl font-medium text-white mb-2">No assigned properties</h4>
-                              <p className="text-gray-400 mb-6">You haven`&apos;`t been assigned any properties yet.</p>
+                              <h4 className="text-xl font-medium text-white mb-2">
+                                No assigned properties
+                              </h4>
+                              <p className="text-gray-400 mb-6">
+                                You haven`&apos;`t been assigned any properties
+                                yet.
+                              </p>
                             </div>
                           </div>
                         ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {assignedProperties.map((property) => (
-                            <motion.div
-                              key={property._id}
-                              initial={{ opacity: 0, y: 10 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.4 }}
-                              viewport={{ once: true }}
-                              className="group"
-                            >
-                              <Card className="overflow-hidden h-full border-0 bg-gray-900 group-hover:shadow-lg group-hover:shadow-orange-500/10 transition-all duration-300">
-                                <div className="relative h-48">
-                                  <Image
-                                      src={property.images?.[0] || "/placeholder.svg"}
-                                    alt={property.title}
-                                    fill
-                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                                  <div className="absolute top-2 right-2">
-                                    <Badge
-                                      className={
-                                        property.verified
-                                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                          : "bg-red-500/20 text-red-400 border border-red-500/30"
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {assignedProperties.map((property) => (
+                              <motion.div
+                                key={property._id}
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4 }}
+                                viewport={{ once: true }}
+                                className="group"
+                              >
+                                <Card className="overflow-hidden h-full border-0 bg-gray-900 group-hover:shadow-lg group-hover:shadow-orange-500/10 transition-all duration-300">
+                                  <div className="relative h-48">
+                                    <Image
+                                      src={
+                                        property.images?.[0] ||
+                                        "/placeholder.svg"
                                       }
-                                    >
-                                      {property.verified ? (
-                                        <span className="flex items-center gap-1">
-                                          <CheckCircle className="w-3 h-3" /> Verified
-                                        </span>
-                                      ) : (
-                                        <span className="flex items-center gap-1">
-                                          <XCircle className="w-3 h-3" /> Not Verified
-                                        </span>
-                                      )}
-                                    </Badge>
-                                  </div>
-                                  <div className="absolute bottom-2 left-2">
-                                    <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0">
-                                      {property.listingType}
-                                    </Badge>
-                                  </div>
-                                </div>
-                                <CardContent className="p-6">
-                                  <div className="mb-4">
-                                    <h4 className="text-xl font-semibold text-orange-500 mb-2 group-hover:text-orange-400 transition-colors">
-                                      {property.title}
-                                    </h4>
-                                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">{property.description}</p>
-                                    <p className="text-2xl font-bold text-white">₹ {property.price.toLocaleString()}</p>
-                                      {property.owner && (
-                                    <div className="mt-3 flex items-center">
-                                      <Avatar className="w-6 h-6 mr-2 border border-orange-500">
-                                        <AvatarFallback className="bg-orange-500/20 text-orange-500 text-xs">
-                                              {property.owner.name.charAt(0)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <p className="text-gray-300 text-sm">
-                                            Owner: <span className="text-orange-400">{property.owner.name}</span>
-                                      </p>
+                                      alt={property.title}
+                                      fill
+                                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                    <div className="absolute top-2 right-2">
+                                      <Badge
+                                        className={
+                                          property.verified
+                                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                            : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                        }
+                                      >
+                                        {property.verified ? (
+                                          <span className="flex items-center gap-1">
+                                            <CheckCircle className="w-3 h-3" />{" "}
+                                            Verified
+                                          </span>
+                                        ) : (
+                                          <span className="flex items-center gap-1">
+                                            <XCircle className="w-3 h-3" /> Not
+                                            Verified
+                                          </span>
+                                        )}
+                                      </Badge>
                                     </div>
-                                      )}
+                                    <div className="absolute bottom-2 left-2">
+                                      <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0">
+                                        {property.listingType}
+                                      </Badge>
+                                    </div>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            </motion.div>
-                          ))}
-                        </div>
+                                  <CardContent className="p-6">
+                                    <div className="mb-4">
+                                      <h4 className="text-xl font-semibold text-orange-500 mb-2 group-hover:text-orange-400 transition-colors">
+                                        {property.title}
+                                      </h4>
+                                      <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                                        {property.description}
+                                      </p>
+                                      <p className="text-2xl font-bold text-white">
+                                        ₹ {property.price.toLocaleString()}
+                                      </p>
+                                      {property.owner && (
+                                        <div className="mt-3 flex items-center">
+                                          <Avatar className="w-6 h-6 mr-2 border border-orange-500">
+                                            <AvatarFallback className="bg-orange-500/20 text-orange-500 text-xs">
+                                              {property.owner.name.charAt(0)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <p className="text-gray-300 text-sm">
+                                            Owner:{" "}
+                                            <span className="text-orange-400">
+                                              {property.owner.name}
+                                            </span>
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </motion.div>
+                            ))}
+                          </div>
                         )}
                       </CardContent>
                     </Card>
@@ -977,7 +1105,13 @@ export default function UserProfile() {
               className="absolute right-4 top-4 text-gray-500 hover:text-gray-300 transition-colors"
               disabled={isDeleteLoading}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M18 6L6 18M6 6L18 18"
                   stroke="currentColor"
@@ -991,10 +1125,15 @@ export default function UserProfile() {
               <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Trash2 className="w-8 h-8 text-red-500" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Delete Property</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Delete Property
+              </h2>
               <p className="text-gray-300 mb-6">
                 Are you sure you want to delete the property `&quot;`
-                <span className="text-orange-500">{propertyToDelete.title}</span>`&quot;`?
+                <span className="text-orange-500">
+                  {propertyToDelete.title}
+                </span>
+                `&quot;`?
               </p>
               <div className="flex justify-center space-x-4">
                 <Button
@@ -1047,7 +1186,13 @@ export default function UserProfile() {
               onClick={closeEditProfileModal}
               className="absolute right-4 top-4 text-gray-500 hover:text-gray-300 transition-colors"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M18 6L6 18M6 6L18 18"
                   stroke="currentColor"
@@ -1063,12 +1208,16 @@ export default function UserProfile() {
                   <Edit className="w-8 h-8 text-orange-500" />
                 </div>
                 <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-                <p className="text-gray-400 text-sm mt-1">Update your personal information</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Update your personal information
+                </p>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="text-gray-300 text-sm font-medium mb-2 block">Name</label>
+                  <label className="text-gray-300 text-sm font-medium mb-2 block">
+                    Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -1079,7 +1228,9 @@ export default function UserProfile() {
                   />
                 </div>
                 <div>
-                  <label className="text-gray-300 text-sm font-medium mb-2 block">Email</label>
+                  <label className="text-gray-300 text-sm font-medium mb-2 block">
+                    Email
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -1087,10 +1238,14 @@ export default function UserProfile() {
                     disabled
                     className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent opacity-70 text-white"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Email cannot be changed
+                  </p>
                 </div>
                 <div>
-                  <label className="text-gray-300 text-sm font-medium mb-2 block">Phone</label>
+                  <label className="text-gray-300 text-sm font-medium mb-2 block">
+                    Phone
+                  </label>
                   <input
                     type="text"
                     name="phone"
@@ -1101,7 +1256,9 @@ export default function UserProfile() {
                   />
                 </div>
                 <div>
-                  <label className="text-gray-300 text-sm font-medium mb-2 block">About</label>
+                  <label className="text-gray-300 text-sm font-medium mb-2 block">
+                    About
+                  </label>
                   <textarea
                     name="bio"
                     value={formData.bio}
@@ -1113,11 +1270,14 @@ export default function UserProfile() {
 
                 <div className="border-t border-gray-700 pt-4 mt-4">
                   <h3 className="text-white text-md font-medium mb-4 flex items-center">
-                    <MapPin className="w-4 h-4 mr-2 text-orange-500" /> Address Information
+                    <MapPin className="w-4 h-4 mr-2 text-orange-500" /> Address
+                    Information
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-gray-300 text-sm font-medium mb-2 block">Street</label>
+                      <label className="text-gray-300 text-sm font-medium mb-2 block">
+                        Street
+                      </label>
                       <input
                         type="text"
                         name="street"
@@ -1129,7 +1289,9 @@ export default function UserProfile() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-gray-300 text-sm font-medium mb-2 block">City</label>
+                        <label className="text-gray-300 text-sm font-medium mb-2 block">
+                          City
+                        </label>
                         <input
                           type="text"
                           name="city"
@@ -1140,7 +1302,9 @@ export default function UserProfile() {
                         />
                       </div>
                       <div>
-                        <label className="text-gray-300 text-sm font-medium mb-2 block">State</label>
+                        <label className="text-gray-300 text-sm font-medium mb-2 block">
+                          State
+                        </label>
                         <input
                           type="text"
                           name="state"
@@ -1153,7 +1317,9 @@ export default function UserProfile() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-gray-300 text-sm font-medium mb-2 block">Zip Code</label>
+                        <label className="text-gray-300 text-sm font-medium mb-2 block">
+                          Zip Code
+                        </label>
                         <input
                           type="text"
                           name="zipCode"
@@ -1164,7 +1330,9 @@ export default function UserProfile() {
                         />
                       </div>
                       <div>
-                        <label className="text-gray-300 text-sm font-medium mb-2 block">Country</label>
+                        <label className="text-gray-300 text-sm font-medium mb-2 block">
+                          Country
+                        </label>
                         <input
                           type="text"
                           name="country"
@@ -1193,5 +1361,5 @@ export default function UserProfile() {
 
       <Footer />
     </main>
-  )
+  );
 }

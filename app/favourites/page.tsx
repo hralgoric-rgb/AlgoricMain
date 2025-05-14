@@ -5,9 +5,16 @@ import { FavoritesAPI } from "../lib/api-helpers";
 import Link from "next/link";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {Trash2, HomeIcon, Building, Users, MapPin } from "lucide-react";
+import { Trash2, HomeIcon, Building, Users, MapPin } from "lucide-react";
 import Navbar from "../components/navbar";
 import { motion } from "framer-motion";
 import Footer from "../components/footer";
@@ -77,9 +84,8 @@ interface Builder {
   established?: number;
   projects?: number;
   specializations?: string[];
-  description:string;
-  rating:number;
-
+  description: string;
+  rating: number;
 }
 
 export default function FavoritesPage() {
@@ -93,24 +99,19 @@ export default function FavoritesPage() {
   const router = useRouter();
   useEffect(() => {
     // Only run this on the client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const authToken = sessionStorage.getItem("authToken");
       if (authToken) {
         setToken(authToken);
+        console.log("authToken: ", token);
+      } else {
+        toast.error("Please login to proceed!! Redirecting to home page!");
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
       }
     }
   }, []);
-
-  useEffect(() => {
-    if(!token) {
-      toast.error("Please login to proceed!! Redirecting to home page!")
-      setTimeout(() => {
-      router.push("/")
-      }, 1500)
-    }
-  }, [token, router])
-
-  
 
   const fetchFavorites = async () => {
     setLoading(true);
@@ -119,7 +120,7 @@ export default function FavoritesPage() {
       switch (activeTab) {
         case "properties":
           const propertiesData = await FavoritesAPI.getProperties();
-          
+
           setProperties(propertiesData.favorites || []);
           break;
         case "agents":
@@ -128,7 +129,7 @@ export default function FavoritesPage() {
           break;
         case "builders":
           const buildersData = await FavoritesAPI.getBuilders();
-          
+
           setBuilders(buildersData.favorites || []);
           break;
       }
@@ -143,7 +144,7 @@ export default function FavoritesPage() {
   useEffect(() => {
     fetchFavorites();
   }, [activeTab, fetchFavorites]);
-  
+
   const removeFromFavorites = async (type: string, id: string) => {
     try {
       switch (type) {
@@ -181,27 +182,30 @@ export default function FavoritesPage() {
         </motion.h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-8 bg-gray-900 shadow-sm border border-gray-800 rounded-lg">
+          <TabsList className="mb-8 bg-gray-900 shadow-sm border border-gray-800 rounded-lg mr-2">
             <TabsTrigger
               value="properties"
-              className={`flex items-center gap-2 py-2 rounded-lg transition-colors duration-300 ${activeTab === "properties" ? "bg-orange-500 text-white" : ""
-                }`}
+              className={`flex items-center gap-2 py-2 rounded-lg transition-colors duration-300 ${
+                activeTab === "properties" ? "bg-orange-500 text-white" : ""
+              }`}
             >
               <HomeIcon size={16} />
               <span>Properties</span>
             </TabsTrigger>
             <TabsTrigger
               value="agents"
-              className={`flex items-center gap-2 p-2 rounded-lg transition-colors duration-300 ${activeTab === "agents" ? "bg-orange-500 text-white" : ""
-                }`}
+              className={`flex items-center gap-2 p-2 rounded-lg transition-colors duration-300 ${
+                activeTab === "agents" ? "bg-orange-500 text-white" : ""
+              }`}
             >
               <Users size={16} />
               <span>Agents</span>
             </TabsTrigger>
             <TabsTrigger
               value="builders"
-              className={`flex items-center gap-2 p-2 rounded-lg transition-colors duration-300 ${activeTab === "builders" ? "bg-orange-500 text-white" : ""
-                }`}
+              className={`flex items-center gap-2 p-2 rounded-lg transition-colors duration-300 ${
+                activeTab === "builders" ? "bg-orange-500 text-white" : ""
+              }`}
             >
               <Building size={16} />
               <span>Builders</span>
@@ -237,7 +241,9 @@ export default function FavoritesPage() {
                       <PropertyCard
                         key={property._id}
                         property={property}
-                        onRemove={() => removeFromFavorites("property", property._id)}
+                        onRemove={() =>
+                          removeFromFavorites("property", property._id)
+                        }
                       />
                     ))}
                   </motion.div>
@@ -279,18 +285,19 @@ export default function FavoritesPage() {
                       <BuilderCard
                         key={builder._id}
                         builder={builder}
-                        onRemove={() => removeFromFavorites("builder", builder._id)}
+                        onRemove={() =>
+                          removeFromFavorites("builder", builder._id)
+                        }
                       />
                     ))}
                   </motion.div>
                 )}
               </TabsContent>
-
             </>
           )}
         </Tabs>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
@@ -306,7 +313,8 @@ function EmptyState({ type }: { type: string }) {
     },
     agents: {
       title: "No favorite agents yet",
-      description: "Discover real estate agents and add them to your favorites.",
+      description:
+        "Discover real estate agents and add them to your favorites.",
       action: "Find Agents",
       link: "/agents",
       icon: <Users className="w-16 h-16 text-gray-500" />,
@@ -317,10 +325,11 @@ function EmptyState({ type }: { type: string }) {
       action: "Explore Builders",
       link: "/builders",
       icon: <Building className="w-16 h-16 text-gray-500" />,
-    }
+    },
   };
 
-  const { title, description, action, link, icon } = messages[type as keyof typeof messages];
+  const { title, description, action, link, icon } =
+    messages[type as keyof typeof messages];
 
   return (
     <motion.div
@@ -339,7 +348,13 @@ function EmptyState({ type }: { type: string }) {
   );
 }
 
-function PropertyCard({ property, onRemove }: { property: Property; onRemove: () => void }) {
+function PropertyCard({
+  property,
+  onRemove,
+}: {
+  property: Property;
+  onRemove: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -364,22 +379,30 @@ function PropertyCard({ property, onRemove }: { property: Property; onRemove: ()
           </Button>
         </div>
         <CardHeader>
-          <CardTitle className="line-clamp-1 text-orange-500">{property.title}</CardTitle>
+          <CardTitle className="line-clamp-1 text-orange-500">
+            {property.title}
+          </CardTitle>
           <CardDescription className="flex items-center text-gray-400">
             <MapPin size={14} className="mr-1" />
             {property.address.city}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold text-orange-500">₹{property.price?.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-orange-500">
+            ₹{property.price?.toLocaleString()}
+          </p>
           <div className="flex gap-4 mt-2">
             <div>
               <p className="text-sm text-gray-500">Area</p>
-              <p className="font-medium text-gray-300">{property.area} sq.ft.</p>
+              <p className="font-medium text-gray-300">
+                {property.area} sq.ft.
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Type</p>
-              <p className="font-medium text-gray-300">{property.propertyType}</p>
+              <p className="font-medium text-gray-300">
+                {property.propertyType}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -395,7 +418,13 @@ function PropertyCard({ property, onRemove }: { property: Property; onRemove: ()
   );
 }
 
-function AgentCard({ agent, onRemove }: { agent: Agent; onRemove: () => void }) {
+function AgentCard({
+  agent,
+  onRemove,
+}: {
+  agent: Agent;
+  onRemove: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -430,12 +459,19 @@ function AgentCard({ agent, onRemove }: { agent: Agent; onRemove: () => void }) 
         </div>
         <CardHeader className="text-center">
           <CardTitle className="text-orange-500">{agent.name}</CardTitle>
-          <CardDescription className="text-gray-400">{agent.agentInfo.agency || "Independent Agent"}</CardDescription>
+          <CardDescription className="text-gray-400">
+            {agent.agentInfo.agency || "Independent Agent"}
+          </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-sm text-gray-500 mb-2">{agent.agentInfo.experience} years experience</p>
+          <p className="text-sm text-gray-500 mb-2">
+            {agent.agentInfo.experience} years experience
+          </p>
           <p className="text-sm text-gray-500">
-            <span className="font-medium text-gray-300">{agent.agentInfo.properties || 0}</span> properties sold
+            <span className="font-medium text-gray-300">
+              {agent.agentInfo.properties || 0}
+            </span>{" "}
+            properties sold
           </p>
         </CardContent>
         <CardFooter className="flex justify-center">
@@ -448,7 +484,13 @@ function AgentCard({ agent, onRemove }: { agent: Agent; onRemove: () => void }) 
   );
 }
 
-function BuilderCard({ builder, onRemove }: { builder: Builder; onRemove: () => void }) {
+function BuilderCard({
+  builder,
+  onRemove,
+}: {
+  builder: Builder;
+  onRemove: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -473,10 +515,10 @@ function BuilderCard({ builder, onRemove }: { builder: Builder; onRemove: () => 
           </Button>
         </div>
         <CardHeader>
-          <CardTitle className="text-center text-orange-500">{builder.title}</CardTitle>
-          <CardDescription>
-            {builder.description}
-          </CardDescription>
+          <CardTitle className="text-center text-orange-500">
+            {builder.title}
+          </CardTitle>
+          <CardDescription>{builder.description}</CardDescription>
           <CardDescription className="text-center text-gray-400">
             {builder.established ? `Est. ${builder.established}` : ""}
           </CardDescription>
@@ -487,7 +529,10 @@ function BuilderCard({ builder, onRemove }: { builder: Builder; onRemove: () => 
           </p>
           <div className="flex justify-center gap-2 mt-3">
             {builder.specializations?.slice(0, 3).map((spec, i) => (
-              <span key={i} className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
+              <span
+                key={i}
+                className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full"
+              >
                 {spec}
               </span>
             ))}

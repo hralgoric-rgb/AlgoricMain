@@ -214,7 +214,7 @@ export default function CompareProperties() {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
     // Only run this on the client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const authToken = sessionStorage.getItem("authToken");
       if (authToken) {
         setToken(authToken);
@@ -309,7 +309,7 @@ export default function CompareProperties() {
 
   // Animation variants
   const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       y: 0,
@@ -784,8 +784,8 @@ export default function CompareProperties() {
               >
                 <div className="bg-orange-600/10 rounded-xl p-4 mb-6 text-center max-w-xl">
                   <p className="text-lg">
-                    You`&apos;`ve selected two properties! Compare them now to see a
-                    detailed side-by-side analysis.
+                    You`&apos;`ve selected two properties! Compare them now to
+                    see a detailed side-by-side analysis.
                   </p>
                 </div>
 

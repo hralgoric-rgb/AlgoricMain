@@ -15,7 +15,7 @@ import {
   Headset,
   Info,
 } from "lucide-react";
-import { signIn} from "next-auth/react";
+import { signIn } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -29,45 +29,49 @@ export default function Navbar() {
   >("main");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Check for auth errors in URL parameters and auth token
   useEffect(() => {
     // Check for error parameters
     const url = new URL(window.location.href);
-    const errorParam = url.searchParams.get('error');
+    const errorParam = url.searchParams.get("error");
     // const callbackUrl = url.searchParams.get('callbackUrl');
-    
+
     if (errorParam) {
       // Open auth modal if there's an error
       setIsAuthModalOpen(true);
       setActiveTab("login");
-      
+
       // Handle specific OAuth errors
-      if (errorParam === 'OAuthAccountNotLinked') {
-        setError('This email is already associated with a different sign-in method. Please use your original sign-in method.');
-        toast.error('Account not linked. Please use your original sign-in method.');
+      if (errorParam === "OAuthAccountNotLinked") {
+        setError(
+          "This email is already associated with a different sign-in method. Please use your original sign-in method.",
+        );
+        toast.error(
+          "Account not linked. Please use your original sign-in method.",
+        );
       } else {
-        setError('An error occurred during sign in. Please try again.');
-        toast.error('Authentication error. Please try again.');
+        setError("An error occurred during sign in. Please try again.");
+        toast.error("Authentication error. Please try again.");
       }
-      
+
       // Clean up URL by removing error parameters
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
       }
     }
-    
+
     // Check for auth token in cookies and store in sessionStorage
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
       return null;
     };
-    
-    const authToken = getCookie('authToken');
-    if (authToken && typeof window !== 'undefined') {
+
+    const authToken = getCookie("authToken");
+    if (authToken && typeof window !== "undefined") {
       // Store token in session storage
       sessionStorage.setItem("authToken", authToken);
       setIsAuthenticated(true);
@@ -88,7 +92,7 @@ export default function Navbar() {
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   useEffect(() => {
-    if(typeof window !== "undefined"){
+    if (typeof window !== "undefined") {
       const token = sessionStorage.getItem("authToken");
       if (token) {
         setIsAuthenticated(true);
@@ -143,8 +147,8 @@ export default function Navbar() {
     try {
       // Get the current URL to use as callback URL if one isn't provided in the URL parameters
       const url = new URL(window.location.href);
-      const callbackUrl = url.searchParams.get('callbackUrl') || '/';
-      
+      const callbackUrl = url.searchParams.get("callbackUrl") || "/";
+
       await signIn("google", { callbackUrl });
       toast.success("Successfully logged in !!");
     } catch (error: any) {
@@ -432,7 +436,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md transition-all duration-300 bg-black/50`}
+        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md transition-all duration-300 bg-black/65`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main navigation - desktop */}
@@ -725,7 +729,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-black/95 backdrop-blur-md"
+            className="md:hidden bg-black/65 backdrop-blur-md sticky top-14 z-50 w-full"
           >
             <div className="px-4 pt-2 pb-4 space-y-2">
               <Link
@@ -1170,8 +1174,8 @@ export default function Navbar() {
                       </h3>
 
                       <p className="text-gray-600 mb-6">
-                        Enter your email address and we`&apos;`ll send you a link to
-                        reset your password.
+                        Enter your email address and we`&apos;`ll send you a
+                        link to reset your password.
                       </p>
 
                       {/* Error/Success Messages */}

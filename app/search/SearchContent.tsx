@@ -12,6 +12,8 @@ import {
   FaMapMarkerAlt,
   FaArrowRight,
   FaNewspaper,
+  FaMap,
+  FaList,
 } from "react-icons/fa";
 
 import Map from "../components/Map";
@@ -260,6 +262,7 @@ const SearchPage = () => {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<FilterState>({
     priceRange: [0, 5000000],
     propertyType: [],
@@ -734,6 +737,25 @@ const SearchPage = () => {
     }
   }, [allProperties, filterProperties]);
 
+  // Detect screen size and set initial map visibility
+  useEffect(() => {
+    const handleResize = () => {
+      // On larger screens (md and up), both map and list are visible
+      // On mobile, default to showing the list view
+      const isMobile = window.innerWidth < 768;
+      setShowMap(!isMobile);
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener("resize", handleResize);
+
+    // Clean up
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Reset filters function
   const resetFilters = () => {
     setSelectedFilters({
@@ -961,12 +983,7 @@ const SearchPage = () => {
     });
   };
 
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Properties", href: "/search" },
-    { label: "Profile", href: "/profile" },
-    { label: "Contact", href: "/contact" },
-  ];
+  const navItems = [{ label: "Home", href: "/" }];
 
   // Initialize from sessionStorage on component mount
   useEffect(() => {
@@ -1349,12 +1366,34 @@ const SearchPage = () => {
         )}
       </AnimatePresence>
 
+      {/* Mobile Map Toggle Button - Only visible on small screens */}
+      <div className="md:hidden sticky top-[85px] z-20 bg-black py-2 px-4 flex justify-end border-b border-gray-800">
+        <button
+          onClick={() => setShowMap(!showMap)}
+          className="px-3 py-1.5 bg-orange-500 text-white rounded-md text-sm font-medium flex items-center gap-1.5"
+        >
+          {showMap ? (
+            <>
+              <FaList className="h-3 w-3" />
+              <span>Show List</span>
+            </>
+          ) : (
+            <>
+              <FaMap className="h-3 w-3" />
+              <span>Show Map</span>
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Main Content */}
       <div
-        className={`flex  ${showFilters ? "h-[calc(100vh-125px)]" : "h-[calc(100vh-85px)]"}`}
+        className={`flex flex-col md:flex-row ${showFilters ? "h-[calc(100vh-125px)]" : "h-[calc(100vh-85px)]"}`}
       >
         {/* Map Section */}
-        <div className="w-1/2 relative">
+        <div
+          className={`${showMap ? "block" : "hidden"} md:block md:w-1/2 relative h-[calc(100vh-150px)] md:h-auto`}
+        >
           <Map
             center={mapCenter}
             zoom={zoom}
@@ -1383,20 +1422,33 @@ const SearchPage = () => {
             onBoundsChanged={handleMapBoundsChange}
             // mapStyle="dark" // Set the map style to dark
           />
-          <button
-            onClick={() => {
-              if (mapBounds) {
-                searchPropertiesInMapBounds();
-              }
-            }}
-            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm text-xs font-medium hover:bg-orange-600 transition-colors"
-          >
-            Search this area
-          </button>
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center">
+            <button
+              onClick={() => {
+                if (mapBounds) {
+                  searchPropertiesInMapBounds();
+                }
+              }}
+              className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm text-xs font-medium hover:bg-orange-600 transition-colors"
+            >
+              Search this area
+            </button>
+
+            {/* List view toggle button - only visible on mobile when map is shown */}
+            <button
+              onClick={() => setShowMap(false)}
+              className="md:hidden bg-black text-white px-3 py-1.5 rounded-md shadow-md text-xs font-medium border border-gray-700 flex items-center gap-1.5"
+            >
+              <FaList className="h-3 w-3" />
+              <span>Show List</span>
+            </button>
+          </div>
         </div>
 
         {/* Properties List + Articles Section */}
-        <div className="w-1/2 bg-black overflow-y-auto">
+        <div
+          className={`${!showMap ? "block" : "hidden"} md:block md:w-1/2 bg-black overflow-y-auto`}
+        >
           <div className="p-4 md:p-6">
             {/* Properties Count + Article Toggle */}
             <div className="flex items-center justify-between mb-4">
@@ -1407,13 +1459,17 @@ const SearchPage = () => {
                 properties found
               </div>
 
-              <button
-                onClick={() => setShowArticles(!showArticles)}
-                className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600 transition-colors"
-              >
-                <FaNewspaper className="h-3 w-3" />
-                <span>{showArticles ? "Hide Articles" : "Show Articles"}</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowArticles(!showArticles)}
+                  className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600 transition-colors"
+                >
+                  <FaNewspaper className="h-3 w-3" />
+                  <span>
+                    {showArticles ? "Hide Articles" : "Show Articles"}
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Properties List */}
@@ -1618,21 +1674,19 @@ const SearchPage = () => {
 
       {/* Bottom Navigation Bar */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center items-center pb-4 md:pb-6 pointer-events-none"
+        className="fixed bottom-1 left-0 right-0 z-50 flex justify-center items-center pb-4 md:pb-6 pointer-events-none"
         initial={{ y: 0, opacity: 1 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="bg-black/30 backdrop-blur-lg rounded-full shadow-lg border border-white/20 px-2 py-1.5 pointer-events-auto">
+        <div className="backdrop-blur-lg rounded-full shadow-lg border border-white/20 px-2 py-1.5 pointer-events-auto bg-orange-600 hover:bg-orange-800">
           <div className="flex space-x-1 relative">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
-                  item.href === "/search"
-                    ? "text-white"
-                    : "text-white hover:text-orange-500"
+                className={`relative px-2 py-1 text-base rounded-full transition-all duration-300 font-bold ${
+                  item.href === "/search" ? "text-white" : "text-white"
                 }`}
               >
                 {item.href === "/search" && (

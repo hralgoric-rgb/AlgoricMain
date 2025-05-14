@@ -1,44 +1,63 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, Building, AreaChart, Bed, Droplets, Car, School, ArrowUp, Wrench, MapPin, Building2, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import Navbar from '../components/navbar';
-import Footer from '../components/footer';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Home,
+  Building,
+  AreaChart,
+  Bed,
+  Droplets,
+  Car,
+  School,
+  ArrowUp,
+  Wrench,
+  MapPin,
+  Building2,
+  Loader2,
+} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import Navbar from "../components/navbar";
+import Footer from "../components/footer";
 
 export default function HousePricePrediction() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [predictedPrice, setPredictedPrice] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-    area: '',
-    bedrooms: '',
-    resale: '1',
-    swimmingpool: '0',
-    carparking: '1',
-    school: '1',
-    lift: '1',
-    maintenance: '1',
-    location: '',
-    city: 'Bangalore'
+    area: "",
+    bedrooms: "",
+    resale: "1",
+    swimmingpool: "0",
+    carparking: "1",
+    school: "1",
+    lift: "1",
+    maintenance: "1",
+    location: "",
+    city: "Bangalore",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -59,55 +78,63 @@ export default function HousePricePrediction() {
         lift: Number(formData.lift),
         maintenance: Number(formData.maintenance),
         location: formData.location,
-        city: formData.city
+        city: formData.city,
       };
 
-      console.log('Sending payload:', payload);
+      console.log("Sending payload:", payload);
 
-      const response = await fetch('https://indian-house-price-predection.onrender.com/predict_api', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "https://indian-house-price-predection.onrender.com/predict_api",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error:', errorText);
+        console.error("API Error:", errorText);
         throw new Error(`Failed to predict price: ${errorText}`);
       }
 
       const responseText = await response.text();
-      console.log('API Response Text:', responseText);
-      
+      console.log("API Response Text:", responseText);
+
       // Try to parse the response as JSON
       let data;
       try {
         data = JSON.parse(responseText);
       } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
-        throw new Error('Invalid response format from server');
+        console.error("Failed to parse response as JSON:", e);
+        throw new Error("Invalid response format from server");
       }
 
       // Check if the predicted price is available and handle different response formats
-      if (data && (data.predicted_price_lakhs !== undefined || data.predicted_price_lakhs !== null)) {
+      if (
+        data &&
+        (data.predicted_price_lakhs !== undefined ||
+          data.predicted_price_lakhs !== null)
+      ) {
         // Make sure we convert to a number if it's not already
-        const price = typeof data.predicted_price_lakhs === 'string' 
-          ? parseFloat(data.predicted_price_lakhs) 
-          : Number(data.predicted_price_lakhs);
-        
+        const price =
+          typeof data.predicted_price_lakhs === "string"
+            ? parseFloat(data.predicted_price_lakhs)
+            : Number(data.predicted_price_lakhs);
+
         setPredictedPrice(price);
       } else {
-        console.error('Unexpected response format:', data);
-        throw new Error('Could not find predicted price in response');
+        console.error("Unexpected response format:", data);
+        throw new Error("Could not find predicted price in response");
       }
     } catch (error) {
-      console.error('Error during prediction:', error);
+      console.error("Error during prediction:", error);
       toast({
-        title: 'Error',
+        title: "Error",
         description: `Failed to predict house price. Please try again.${error}`,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -115,24 +142,35 @@ export default function HousePricePrediction() {
   };
 
   // Custom icon component with color and styling
-  const FeatureIcon = ({ icon: Icon, active }: { icon: any; active: boolean }) => (
-    <div className={`p-2 rounded-full ${active ? 'bg-orange-500' : 'bg-neutral-800'} 
-                   transition-all duration-300`}>
-      <Icon size={16} className={active ? 'text-white' : 'text-neutral-400'} />
+  const FeatureIcon = ({
+    icon: Icon,
+    active,
+  }: {
+    icon: any;
+    active: boolean;
+  }) => (
+    <div
+      className={`p-2 rounded-full ${active ? "bg-orange-500" : "bg-neutral-800"}
+                   transition-all duration-300 items-center`}
+    >
+      <Icon size={16} className={active ? "text-white" : "text-neutral-400"} />
     </div>
   );
 
   return (
     <div className="min-h-screen bg-black text-white py-12 px-4">
-      <Navbar/>
+      <Navbar />
       <div className="max-w-4xl mx-auto my-20 mb-32">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold mb-2 flex items-center justify-center gap-2">
             <Home className="text-orange-500" size={32} />
-            <span>House Price</span>
-            <span className="text-orange-500">Predictor</span>
+            <span>
+              House Price <span className="text-orange-500">Predictor</span>
+            </span>
           </h1>
-          <p className="text-neutral-400">Discover the market value of your dream property in seconds</p>
+          <p className="text-neutral-400">
+            Discover the market value of your dream property in seconds
+          </p>
         </div>
 
         <Card className="bg-neutral-900 border-none shadow-lg shadow-orange-500/10">
@@ -142,16 +180,20 @@ export default function HousePricePrediction() {
               Property Details
             </CardTitle>
             <CardDescription className="text-neutral-400">
-              Enter property specifications to receive an AI-driven price estimate
+              Enter property specifications to receive an AI-driven price
+              estimate
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Area Input */}
                 <div className="space-y-2 relative group">
-                  <Label htmlFor="area" className="text-neutral-400 flex items-center gap-2">
+                  <Label
+                    htmlFor="area"
+                    className="text-neutral-400 flex items-center gap-2"
+                  >
                     <AreaChart size={14} className="text-orange-500" />
                     Area (sq ft)
                   </Label>
@@ -170,7 +212,10 @@ export default function HousePricePrediction() {
 
                 {/* Bedrooms Input */}
                 <div className="space-y-2 relative group">
-                  <Label htmlFor="bedrooms" className="text-neutral-400 flex items-center gap-2">
+                  <Label
+                    htmlFor="bedrooms"
+                    className="text-neutral-400 flex items-center gap-2"
+                  >
                     <Bed size={14} className="text-orange-500" />
                     Bedrooms
                   </Label>
@@ -188,7 +233,10 @@ export default function HousePricePrediction() {
 
                 {/* Location Input */}
                 <div className="space-y-2 relative group">
-                  <Label htmlFor="location" className="text-neutral-400 flex items-center gap-2">
+                  <Label
+                    htmlFor="location"
+                    className="text-neutral-400 flex items-center gap-2"
+                  >
                     <MapPin size={14} className="text-orange-500" />
                     Location
                   </Label>
@@ -205,7 +253,10 @@ export default function HousePricePrediction() {
 
                 {/* City Input */}
                 <div className="space-y-2 relative group">
-                  <Label htmlFor="city" className="text-neutral-400 flex items-center gap-2">
+                  <Label
+                    htmlFor="city"
+                    className="text-neutral-400 flex items-center gap-2"
+                  >
                     <Building size={14} className="text-orange-500" />
                     City
                   </Label>
@@ -224,75 +275,147 @@ export default function HousePricePrediction() {
               {/* Feature toggles section */}
               <div className="mt-8 pt-6 border-t border-neutral-800">
                 <h3 className="text-lg font-medium mb-4">Property Features</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4 justify-items-center">
                   {/* Resale */}
-                  <div className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer"
-                       onClick={() => handleSelectChange('resale', formData.resale === '1' ? '0' : '1')}>
-                    <div className="flex items-center gap-3">
-                      <FeatureIcon icon={Home} active={formData.resale === '1'} />
-                      <div>
+                  <div
+                    className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer w-full max-w-xs"
+                    onClick={() =>
+                      handleSelectChange(
+                        "resale",
+                        formData.resale === "1" ? "0" : "1",
+                      )
+                    }
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <FeatureIcon
+                        icon={Home}
+                        active={formData.resale === "1"}
+                      />
+                      <div className="text-center">
                         <p className="font-medium">Resale Property</p>
-                        <p className="text-xs text-neutral-400">{formData.resale === '1' ? 'Yes' : 'No'}</p>
+                        <p className="text-xs text-neutral-400">
+                          {formData.resale === "1" ? "Yes" : "No"}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Swimming Pool */}
-                  <div className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer"
-                       onClick={() => handleSelectChange('swimmingpool', formData.swimmingpool === '1' ? '0' : '1')}>
-                    <div className="flex items-center gap-3">
-                      <FeatureIcon icon={Droplets} active={formData.swimmingpool === '1'} />
-                      <div>
+                  <div
+                    className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer w-full max-w-xs"
+                    onClick={() =>
+                      handleSelectChange(
+                        "swimmingpool",
+                        formData.swimmingpool === "1" ? "0" : "1",
+                      )
+                    }
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <FeatureIcon
+                        icon={Droplets}
+                        active={formData.swimmingpool === "1"}
+                      />
+                      <div className="text-center">
                         <p className="font-medium">Swimming Pool</p>
-                        <p className="text-xs text-neutral-400">{formData.swimmingpool === '1' ? 'Yes' : 'No'}</p>
+                        <p className="text-xs text-neutral-400">
+                          {formData.swimmingpool === "1" ? "Yes" : "No"}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Car Parking */}
-                  <div className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer"
-                       onClick={() => handleSelectChange('carparking', formData.carparking === '1' ? '0' : '1')}>
-                    <div className="flex items-center gap-3">
-                      <FeatureIcon icon={Car} active={formData.carparking === '1'} />
-                      <div>
+                  <div
+                    className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer w-full max-w-xs"
+                    onClick={() =>
+                      handleSelectChange(
+                        "carparking",
+                        formData.carparking === "1" ? "0" : "1",
+                      )
+                    }
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <FeatureIcon
+                        icon={Car}
+                        active={formData.carparking === "1"}
+                      />
+                      <div className="text-center">
                         <p className="font-medium">Car Parking</p>
-                        <p className="text-xs text-neutral-400">{formData.carparking === '1' ? 'Yes' : 'No'}</p>
+                        <p className="text-xs text-neutral-400">
+                          {formData.carparking === "1" ? "Yes" : "No"}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* School Nearby */}
-                  <div className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer"
-                       onClick={() => handleSelectChange('school', formData.school === '1' ? '0' : '1')}>
-                    <div className="flex items-center gap-3">
-                      <FeatureIcon icon={School} active={formData.school === '1'} />
-                      <div>
+                  <div
+                    className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer w-full max-w-xs"
+                    onClick={() =>
+                      handleSelectChange(
+                        "school",
+                        formData.school === "1" ? "0" : "1",
+                      )
+                    }
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <FeatureIcon
+                        icon={School}
+                        active={formData.school === "1"}
+                      />
+                      <div className="text-center">
                         <p className="font-medium">School Nearby</p>
-                        <p className="text-xs text-neutral-400">{formData.school === '1' ? 'Yes' : 'No'}</p>
+                        <p className="text-xs text-neutral-400">
+                          {formData.school === "1" ? "Yes" : "No"}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Lift */}
-                  <div className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer"
-                       onClick={() => handleSelectChange('lift', formData.lift === '1' ? '0' : '1')}>
-                    <div className="flex items-center gap-3">
-                      <FeatureIcon icon={ArrowUp} active={formData.lift === '1'} />
-                      <div>
+                  <div
+                    className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer w-full max-w-xs"
+                    onClick={() =>
+                      handleSelectChange(
+                        "lift",
+                        formData.lift === "1" ? "0" : "1",
+                      )
+                    }
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <FeatureIcon
+                        icon={ArrowUp}
+                        active={formData.lift === "1"}
+                      />
+                      <div className="text-center">
                         <p className="font-medium">Lift Available</p>
-                        <p className="text-xs text-neutral-400">{formData.lift === '1' ? 'Yes' : 'No'}</p>
+                        <p className="text-xs text-neutral-400">
+                          {formData.lift === "1" ? "Yes" : "No"}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Maintenance */}
-                  <div className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer"
-                       onClick={() => handleSelectChange('maintenance', formData.maintenance === '1' ? '0' : '1')}>
-                    <div className="flex items-center gap-3">
-                      <FeatureIcon icon={Wrench} active={formData.maintenance === '1'} />
-                      <div>
+                  <div
+                    className="bg-neutral-800 p-4 rounded-lg hover:bg-neutral-700 transition-all cursor-pointer w-full max-w-xs"
+                    onClick={() =>
+                      handleSelectChange(
+                        "maintenance",
+                        formData.maintenance === "1" ? "0" : "1",
+                      )
+                    }
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <FeatureIcon
+                        icon={Wrench}
+                        active={formData.maintenance === "1"}
+                      />
+                      <div className="text-center">
                         <p className="font-medium">Maintenance</p>
-                        <p className="text-xs text-neutral-400">{formData.maintenance === '1' ? 'Yes' : 'No'}</p>
+                        <p className="text-xs text-neutral-400">
+                          {formData.maintenance === "1" ? "Yes" : "No"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -310,7 +433,9 @@ export default function HousePricePrediction() {
                     <span>Analyzing market data...</span>
                   </div>
                 ) : (
-                  <span className="text-lg font-medium">Predict Property Price</span>
+                  <span className="text-lg font-medium">
+                    Predict Property Price
+                  </span>
                 )}
               </Button>
             </form>
@@ -321,12 +446,19 @@ export default function HousePricePrediction() {
                 <div className="relative bg-neutral-800 border border-orange-500/30 rounded-xl p-6">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-lg font-medium text-neutral-300">Estimated Market Value</h3>
+                      <h3 className="text-lg font-medium text-neutral-300">
+                        Estimated Market Value
+                      </h3>
                       <p className="text-4xl font-bold text-white mt-2">
                         <span className="text-orange-500">₹</span>
-                        {typeof predictedPrice === 'number' ? predictedPrice.toLocaleString() : predictedPrice} Lakhs
+                        {typeof predictedPrice === "number"
+                          ? predictedPrice.toLocaleString()
+                          : predictedPrice}{" "}
+                        Lakhs
                       </p>
-                      <p className="text-xs text-neutral-400 mt-2">*Based on current market trends and AI analysis</p>
+                      <p className="text-xs text-neutral-400 mt-2">
+                        *Based on current market trends and AI analysis
+                      </p>
                     </div>
                     <div className="hidden md:block">
                       <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center">
@@ -340,7 +472,7 @@ export default function HousePricePrediction() {
           </CardContent>
         </Card>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

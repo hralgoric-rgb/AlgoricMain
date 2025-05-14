@@ -76,7 +76,7 @@ export const SubNavbar = ({ items }: { items: NavItem[] }) => {
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center items-center pb-4 md:pb-6 pointer-events-none"
+      className="fixed bottom-0 left-0 right-0 z-50 hidden md:flex justify-center items-center pb-4 md:pb-6 pointer-events-none"
       initial={{ y: 100, opacity: 0 }}
       animate={{ 
         y: isVisible ? 0 : 100,

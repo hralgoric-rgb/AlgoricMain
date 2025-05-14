@@ -220,11 +220,11 @@ function PropertySearchBar() {
         type: "spring",
         stiffness: 100,
       }}
-      className="max-w-4xl mx-auto mt-10 bg-black/40 backdrop-blur-lg rounded-xl overflow-hidden border border-orange-500/30 shadow-xl shadow-orange-900/40"
+      className="max-w-4xl mx-4 sm:mx-auto mt-6 md:mt-10 bg-black/40 backdrop-blur-lg rounded-xl overflow-hidden border border-orange-500/30 shadow-xl shadow-orange-900/40"
     >
       <div className="bg-black/40 backdrop-blur-lg rounded-xl overflow-hidden border border-orange-500/20 shadow-xl shadow-orange-900/10">
         {/* Tabs */}
-        <div className="grid grid-cols-6 border-b border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 border-b border-white/10 overflow-x-auto scrollbar-hide">
           {allTabs.map((tab) => (
             <button
               key={tab.id}
@@ -240,7 +240,7 @@ function PropertySearchBar() {
               <div className="text-xs font-medium">
                 {tab.name.split(" ")[0]}
               </div>
-              <div className="text-xs opacity-70">
+              <div className="text-xs opacity-70 hidden sm:block">
                 {tab.name.split(" ").slice(1).join(" ")}
               </div>
 
@@ -271,9 +271,9 @@ function PropertySearchBar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-10 pr-28 py-3.5 bg-white/10 border border-white/20 rounded-xl
+                className="w-full pl-10 pr-16 sm:pr-28 py-3 sm:py-3.5 bg-white/10 border border-white/20 rounded-xl
                         text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/30
-                        transition-all duration-300"
+                        transition-all duration-300 text-sm sm:text-base"
               />
 
               {/* Location Button */}
@@ -281,8 +281,8 @@ function PropertySearchBar() {
                 <button
                   onClick={handleNearMe}
                   disabled={isLocationLoading}
-                  className="flex items-center gap-1.5 bg-black/30 py-2 px-3 rounded-lg
-                          text-orange-400 border border-orange-500/20 hover:bg-black/50 transition-colors duration-300"
+                  className="flex items-center gap-1 sm:gap-1.5 bg-black/30 py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg
+                          text-orange-400 border border-orange-500/20 hover:bg-black/50 transition-colors duration-300 text-xs sm:text-sm"
                 >
                   {isLocationLoading ? (
                     <>
@@ -291,8 +291,8 @@ function PropertySearchBar() {
                     </>
                   ) : (
                     <>
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm font-medium">Near me</span>
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm font-medium">Near me</span>
                     </>
                   )}
                 </button>
@@ -302,9 +302,9 @@ function PropertySearchBar() {
             {/* Search Button */}
             <div className="flex gap-2">
               <button
-                className="h-full px-3 py-1 bg-gradient-to-r from-orange-600 to-orange-500
-                        text-white font-medium flex items-center gap-2 rounded-xl hover:brightness-110
-                        transition-all duration-300 shadow-lg shadow-orange-900/20"
+                className="h-full px-3 py-2 sm:py-1 bg-gradient-to-r from-orange-600 to-orange-500
+                        text-white font-medium flex items-center gap-1 sm:gap-2 rounded-xl hover:brightness-110
+                        transition-all duration-300 shadow-lg shadow-orange-900/20 text-sm"
                 onClick={handleSearch}
               >
                 <Search className="w-4 h-4" />
@@ -314,18 +314,18 @@ function PropertySearchBar() {
           </div>
 
           {/* Map Search Option */}
-          <div className="mt-4 inline-flex items-center gap-2">
+          <div className="mt-3 sm:mt-4 inline-flex items-center gap-2">
             <Link
               href="/search?view=map"
-              className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-black/40
-                      text-white/70 hover:text-white text-sm border border-white/10 cursor-pointer
+              className="flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-full bg-black/40
+                      text-white/70 hover:text-white text-xs sm:text-sm border border-white/10 cursor-pointer
                       hover:border-orange-500/20 transition-all duration-300 group"
             >
-              <Search className="w-3.5 h-3.5 text-orange-400" />
+              <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-400" />
               <span>Search by</span>
               <span className="text-orange-400 font-medium">Map</span>
               <span>View</span>
-              <ArrowRight className="w-3.5 h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform duration-300" />
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform duration-300" />
             </Link>
           </div>
         </div>
