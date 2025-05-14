@@ -602,11 +602,19 @@ export default function Navbar() {
             </div>
             <div className="flex items-center space-x-8">
               <Link
-                href="/sell"
-                className={`text-white bg-gradient-to-r from-orange-500 to-orange-900 rounded-md px-2 py-2 font-bold`}
-              >
-                Post My Property
-              </Link>
+      href="/sell"
+      className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-white rounded-md group bg-gradient-to-br from-orange-600 via-black to-orange-600 group-hover:from-orange-600 group-hover:via-orange-800 group-hover:to-black dark:text-white focus:ring-4 focus:outline-none focus:ring-orange-300 dark:focus:ring-orange-800"
+    >
+      <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-black rounded-md group-hover:bg-opacity-0 flex items-center font-bold">
+        Post Property
+        <span className="ml-2 bg-orange-600 rounded-md p-1 text-sm text-white font-bold transition-all duration-300">
+          Free
+        </span>
+      </span>
+      
+    </Link>
+              <div>
+    </div>
               <Link
                 href="/contact"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
