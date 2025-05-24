@@ -25,7 +25,6 @@ export default function SearchDropdown({
   value,
   onChangeAction,
   name,
-  label,
   required = false,
   className,
   icon,
@@ -136,9 +135,7 @@ export default function SearchDropdown({
   // Calculate dropdown position
   const getDropdownPosition = (): React.CSSProperties => {
     if (!containerRef.current) return {};
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    return {
+        return {
       position: "absolute" as const,
       top: "100%",
       left: 0,

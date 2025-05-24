@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
+
 
 // Define type for news articles
 type NewsArticle = {

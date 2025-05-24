@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useState, useEffect, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FcGoogle } from "react-icons/fc";
 import {
   LogOut,
   Mail,
@@ -15,7 +14,7 @@ import {
   Headset,
   Info,
 } from "lucide-react";
-import { getSession, signIn, signOut } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
 import GoogleLoginButton from "./GoogleLoginButton";

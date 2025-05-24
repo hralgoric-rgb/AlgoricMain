@@ -916,74 +916,74 @@ const SearchPage = () => {
   };
 
   // Mock articles for fallback
-  const mockArticles: Article[] = [
-    {
-      id: "1",
-      title: "Real Estate Trends in India for 2024",
-      description:
-        "Find out the latest market trends and investment opportunities in the Indian real estate sector for 2024.",
-      url: "#",
-      urlToImage: "/article1.jpg",
-      publishedAt: "2024-05-01T10:00:00Z",
-      source: { name: "Real Estate News" },
-      category: "Market",
-    },
-    {
-      id: "2",
-      title: "New Housing Policies Announced in Delhi",
-      description:
-        "The Delhi government has announced new housing policies to make affordable housing accessible to more citizens.",
-      url: "#",
-      urlToImage: "/article2.jpg",
-      publishedAt: "2024-05-02T09:30:00Z",
-      source: { name: "Delhi News" },
-      category: "Policy",
-    },
-    {
-      id: "3",
-      title: "Tips for First-Time Home Buyers in India",
-      description:
-        "Essential advice for first-time home buyers navigating the complex real estate market in India.",
-      url: "#",
-      urlToImage: "/article3.jpg",
-      publishedAt: "2024-05-03T11:15:00Z",
-      source: { name: "Home Buying Guide" },
-      category: "Advice",
-    },
-    {
-      id: "4",
-      title: "Luxury Real Estate Booming in Mumbai",
-      description:
-        "The luxury real estate segment in Mumbai is experiencing unprecedented growth despite economic challenges.",
-      url: "#",
-      urlToImage: "/image1.jpg",
-      publishedAt: "2024-05-04T08:45:00Z",
-      source: { name: "Mumbai Property News" },
-      category: "Market",
-    },
-    {
-      id: "5",
-      title: "Environmental Considerations in Modern Housing",
-      description:
-        "How sustainable practices are being incorporated into modern housing developments across India.",
-      url: "#",
-      urlToImage: "/image2.avif",
-      publishedAt: "2024-05-05T14:20:00Z",
-      source: { name: "Green Living" },
-      category: "News",
-    },
-    {
-      id: "6",
-      title: "Commercial Real Estate Outlook Post-Pandemic",
-      description:
-        "Analysis of how commercial real estate in India has evolved after the pandemic and what to expect in the future.",
-      url: "#",
-      urlToImage: "/image3.webp",
-      publishedAt: "2024-05-06T16:10:00Z",
-      source: { name: "Business Property Review" },
-      category: "Market",
-    },
-  ];
+  // const mockArticles: Article[] = [
+  //   {
+  //     id: "1",
+  //     title: "Real Estate Trends in India for 2024",
+  //     description:
+  //       "Find out the latest market trends and investment opportunities in the Indian real estate sector for 2024.",
+  //     url: "#",
+  //     urlToImage: "/article1.jpg",
+  //     publishedAt: "2024-05-01T10:00:00Z",
+  //     source: { name: "Real Estate News" },
+  //     category: "Market",
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "New Housing Policies Announced in Delhi",
+  //     description:
+  //       "The Delhi government has announced new housing policies to make affordable housing accessible to more citizens.",
+  //     url: "#",
+  //     urlToImage: "/article2.jpg",
+  //     publishedAt: "2024-05-02T09:30:00Z",
+  //     source: { name: "Delhi News" },
+  //     category: "Policy",
+  //   },
+  //   {
+  //     id: "3",
+  //     title: "Tips for First-Time Home Buyers in India",
+  //     description:
+  //       "Essential advice for first-time home buyers navigating the complex real estate market in India.",
+  //     url: "#",
+  //     urlToImage: "/article3.jpg",
+  //     publishedAt: "2024-05-03T11:15:00Z",
+  //     source: { name: "Home Buying Guide" },
+  //     category: "Advice",
+  //   },
+  //   {
+  //     id: "4",
+  //     title: "Luxury Real Estate Booming in Mumbai",
+  //     description:
+  //       "The luxury real estate segment in Mumbai is experiencing unprecedented growth despite economic challenges.",
+  //     url: "#",
+  //     urlToImage: "/image1.jpg",
+  //     publishedAt: "2024-05-04T08:45:00Z",
+  //     source: { name: "Mumbai Property News" },
+  //     category: "Market",
+  //   },
+  //   {
+  //     id: "5",
+  //     title: "Environmental Considerations in Modern Housing",
+  //     description:
+  //       "How sustainable practices are being incorporated into modern housing developments across India.",
+  //     url: "#",
+  //     urlToImage: "/image2.avif",
+  //     publishedAt: "2024-05-05T14:20:00Z",
+  //     source: { name: "Green Living" },
+  //     category: "News",
+  //   },
+  //   {
+  //     id: "6",
+  //     title: "Commercial Real Estate Outlook Post-Pandemic",
+  //     description:
+  //       "Analysis of how commercial real estate in India has evolved after the pandemic and what to expect in the future.",
+  //     url: "#",
+  //     urlToImage: "/image3.webp",
+  //     publishedAt: "2024-05-06T16:10:00Z",
+  //     source: { name: "Business Property Review" },
+  //     category: "Market",
+  //   },
+  // ];
 
   // Format publication date
   const formatDate = (dateString: string): string => {

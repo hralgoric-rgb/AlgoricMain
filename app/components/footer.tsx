@@ -110,7 +110,7 @@ export default function Footer() {
                   href="/search?location=Lutyens'+Delhi"
                   className="hover:text-beige transition-all duration-300 inline-block"
                 >
-                  Properties in Lutyens' Delhi
+                  Properties in Lutyens&apos; Delhi
                 </Link>
               </li>
               <li>
