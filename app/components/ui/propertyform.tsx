@@ -714,8 +714,7 @@ export default function PropertyForm({
                     ></div>
 
                     <div
-                      className="z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-black border-2 transition-all duration-300
-                    ${formStep > index + 1 ? 'border-orange-500 text-orange-500' : formStep === index + 1 ? 'border-orange-500 text-white bg-orange-500' : 'border-gray-700 text-gray-600'}"
+                      className="z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-black border-2 transition-all duration-300 ${formStep > index + 1 ? 'border-orange-500 text-orange-500' : formStep === index + 1 ? 'border-orange-500 text-white bg-orange-500' : 'border-gray-700 text-gray-600'}"
                     >
                       {formStep > index + 1 ? (
                         <CheckCircle className="w-4 h-4" />

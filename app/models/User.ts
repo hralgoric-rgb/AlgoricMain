@@ -1,4 +1,4 @@
-import mongoose, { Schema, models } from 'mongoose';
+import mongoose, { Schema, models } from "mongoose";
 
 interface IUser {
   name: string;
@@ -6,6 +6,7 @@ interface IUser {
   password?: string;
   image?: string;
   emailVerified?: Date;
+  googleId?: string;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
   resetPasswordToken?: string;
@@ -20,7 +21,7 @@ interface IUser {
     zipCode?: string;
     country?: string;
   };
-  
+
   // Agent specific fields
   isAgent?: boolean;
   agentInfo?: {
@@ -34,7 +35,7 @@ interface IUser {
     verified?: boolean;
     listings?: number; // count of active listings
     sales?: number; // count of completed sales/rentals
-    assignedProperties:mongoose.Types.ObjectId[];
+    assignedProperties: mongoose.Types.ObjectId[];
   };
   // Social media links
   social?: {
@@ -82,6 +83,12 @@ const userSchema = new Schema<IUser>(
     emailVerified: {
       type: Date,
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // allow null for non-Google users
+    },
+
     verificationToken: {
       type: String,
     },
@@ -99,8 +106,8 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['user', 'agent', 'admin'],
-      default: 'user',
+      enum: ["user", "agent", "admin"],
+      default: "user",
     },
     bio: {
       type: String,
@@ -113,7 +120,7 @@ const userSchema = new Schema<IUser>(
       zipCode: String,
       country: {
         type: String,
-        default: 'India',
+        default: "India",
       },
     },
     isAgent: {
@@ -148,10 +155,12 @@ const userSchema = new Schema<IUser>(
         type: Number,
         default: 0,
       },
-      assignedProperties:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Property'
-      }]
+      assignedProperties: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Property",
+        },
+      ],
     },
     social: {
       facebook: String,
@@ -161,25 +170,33 @@ const userSchema = new Schema<IUser>(
     },
     // Add user favorites
     favorites: {
-      properties: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Property'
-      }],
-      agents: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-      }],
-      builders: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Builder'
-      }],
-      localities: [String]
+      properties: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Property",
+        },
+      ],
+      agents: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      builders: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Builder",
+        },
+      ],
+      localities: [String],
     },
     // User's properties/listings
-    properties: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Property'
-    }],
+    properties: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Property",
+      },
+    ],
     preferences: {
       emailNotifications: {
         type: Boolean,
@@ -204,6 +221,6 @@ const userSchema = new Schema<IUser>(
 );
 
 // Check if model exists already to prevent recompiling during hot reload in development
-const User = models.User || mongoose.model<IUser>('User', userSchema);
+const User = models.User || mongoose.model<IUser>("User", userSchema);
 
-export default User; 
+export default User;

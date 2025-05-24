@@ -41,7 +41,12 @@ export default function SellProperty() {
   const handleOpenForm = () => {
     if (!isAuthenticated) {
       // Redirect to login page with callback URL
-      router.push(`/login?callbackUrl=${encodeURIComponent("/sell")}`);
+      toast.message(
+        "Please login to sell a property. Redirecting you to the Home Page!",
+      );
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
       return;
     }
     setIsFormOpen(true);

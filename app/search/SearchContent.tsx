@@ -238,7 +238,7 @@ interface Article {
   title: string;
   description: string;
   url: string;
-  urlToImage: string;
+  urlToImage: string; // We'll map GNews 'image' to this field
   publishedAt: string;
   source: {
     name: string;
@@ -819,14 +819,13 @@ const SearchPage = () => {
       setArticlesError(null);
 
       try {
-        // Replace with your actual API endpoint
-        const response = await axios.get("https://newsapi.org/v2/everything", {
+        // Using GNews API instead of NewsAPI.org
+        const response = await axios.get("https://gnews.io/api/v4/search", {
           params: {
-            q: "real estate india",
-            language: "en",
-            sortBy: "publishedAt",
-            apiKey:
-              process.env.NEXT_PUBLIC_NEWS_API_KEY || "your-fallback-api-key",
+            q: "real estate property market",
+            lang: "en",
+            max: 100,
+            apikey: "ee109d074f15362d67dd776ff2b449e8", // GNews API key
           },
         });
 
@@ -838,7 +837,7 @@ const SearchPage = () => {
                 title: string;
                 description?: string;
                 url: string;
-                urlToImage?: string;
+                image?: string; // GNews uses 'image' instead of 'urlToImage'
                 publishedAt: string;
                 source: { name: string };
               },
@@ -848,7 +847,7 @@ const SearchPage = () => {
               title: article.title,
               description: article.description || "No description available",
               url: article.url,
-              urlToImage: article.urlToImage || "/placeholder-news.jpg",
+              urlToImage: article.image || "/placeholder-news.jpg", // Map image to urlToImage
               publishedAt: article.publishedAt,
               source: article.source,
               category: categorizeArticle(
@@ -866,8 +865,21 @@ const SearchPage = () => {
         console.error("Error fetching articles:", error);
         setArticlesError("Failed to fetch articles");
 
-        // Use mock data as fallback
-        setArticles(mockArticles);
+        // Use fallback articles similar to what we do in property-news.tsx
+        const fallbackArticles = Array(10)
+          .fill(0)
+          .map((_, index) => ({
+            id: `article-${index}`,
+            title: `Property Market Insight #${index + 1}`,
+            description:
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Sed euismod, nisl eget ultricies ultrices, nisl nisl aliquam nisl.",
+            url: "#",
+            urlToImage: `https://images.unsplash.com/photo-${1560518883 + index * 10}-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80`,
+            publishedAt: new Date(Date.now() - index * 86400000).toISOString(),
+            source: { name: "Property Insights" },
+            category: index % 2 === 0 ? "Market Analysis" : "Investment Tips",
+          }));
+        setArticles(fallbackArticles);
       } finally {
         setArticlesLoading(false);
       }

@@ -15,9 +15,10 @@ import {
   Headset,
   Info,
 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { getSession, signIn, signOut } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
+import GoogleLoginButton from "./GoogleLoginButton";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,10 +46,10 @@ export default function Navbar() {
       // Handle specific OAuth errors
       if (errorParam === "OAuthAccountNotLinked") {
         setError(
-          "This email is already associated with a different sign-in method. Please use your original sign-in method.",
+          "Google account not linked. If this is your first time signing in, please try signing up first. If you have previously used another sign-in method (like email/password), please use that method."
         );
         toast.error(
-          "Account not linked. Please use your original sign-in method.",
+          "Google account not linked. Try signing up first or use your original sign-in method."
         );
       } else {
         setError("An error occurred during sign in. Please try again.");
@@ -92,12 +93,53 @@ export default function Navbar() {
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = sessionStorage.getItem("authToken");
-      if (token) {
-        setIsAuthenticated(true);
+    const checkAuthStatus = async () => {
+      if (typeof window !== "undefined") {
+        // First check sessionStorage for custom auth token
+        const token = sessionStorage.getItem("authToken");
+
+        if (token) {
+          try {
+            const authData = JSON.parse(token);
+            // Check if it's a Google auth session or custom auth
+            if (authData.provider === "google") {
+              // For Google auth, also verify the NextAuth session is still valid
+              const session = await getSession();
+              if (session?.user) {
+                setIsAuthenticated(true);
+              } else {
+                // Session expired, clear storage
+                sessionStorage.removeItem("authToken");
+                setIsAuthenticated(false);
+              }
+            } else {
+              // For custom auth, just check if token exists
+              setIsAuthenticated(true);
+            }
+          } catch (error) {
+            console.error("Error parsing auth token:", error);
+            sessionStorage.removeItem("authToken");
+            setIsAuthenticated(false);
+          }
+        } else {
+          // Check if there's a NextAuth session without our custom token
+          const session = await getSession();
+          if (session?.user) {
+            // Create our custom auth data for existing NextAuth session
+            const customAuthData = {
+              user: session.user,
+              expires: session.expires,
+              provider: "google",
+              timestamp: Date.now(),
+            };
+            sessionStorage.setItem("authToken", JSON.stringify(customAuthData));
+            setIsAuthenticated(true);
+          }
+        }
       }
-    }
+    };
+
+    checkAuthStatus();
   }, []);
 
   // Clear errors and success messages when switching tabs
@@ -143,19 +185,6 @@ export default function Navbar() {
   };
 
   // Handle login with NextAuth Google
-  const handleGoogleLogin = async () => {
-    try {
-      // Get the current URL to use as callback URL if one isn't provided in the URL parameters
-      const url = new URL(window.location.href);
-      const callbackUrl = url.searchParams.get("callbackUrl") || "/";
-
-      await signIn("google", { callbackUrl });
-      toast.success("Successfully logged in !!");
-    } catch (error: any) {
-      setError("Failed to sign in with Google. Please try again.");
-      toast.error(error);
-    }
-  };
 
   // Show the auth modal
   const openAuthModal = () => {
@@ -168,16 +197,31 @@ export default function Navbar() {
     if (typeof window === "undefined") {
       return;
     }
+
     try {
+      // Clear sessionStorage
       sessionStorage.removeItem("authToken");
+
+      // Clear cookies
+      document.cookie =
+        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+      // Check if user was logged in via Google (NextAuth)
+      const session = await getSession();
+      if (session) {
+        // Sign out from NextAuth
+        await signOut({ redirect: false });
+      }
+
       setIsAuthenticated(false);
       toast.success("Successfully Logged out");
+
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Logout failed:", error);
-      toast.error(error);
+      toast.error("Logout failed");
     }
   };
 
@@ -602,19 +646,17 @@ export default function Navbar() {
             </div>
             <div className="flex items-center space-x-8">
               <Link
-      href="/sell"
-      className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-white rounded-md group bg-gradient-to-br from-orange-600 via-black to-orange-600 group-hover:from-orange-600 group-hover:via-orange-800 group-hover:to-black dark:text-white focus:ring-4 focus:outline-none focus:ring-orange-300 dark:focus:ring-orange-800"
-    >
-      <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-black rounded-md group-hover:bg-opacity-0 flex items-center font-bold">
-        Post Property
-        <span className="ml-2 bg-orange-600 rounded-md p-1 text-sm text-white font-bold transition-all duration-300">
-          Free
-        </span>
-      </span>
-      
-    </Link>
-              <div>
-    </div>
+                href="/sell"
+                className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-white rounded-md group bg-gradient-to-br from-orange-600 via-black to-orange-600 group-hover:from-orange-600 group-hover:via-orange-800 group-hover:to-black dark:text-white focus:ring-4 focus:outline-none focus:ring-orange-300 dark:focus:ring-orange-800"
+              >
+                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-black rounded-md group-hover:bg-opacity-0 flex items-center font-bold">
+                  Post Property
+                  <span className="ml-2 bg-orange-600 rounded-md p-1 text-sm text-white font-bold transition-all duration-300">
+                    Free
+                  </span>
+                </span>
+              </Link>
+              <div></div>
               <Link
                 href="/contact"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
@@ -1138,16 +1180,8 @@ export default function Navbar() {
                       </div>
 
                       <div className="space-y-3">
-                        <button
-                          type="button"
-                          onClick={handleGoogleLogin}
-                          className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                        >
-                          <FcGoogle size={24} />
-                          <span className="text-gray-700 ml-2">
-                            Continue with Google
-                          </span>
-                        </button>
+                        <GoogleLoginButton />
+                        
                       </div>
                     </>
                   )}

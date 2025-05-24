@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,11 +28,14 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import SearchDropdown from "@/components/ui/search-dropdown";
 
 export default function HousePricePrediction() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [predictedPrice, setPredictedPrice] = useState<number | null>(null);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     area: "",
     bedrooms: "",
@@ -45,6 +48,31 @@ export default function HousePricePrediction() {
     location: "",
     city: "Bangalore",
   });
+  
+  // Load location and city data
+  useEffect(() => {
+    // Fetch locations
+    fetch('/location_mapping.json')
+      .then(response => response.json())
+      .then(data => {
+        setLocations(data);
+      })
+      .catch(error => {
+        console.error("Error loading location data:", error);
+        setLocations([]);
+      });
+      
+    // Fetch city data
+    fetch('/city_mapping.json')
+      .then(response => response.json())
+      .then(data => {
+        setCities(Object.keys(data));
+      })
+      .catch(error => {
+        console.error("Error loading city data:", error);
+        setCities(["Banglore", "Chennai", "Delhi", "Hyderabad", "Kolkata", "Mumbai"]);
+      });
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -240,14 +268,14 @@ export default function HousePricePrediction() {
                     <MapPin size={14} className="text-orange-500" />
                     Location
                   </Label>
-                  <Input
-                    id="location"
+                  <SearchDropdown
                     name="location"
+                    placeholder="Search for a location..."
+                    options={locations}
                     value={formData.location}
-                    onChange={handleInputChange}
-                    placeholder="Enter location"
+                    onChangeAction={(value) => handleSelectChange("location", value)}
                     required
-                    className="bg-neutral-800 border-neutral-700 focus:border-orange-500 focus:ring-orange-500/20 transition-all"
+                    icon={<MapPin size={14} />}
                   />
                 </div>
 
@@ -260,14 +288,14 @@ export default function HousePricePrediction() {
                     <Building size={14} className="text-orange-500" />
                     City
                   </Label>
-                  <Input
-                    id="city"
+                  <SearchDropdown
                     name="city"
+                    placeholder="Search for a city..."
+                    options={cities}
                     value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="Enter city"
+                    onChangeAction={(value) => handleSelectChange("city", value)}
                     required
-                    className="bg-neutral-800 border-neutral-700 focus:border-orange-500 focus:ring-orange-500/20 transition-all"
+                    icon={<Building size={14} />}
                   />
                 </div>
               </div>

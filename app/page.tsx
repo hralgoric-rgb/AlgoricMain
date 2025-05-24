@@ -9,6 +9,7 @@ import { InfiniteCarousel } from "@/components/ui/infinite-carousel";
 import { SubNavbar } from "@/components/ui/sub-navbar";
 import { useState, useEffect } from "react";
 import { BackgroundPaths } from "@/components/ui/background-paths";
+import { PropertyNewsSection } from "@/components/ui/property-news";
 import Link from "next/link";
 
 // const defaultCards = [
@@ -298,6 +299,7 @@ export default function Home() {
     { label: "AI Tools", href: "#ai-tools" },
     { label: "Features", href: "#features" },
     { label: "Process", href: "#process" },
+    { label: "News", href: "#news" },
   ];
 
   const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({});
@@ -1320,6 +1322,31 @@ export default function Home() {
 
         {/* Transition to next section */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900 to-black z-10"></div>
+      </section>
+
+      {/* Property News & Blog Section */}
+      <section className="bg-black py-20 relative" id="news">
+        <div className="container mx-auto max-w-7xl px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              Property News & Insights
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Stay updated with the latest trends, insights, and news from the
+              real estate world
+            </p>
+          </motion.div>
+
+          <PropertyNewsSection />
+        </div>
+
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-zinc-900 to-transparent z-10"></div>
       </section>
 
       <Footer />

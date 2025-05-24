@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
   MapPin,
@@ -10,6 +10,8 @@ import {
   Key,
   Store,
   ArrowRight,
+  Navigation,
+  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -67,7 +69,46 @@ function PropertySearchBar() {
   const [activeTab, setActiveTab] = useState("buy");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLocationLoading, setIsLocationLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [locationData, setLocationData] = useState<string[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Load location data
+  useEffect(() => {
+    const fetchLocationData = async () => {
+      try {
+        const response = await fetch("/location_mapping.json");
+        const data = await response.json();
+        setLocationData(data);
+      } catch (error) {
+        console.error("Error loading location data:", error);
+      }
+    };
+
+    fetchLocationData();
+  }, []);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const listingTypeTabs = [
     { id: "buy", name: "Buy Properties", icon: <Home className="w-5 h-5" /> },
     { id: "rent", name: "Rent Properties", icon: <Key className="w-5 h-5" /> },
@@ -207,6 +248,74 @@ function PropertySearchBar() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
+      setShowSuggestions(false);
+    } else if (e.key === "ArrowDown" && suggestions.length > 0) {
+      // Focus the first suggestion
+      const suggestionElement = document.getElementById("suggestion-0");
+      if (suggestionElement) suggestionElement.focus();
+      e.preventDefault();
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle input change for search query
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    // Filter suggestions based on input
+    if (value.trim().length > 0) {
+      const filtered = locationData
+        .filter((location) =>
+          location.toLowerCase().includes(value.toLowerCase()),
+        )
+        .slice(0, 10); // Limit to 10 suggestions
+
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSelectSuggestion = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
+  // Handle keyboard navigation within suggestions
+  const handleSuggestionKeyDown = (
+    e: React.KeyboardEvent<HTMLDivElement>,
+    index: number,
+    suggestion: string,
+  ) => {
+    if (e.key === "Enter") {
+      handleSelectSuggestion(suggestion);
+      e.preventDefault();
+    } else if (e.key === "ArrowDown") {
+      // Move to next suggestion
+      const nextIndex = (index + 1) % suggestions.length;
+      const nextElement = document.getElementById(`suggestion-${nextIndex}`);
+      if (nextElement) nextElement.focus();
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      // Move to previous suggestion or back to input
+      if (index === 0) {
+        if (searchInputRef.current) searchInputRef.current.focus();
+      } else {
+        const prevElement = document.getElementById(`suggestion-${index - 1}`);
+        if (prevElement) prevElement.focus();
+      }
+      e.preventDefault();
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      if (searchInputRef.current) searchInputRef.current.focus();
     }
   };
   const allTabs = [...listingTypeTabs, ...propertyTypeTabs];
@@ -222,6 +331,78 @@ function PropertySearchBar() {
       }}
       className="max-w-4xl mx-4 sm:mx-auto mt-6 md:mt-10 bg-black/40 backdrop-blur-lg rounded-xl overflow-hidden border border-orange-500/30 shadow-xl shadow-orange-900/40"
     >
+      <style jsx global>{`
+        .search-path-override {
+          --tw-bg-opacity: 0.1;
+          --tw-border-opacity: 0.2;
+          --tw-text-opacity: 1;
+          width: 100%;
+        }
+
+        .search-path-override input {
+          width: 100%;
+          padding-left: 2.5rem;
+          padding-right: 7rem;
+          padding-top: 0.75rem;
+          padding-bottom: 0.75rem;
+          background-color: rgba(255, 255, 255, var(--tw-bg-opacity));
+          border-width: 1px;
+          border-color: rgba(255, 255, 255, var(--tw-border-opacity));
+          border-radius: 0.75rem;
+          color: rgba(255, 255, 255, var(--tw-text-opacity));
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+          transition-property: all;
+          transition-duration: 300ms;
+          height: auto;
+        }
+
+        .search-path-override input:focus {
+          outline: none;
+          --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+            var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+          --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+            calc(2px + var(--tw-ring-offset-width)) rgba(249, 115, 22, 0.5);
+          box-shadow:
+            var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+            var(--tw-shadow, 0 0 #0000);
+          border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .search-path-override input::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-path-override svg {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-path-override div[class*="z-10"] {
+          background-color: rgba(0, 0, 0, 0.9);
+          border-color: rgba(249, 115, 22, 0.2);
+          max-height: 12rem;
+          z-index: 20;
+        }
+
+        .search-path-override div[class*="z-10"] div {
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        .search-path-override div[class*="z-10"] div:hover {
+          background-color: rgba(249, 115, 22, 0.2);
+        }
+
+        .search-path-override div[class*="z-10"] div span {
+          background-color: rgba(249, 115, 22, 0.3);
+          color: white;
+        }
+
+        @media (max-width: 640px) {
+          .search-path-override input {
+            padding-right: 5.5rem;
+          }
+        }
+      `}</style>
       <div className="bg-black/40 backdrop-blur-lg rounded-xl overflow-hidden border border-orange-500/20 shadow-xl shadow-orange-900/10">
         {/* Tabs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 border-b border-white/10 overflow-x-auto scrollbar-hide">
@@ -258,43 +439,103 @@ function PropertySearchBar() {
         </div>
 
         {/* Search Input & Filters */}
-        <div className="p-5">
+        <div
+          className={`p-5 ${showSuggestions && suggestions.length > 0 ? "h-[30vh]" : ""}`}
+        >
           <div className="flex flex-col md:flex-row gap-4">
             {/* Main Search Input */}
-            <div className="relative flex-1">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
-                <Search className="w-5 h-5" />
+            <div className="relative flex-1 search-path-override">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50">
+                <MapPin className="w-4 h-4" />
               </div>
+
               <input
+                ref={searchInputRef}
                 type="text"
-                placeholder="Search by Location, Project, or Builder..."
+                placeholder="Search by location or area..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-10 pr-16 sm:pr-28 py-3 sm:py-3.5 bg-white/10 border border-white/20 rounded-xl
-                        text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/30
-                        transition-all duration-300 text-sm sm:text-base"
+                onFocus={() => {
+                  if (searchQuery.trim().length > 0 && suggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                className="w-full rounded-xl bg-white/10 border border-white/20 text-white py-3 pl-10 pr-28 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/30"
               />
 
-              {/* Location Button */}
-              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              {/* Location Suggestions */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute left-0 right-0 mt-1 bg-black/90 border border-orange-500/20 rounded-xl overflow-hidden overflow-y-auto z-10 max-h-48 shadow-lg shadow-black/50"
+                >
+                  {suggestions.map((suggestion, index) => (
+                    <div
+                      key={suggestion}
+                      id={`suggestion-${index}`}
+                      tabIndex={0}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      onKeyDown={(e) =>
+                        handleSuggestionKeyDown(e, index, suggestion)
+                      }
+                      className="px-4 py-2 cursor-pointer hover:bg-orange-500/20 focus:bg-orange-500/20 focus:outline-none transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3 h-3 text-orange-400" />
+                        <div className="text-sm">
+                          {searchQuery.trim() &&
+                          suggestion
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase()) ? (
+                            <>
+                              {suggestion.substring(
+                                0,
+                                suggestion
+                                  .toLowerCase()
+                                  .indexOf(searchQuery.toLowerCase()),
+                              )}
+                              <span className="bg-orange-500/30 px-1 rounded">
+                                {suggestion.substring(
+                                  suggestion
+                                    .toLowerCase()
+                                    .indexOf(searchQuery.toLowerCase()),
+                                  suggestion
+                                    .toLowerCase()
+                                    .indexOf(searchQuery.toLowerCase()) +
+                                    searchQuery.length,
+                                )}
+                              </span>
+                              {suggestion.substring(
+                                suggestion
+                                  .toLowerCase()
+                                  .indexOf(searchQuery.toLowerCase()) +
+                                  searchQuery.length,
+                              )}
+                            </>
+                          ) : (
+                            suggestion
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Near Me Button (inside the input) */}
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <button
                   onClick={handleNearMe}
+                  className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full hover:bg-orange-500/30 transition-colors duration-200 flex items-center gap-1"
                   disabled={isLocationLoading}
-                  className="flex items-center gap-1 sm:gap-1.5 bg-black/30 py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg
-                          text-orange-400 border border-orange-500/20 hover:bg-black/50 transition-colors duration-300 text-xs sm:text-sm"
                 >
                   {isLocationLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm font-medium">Loading...</span>
-                    </>
+                    <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
-                    <>
-                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="text-xs sm:text-sm font-medium">Near me</span>
-                    </>
+                    <Navigation className="w-3 h-3" />
                   )}
+                  <span>Near Me</span>
                 </button>
               </div>
             </div>
@@ -302,9 +543,7 @@ function PropertySearchBar() {
             {/* Search Button */}
             <div className="flex gap-2">
               <button
-                className="h-full px-3 py-2 sm:py-1 bg-gradient-to-r from-orange-600 to-orange-500
-                        text-white font-medium flex items-center gap-1 sm:gap-2 rounded-xl hover:brightness-110
-                        transition-all duration-300 shadow-lg shadow-orange-900/20 text-sm"
+                className="h-full px-3 py-3 sm:py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-medium flex items-center gap-1 sm:gap-2 rounded-xl hover:brightness-110 transition-all duration-300 shadow-lg shadow-orange-900/20 text-sm"
                 onClick={handleSearch}
               >
                 <Search className="w-4 h-4" />
@@ -317,9 +556,7 @@ function PropertySearchBar() {
           <div className="mt-3 sm:mt-4 inline-flex items-center gap-2">
             <Link
               href="/search?view=map"
-              className="flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-full bg-black/40
-                      text-white/70 hover:text-white text-xs sm:text-sm border border-white/10 cursor-pointer
-                      hover:border-orange-500/20 transition-all duration-300 group"
+              className="flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-full bg-black/40 text-white/70 hover:text-white text-xs sm:text-sm border border-white/10 cursor-pointer hover:border-orange-500/20 transition-all duration-300 group"
             >
               <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-400" />
               <span>Search by</span>
@@ -343,7 +580,7 @@ function AnimatedGradientText({
   delay?: number;
 }) {
   return (
-    <span className="inline-block relative overflow-hidden">
+    <span className="inline-block relative">
       {text.split("").map((letter, letterIndex) => (
         <motion.span
           key={`animated-${letterIndex}`}
@@ -415,8 +652,8 @@ export function BackgroundPaths() {
           transition={{ duration: 2 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 flex flex-col">
-            <span className="mb-4">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 flex flex-col ">
+            <span className="mb-4 ">
               {/* First part - "Find your" - handling each word */}
               {firstPartWords.map((word, wordIndex) => (
                 <span key={`word-${wordIndex}`} className="inline-block mr-4">
@@ -433,8 +670,7 @@ export function BackgroundPaths() {
                         stiffness: 150,
                         damping: 25,
                       }}
-                      className="inline-block text-transparent bg-clip-text
-                                            bg-gradient-to-r from-white to-white/80"
+                      className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80"
                     >
                       {letter}
                     </motion.span>
@@ -471,8 +707,7 @@ export function BackgroundPaths() {
                         stiffness: 150,
                         damping: 25,
                       }}
-                      className="inline-block text-transparent bg-clip-text
-                                            bg-gradient-to-r from-white to-white/80"
+                      className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80 "
                     >
                       {letter}
                     </motion.span>
@@ -486,7 +721,7 @@ export function BackgroundPaths() {
               {brandNameWords.map((word, wordIndex) => (
                 <span
                   key={`brand-word-${wordIndex}`}
-                  className="inline-block mr-4"
+                  className="inline-block mr-4 pb-4"
                 >
                   <AnimatedGradientText
                     text={word}

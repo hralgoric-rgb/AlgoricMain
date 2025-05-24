@@ -79,7 +79,7 @@ export default function Legal() {
               viewport={{ once: true }}
               className="inline-block bg-orange-500/50 px-4 py-2 rounded-full mb-6"
             >
-              <span className="text-white font-medium">TERMS OF SERVICE</span>
+              <span className="text-white font-medium">Privacy Policy</span>
             </motion.div>
 
             <motion.h2
@@ -89,7 +89,7 @@ export default function Legal() {
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-bold mb-6 text-center text-white"
             >
-              Terms of Service
+              Privacy Policy
             </motion.h2>
 
             <motion.div
@@ -100,44 +100,82 @@ export default function Legal() {
               className="bg-gray-100 p-8 rounded-xl shadow-lg space-y-4"
             >
               <p className="text-lg text-black">
-                Welcome to 100 Gaj. These terms and conditions outline the rules
-                and regulations for the use of our website and services. By
-                accessing this website, we assume you accept these terms and
-                conditions in full.
-              </p>
-              <p className="text-lg text-black">
-                <strong>Use License:</strong> Permission is granted to
-                temporarily download one copy of the materials on
-                EstateElite`&apos;`s website for personal, non-commercial
-                transitory viewing only. This is the grant of a license, not a
-                transfer of title, and under this license you may not:
+                <strong>1. Information We Collect</strong> <br />
+                We may collect the following types of information:
               </p>
               <ul className="list-disc list-inside text-lg text-black space-y-2">
-                <li>Modify or copy the materials;</li>
                 <li>
-                  Use the materials for any commercial purpose, or for any
-                  public display;
+                  Personal Information: Your name, email address, phone number,
+                  and residential address.
                 </li>
                 <li>
-                  Attempt to decompile or reverse engineer any software
-                  contained on EstateElite`&apos;`s website;
+                  Property Details: Information related to properties you list
+                  or search for on our platform.
                 </li>
                 <li>
-                  Remove any copyright or other proprietary notations from the
-                  materials; or
+                  Usage Data: Information such as IP address, browser type,
+                  device type, pages visited, and time spent on the site.
                 </li>
                 <li>
-                  Transfer the materials to another person or
-                  `&quot;`mirror`&quot;`` the materials on any other server.
+                  Cookies and Tracking Technologies: We use cookies and similar
+                  technologies to enhance user experience and analyze website
+                  usage.
                 </li>
               </ul>
               <p className="text-lg text-black">
-                This license shall automatically terminate if you violate any of
-                these restrictions and may be terminated by EstateElite at any
-                time. Upon terminating your viewing of these materials or upon
-                the termination of this license, you must destroy any downloaded
-                materials in your possession whether in electronic or printed
-                format.
+                <strong>2. How We Use Your Information</strong> <br />
+                We use your information for the following purposes:
+              </p>
+              <ul className="list-disc list-inside text-lg text-black space-y-2">
+                <li>
+                  To facilitate property listings and search functionality.
+                </li>
+                <li>
+                  To communicate with you regarding your account or inquiries.
+                </li>
+                <li>To improve our services and develop new features.</li>
+                <li>
+                  To send promotional communications (you may opt-out at any
+                  time).
+                </li>
+              </ul>
+              <p className="text-lg text-black">
+                <strong>3. Sharing Your Information</strong> <br />
+                We may share your information under the following circumstances:
+              </p>
+              <ul className="list-disc list-inside text-lg text-black space-y-2">
+                <li>
+                  With Service Providers: Trusted partners who assist us in
+                  operating the website and providing services.
+                </li>
+                <li>
+                  Legal Requirements: When required by law, regulation, or legal
+                  process.
+                </li>
+                <li>
+                  Business Transfers: In the event of a merger, acquisition, or
+                  sale of assets.
+                </li>
+              </ul>
+
+              <p className="text-lg text-black">
+                <strong>4. Data Security</strong>
+                <br />
+                We implement appropriate security measures to protect your
+                information from unauthorized access, disclosure, or misuse.
+              </p>
+
+              <p className="text-lg text-black">
+                <strong>5. Your Rights</strong>
+                <br />
+                You have the right to:
+                <ul>
+                  <li>Access the personal data we hold about you.</li>
+                  <li>Request correction or deletion of your data.</li>
+                  <li>Object to or restrict certain processing activities.</li>
+                </ul>
+                To exercise these rights, please contact us at:
+                support@100gaj.com
               </p>
             </motion.div>
           </div>
@@ -155,7 +193,9 @@ export default function Legal() {
               viewport={{ once: true }}
               className="inline-block bg-white px-4 py-2 rounded-full mb-6"
             >
-              <span className="text-gray-950 font-medium">PRIVACY POLICY</span>
+              <span className="text-gray-950 font-medium">
+                Terms Of Service
+              </span>
             </motion.div>
 
             <motion.h2
@@ -165,7 +205,7 @@ export default function Legal() {
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-bold text-black mb-6 text-center"
             >
-              Privacy Policy
+              Terms of Service
             </motion.h2>
 
             <motion.div
@@ -176,35 +216,71 @@ export default function Legal() {
               className="bg-gray-100 p-8 rounded-xl shadow-lg space-y-4"
             >
               <p className="text-lg text-black">
-                At EstateElite, we are committed to protecting your privacy.
-                This Privacy Policy explains how we collect, use, disclose, and
-                safeguard your personal information.
+                <strong>1. Eligibility</strong>
+                You must be at least 18 years old to use this website.
               </p>
+
               <p className="text-lg text-black">
-                <strong>Information We Collect:</strong> We may collect personal
-                information such as your name, email address, phone number, and
-                property preferences when you use our services or communicate
-                with us.
+                <strong>2. User Responsibilities</strong>
+                By using this site, you agree to:
+                <ul>
+                  <li>Provide accurate and current information.</li>
+                  <li>Maintain confidentiality of your account credentials.</li>
+                  <li>Use the website in compliance with applicable laws.</li>
+                  <li>
+                    Refrain from posting any prohibited or harmful content.
+                  </li>
+                </ul>
               </p>
+
               <p className="text-lg text-black">
-                <strong>How We Use Your Information:</strong> We use the
-                collected information to provide and improve our services,
-                communicate with you, and personalize your experience. We may
-                also use this information for marketing and analytical purposes.
+                <strong>3. Property Listings</strong>
+                <ul>
+                  <li>
+                    Users are solely responsible for the accuracy of the
+                    information provided in property listings.
+                  </li>
+                  <li>
+                    Listings that violate our policies or applicable laws may be
+                    removed without notice.
+                  </li>
+                  <li>
+                    We reserve the right to moderate, edit, or delete content at
+                    our discretion.
+                  </li>
+                </ul>
               </p>
+
               <p className="text-lg text-black">
-                <strong>Sharing Your Information:</strong> We do not sell,
-                trade, or otherwise transfer your personal information to
-                outside parties without your consent. This does not include
-                trusted third parties who assist us in operating our website,
-                conducting our business, or servicing you, so long as those
-                parties agree to keep this information confidential.
+                <strong>4. Intellectual Property</strong>
+                All content on this website—including logos, text, images, and
+                software—is the property of 100gaj or its content suppliers, and
+                is protected by intellectual property laws.
               </p>
+
               <p className="text-lg text-black">
-                <strong>Protecting Your Information:</strong> We implement a
-                variety of security measures to maintain the safety of your
-                personal information when you enter, submit, or access your
-                personal information.
+                <strong>5. Limitation of Liability</strong>
+                100gaj is not liable for:
+                <ul>
+                  <li>
+                    Any direct or indirect damages arising from the use of the
+                    site.
+                  </li>
+                  <li>Errors or inaccuracies in property listings.</li>
+                  <li>Unauthorized access to user data.</li>
+                </ul>
+              </p>
+
+              <p className="text-lg text-black">
+                <strong>6. Termination</strong>
+                We reserve the right to suspend or terminate user accounts for
+                any violation of these terms or misuse of our platform.
+              </p>
+
+              <p className="text-lg text-black">
+                <strong>7. Governing Law</strong>
+                These Terms shall be governed by the laws of India. Any disputes
+                shall be subject to the jurisdiction of courts in Delhi
               </p>
             </motion.div>
           </div>
@@ -243,21 +319,20 @@ export default function Legal() {
               className="bg-gray-100 p-8 rounded-xl shadow-lg space-y-4"
             >
               <p className="text-lg text-black">
-                The information contained on this website is for general
-                information purposes only. EstateElite makes no representations
-                or warranties of any kind, express or implied, about the
-                completeness, accuracy, reliability, suitability, or
-                availability with respect to the website or the information,
-                products, services, or related graphics contained on the website
-                for any purpose. Any reliance you place on such information is
-                therefore strictly at your own risk.
-              </p>
-              <p className="text-lg text-black">
-                In no event will we be liable for any loss or damage including
-                without limitation, indirect or consequential loss or damage, or
-                any loss or damage whatsoever arising from loss of data or
-                profits arising out of, or in connection with, the use of this
-                website.
+                <ul>
+                  <li>
+                    100gaj acts solely as a platform for property listings and
+                    user interactions.
+                  </li>
+                  <li>
+                    We do not endorse or verify any listings, users, or property
+                    details.
+                  </li>
+                  <li>
+                    Users are solely responsible for conducting their own due
+                    diligence before engaging in any transactions.
+                  </li>
+                </ul>
               </p>
             </motion.div>
           </div>
