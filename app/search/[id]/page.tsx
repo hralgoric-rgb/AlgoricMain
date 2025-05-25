@@ -464,12 +464,12 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center mb-4">
                   <div className="h-12 w-12 bg-black/10 rounded-full flex items-center justify-center mr-3">
                     <span className="text-black font-medium">
-                      {property.owner.name[0] || "PO"}
+                      {property.ownerDetails.name[0] || "PO"}
                     </span>
                   </div>
                   <div>
                     <p className="font-medium text-black">
-                      {property.owner.name || "property.owner.name"}
+                      {property.ownerDetails.name || "property.owner.name"}
                     </p>
                     <p className="text-sm text-black/70">
                       {property.ownerDetails.phone || "Contact via phone"}

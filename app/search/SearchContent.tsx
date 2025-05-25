@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaSearch,
@@ -22,6 +22,7 @@ import Navbar from "../components/navbar";
 import axios from "axios";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
+import { set } from "mongoose";
 
 // Mock property data
 const priceRanges = [
@@ -615,7 +616,7 @@ const SearchPage = () => {
 
   const handleMapBoundsChange = (bounds: MapBounds) => {
     setMapBounds(bounds);
-    searchPropertiesInMapBounds();
+    // searchPropertiesInMapBounds();
     setSelectedFilters((prev) => ({
       ...prev,
       mapBounds: bounds,
@@ -623,7 +624,7 @@ const SearchPage = () => {
   };
 
   // Update filterProperties function to properly filter properties
-  const filterProperties = () => {
+  const filterProperties = useCallback(() => {
     // if (mapBounds) {
     //     // If map bounds exist, use API for map-based search
     //     searchPropertiesInMapBounds();
@@ -714,7 +715,7 @@ const SearchPage = () => {
     });
 
     setFilteredProperties(filtered);
-  };
+  },[allProperties,searchQuery,selectedFilters]);
 
   // Move useEffect to the end of the component
   useEffect(() => {
@@ -808,7 +809,7 @@ const SearchPage = () => {
       }
     } catch (error) {
       console.error("Error toggling favorite status:", error);
-      toast.error("Failed to update favorites");
+      toast.error("Please login to add or remove favorites");
     }
   };
 
@@ -1434,26 +1435,21 @@ const SearchPage = () => {
             onBoundsChanged={handleMapBoundsChange}
             // mapStyle="dark" // Set the map style to dark
           />
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center z-10">
             <button
               onClick={() => {
                 if (mapBounds) {
                   searchPropertiesInMapBounds();
+                  setShowMap(false); // Hide map after search
                 }
               }}
-              className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm text-xs font-medium hover:bg-orange-600 transition-colors"
+              className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm hover:bg-orange-600 transition-colors font-bold"
             >
               Search this area
             </button>
 
             {/* List view toggle button - only visible on mobile when map is shown */}
-            <button
-              onClick={() => setShowMap(false)}
-              className="md:hidden bg-black text-white px-3 py-1.5 rounded-md shadow-md text-xs font-medium border border-gray-700 flex items-center gap-1.5"
-            >
-              <FaList className="h-3 w-3" />
-              <span>Show List</span>
-            </button>
+            
           </div>
         </div>
 
