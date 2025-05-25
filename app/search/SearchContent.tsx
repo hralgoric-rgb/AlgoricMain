@@ -22,7 +22,7 @@ import Navbar from "../components/navbar";
 import axios from "axios";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
-import { set } from "mongoose";
+
 
 // Mock property data
 const priceRanges = [
