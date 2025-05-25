@@ -63,9 +63,6 @@ export const ThreeDCard = ({ imageUrl, title, description }: ThreeDCardProps) =>
               ease: "easeOut"
             }}
           >
-            <button className="px-4 py-2 bg-orange-500 text-gray-100 rounded-full text-sm font-medium hover:bg-orange-500/90 transition-colors">
-              Explore Area
-            </button>
           </motion.div>
         </div>
         

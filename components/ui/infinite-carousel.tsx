@@ -97,11 +97,7 @@ export const InfiniteCarousel = ({
                     {item.projects} Projects
                   </p>
                 )}
-                <div className="mt-4">
-                  <button className="text-sm font-medium text-orange-500 hover:text-orange-500/70 transition-colors">
-                    View Builder →
-                  </button>
-                </div>
+                
               </div>
             </div>
           </div>

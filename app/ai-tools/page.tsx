@@ -15,6 +15,7 @@ export default function AIToolsPage() {
         "AI-powered 3D walkthroughs of properties without physical visits",
       icon: "/virtual-tour.png",
       color: "bg-orange-500/10",
+      link: "/comingsoon",
     },
     {
       name: "Price Prediction",
@@ -22,18 +23,21 @@ export default function AIToolsPage() {
         "Machine learning algorithms to predict property value trends",
       icon: "/price.png",
       color: "bg-orange-500/10",
+      link: "/house-price-prediction",
     },
     {
       name: "Smart Home Integration",
       description: "AI systems to control lighting, security and climate",
       icon: "/smart-house.png",
       color: "bg-orange-500/10",
+      link: "/smart-home",
     },
     {
       name: "Chatbot Assistant",
       description: "24/7 AI-powered assistant to answer property queries",
       icon: "/chatbot.png",
       color: "bg-orange-500/10",
+      link: "/comingsoon",
     },
     {
       name: "Neighborhood Analysis",
@@ -41,12 +45,14 @@ export default function AIToolsPage() {
         "AI algorithms analyzing area safety, amenities and investment potential",
       icon: "/village.png",
       color: "bg-orange-500/10",
+      link: "/comingsoon",
     },
     {
       name: "Document Analysis",
       description: "Automated legal document review with key term extraction",
       icon: "/documentation.png",
       color: "bg-orange-500/10",
+      link: "/comingsoon",
     },
   ];
 
@@ -92,7 +98,7 @@ export default function AIToolsPage() {
 
             <div className="flex justify-center gap-4">
               <Link
-                href="/properties"
+                href="/search"
                 className="px-8 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors font-medium"
               >
                 Explore Properties
@@ -160,6 +166,7 @@ export default function AIToolsPage() {
                   {tool.name}
                 </h3>
                 <p className="text-gray-400">{tool.description}</p>
+                <Link href={tool.link}>Use tool</Link>
               </motion.div>
             ))}
           </div>

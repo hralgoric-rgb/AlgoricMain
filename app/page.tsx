@@ -802,25 +802,7 @@ export default function Home() {
                 </div>
 
                 {/* View profile button that appears on hover */}
-                <div className="absolute -bottom-20 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 group-hover:-bottom-10 transition-all duration-300">
-                  <button className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1 transform hover:scale-105 transition-transform shadow-lg shadow-orange-900/20">
-                    <span>View Profile</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
-                      />
-                    </svg>
-                  </button>
-                </div>
+               
               </motion.div>
             ))}
           </div>
@@ -948,7 +930,7 @@ export default function Home() {
 
                   <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <a
-                      href="#"
+                      href="/ai-tools"
                       className="text-orange-600 font-medium flex items-center text-sm"
                     >
                       Learn more

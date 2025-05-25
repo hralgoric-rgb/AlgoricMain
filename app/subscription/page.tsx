@@ -720,7 +720,7 @@ export default function Pricing() {
               </p>
               <div className="text-center">
                 <a
-                  href="#pricing-plans"
+                  href="/subscription"
                   className="inline-block px-8 py-4 bg-white text-orange-500 font-semibold rounded-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
                 >
                   Get Started Today

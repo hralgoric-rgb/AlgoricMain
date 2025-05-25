@@ -3,7 +3,7 @@ import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
+
 import { useState } from 'react';
 
 const HouseIcon = () => (
@@ -126,15 +126,6 @@ export default function ContactUs() {
             <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
               We are here to help you with your property needs.
             </p>
-            
-            <div className="flex justify-center gap-4">
-              <Link 
-                href="/properties" 
-                className="px-8 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors font-medium"
-              >
-                Contact Us
-              </Link>
-            </div>
           </motion.div>
         </div>
       </section>

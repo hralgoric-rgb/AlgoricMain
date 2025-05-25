@@ -62,7 +62,7 @@ export default function AboutUs() {
             
             <div className="flex justify-center gap-4">
               <Link 
-                href="/properties" 
+                href="/search" 
                 className="px-8 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors font-medium"
               >
                 Browse Properties
