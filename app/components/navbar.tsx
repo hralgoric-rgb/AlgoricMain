@@ -18,6 +18,8 @@ import { getSession, signOut } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
 import GoogleLoginButton from "./GoogleLoginButton";
+import { useRouter } from "next/navigation";
+
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -91,55 +93,68 @@ export default function Navbar() {
   const [isAgent, setIsAgent] = useState(false);
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (typeof window !== "undefined") {
-        // First check sessionStorage for custom auth token
-        const token = sessionStorage.getItem("authToken");
-
-        if (token) {
-          try {
-            const authData = JSON.parse(token);
-            // Check if it's a Google auth session or custom auth
-            if (authData.provider === "google") {
-              // For Google auth, also verify the NextAuth session is still valid
-              const session = await getSession();
-              if (session?.user) {
-                setIsAuthenticated(true);
-              } else {
-                // Session expired, clear storage
-                sessionStorage.removeItem("authToken");
-                setIsAuthenticated(false);
-              }
-            } else {
-              // For custom auth, just check if token exists
-              setIsAuthenticated(true);
-            }
-          } catch (error) {
-            console.error("Error parsing auth token:", error);
-            sessionStorage.removeItem("authToken");
-            setIsAuthenticated(false);
-          }
-        } else {
-          // Check if there's a NextAuth session without our custom token
-          const session = await getSession();
-          if (session?.user) {
-            // Create our custom auth data for existing NextAuth session
-            const customAuthData = {
-              user: session.user,
-              expires: session.expires,
-              provider: "google",
-              timestamp: Date.now(),
-            };
-            sessionStorage.setItem("authToken", JSON.stringify(customAuthData));
-            setIsAuthenticated(true);
-          }
-        }
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('modal') === 'auth') {
+        setIsAuthModalOpen(true); // or your setIsAuthModal(true)
       }
-    };
-
-    checkAuthStatus();
+      else{
+        setIsAuthModalOpen(false);
+      }
+    }
   }, []);
+
+  // useEffect(() => {
+  //   const checkAuthStatus = async () => {
+  //     if (typeof window !== "undefined") {
+  //       // First check sessionStorage for custom auth token
+  //       const token = sessionStorage.getItem("authToken");
+
+  //       if (token) {
+  //         try {
+  //           const authData = JSON.parse(token);
+  //           // Check if it's a Google auth session or custom auth
+  //           if (authData.provider === "google") {
+  //             // For Google auth, also verify the NextAuth session is still valid
+  //             const session = await getSession();
+  //             if (session?.user) {
+  //               setIsAuthenticated(true);
+  //             } else {
+  //               // Session expired, clear storage
+  //               sessionStorage.removeItem("authToken");
+  //               setIsAuthenticated(false);
+  //             }
+  //           } else {
+  //             // For custom auth, just check if token exists
+  //             setIsAuthenticated(true);
+  //           }
+  //         } catch (error) {
+  //           console.error("Error parsing auth token:", error);
+  //           sessionStorage.removeItem("authToken");
+  //           setIsAuthenticated(false);
+  //         }
+  //       } else {
+  //         // Check if there's a NextAuth session without our custom token
+  //         const session = await getSession();
+  //         if (session?.user) {
+  //           // Create our custom auth data for existing NextAuth session
+  //           const customAuthData = {
+  //             user: session.user,
+  //             expires: session.expires,
+  //             provider: "google",
+  //             timestamp: Date.now(),
+  //           };
+  //           sessionStorage.setItem("authToken", JSON.stringify(customAuthData));
+  //           setIsAuthenticated(true);
+  //         }
+  //       }
+  //     }
+  //   };
+
+  //   checkAuthStatus();
+  // }, []);
 
   // Clear errors and success messages when switching tabs
   useEffect(() => {
@@ -183,12 +198,16 @@ export default function Navbar() {
     setUserId(null);
   };
 
+  const router = useRouter();
   // Handle login with NextAuth Google
 
   // Show the auth modal
   const openAuthModal = () => {
     resetFormState();
     setIsAuthModalOpen(true);
+    const url = new URL(window.location.href);
+    url.searchParams.set("modal", "auth");
+    router.replace(url.pathname + url.search, { scroll: false });
   };
 
   // Handle logout
@@ -241,18 +260,21 @@ export default function Navbar() {
         email,
         password,
       });
-
+      console.log("Login response:", response.data.token);
       if (response.data.token) {
         // Store the token
         if (typeof window === "undefined") {
           return;
         }
-        sessionStorage.setItem("authToken", response.data.token);
+        
         document.cookie = `authToken=${response.data.token}; path=/;`;
+        sessionStorage.setItem("authToken", response.data.token);
         toast.success("Successfully Logged In!!");
         // Update the UI
         setSuccess("Login successful!");
-
+        const url = new URL(window.location.href);
+        url.searchParams.delete("modal");
+        router.replace(url.pathname + url.search,{scroll: false});
         // Close the auth modal after a brief delay to show success message
         setTimeout(() => {
           setIsAuthModalOpen(false);
@@ -314,6 +336,7 @@ export default function Navbar() {
         setSuccess("Account created! Please verify your email.");
         setCurrentView("verify-email");
         toast.success("Successfully Signed Up !");
+        
       }
     } catch (err: any) {
       const errorMsg =
@@ -352,7 +375,9 @@ export default function Navbar() {
         document.cookie = `authToken=${response.data.token}; path=/;`;
 
         setSuccess("Email verified successfully!");
-
+        const url = new URL(window.location.href);
+    url.searchParams.delete("modal");
+    router.replace(url.pathname + url.search,{scroll: false});
         // Close the auth modal after a brief delay
         setTimeout(() => {
           setIsAuthModalOpen(false);
@@ -476,6 +501,12 @@ export default function Navbar() {
     }
   };
 
+  const closeAuthModal = () =>{
+    setIsAuthModalOpen(false)
+    const url = new URL(window.location.href);
+    url.searchParams.delete("modal");
+    router.replace(url.pathname + url.search,{scroll: false});
+  }
   return (
     <>
       <header
@@ -923,7 +954,7 @@ export default function Navbar() {
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative w-full max-w-md">
                 {/* Close button */}
                 <button
-                  onClick={() => setIsAuthModalOpen(false)}
+                  onClick={() => closeAuthModal()}
                   className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 z-10"
                 >
                   <svg

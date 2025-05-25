@@ -12,6 +12,7 @@ import { BackgroundPaths } from "@/components/ui/background-paths";
 import { PropertyNewsSection } from "@/components/ui/property-news";
 import Link from "next/link";
 
+
 // const defaultCards = [
 //   {
 //     icon: <Sparkles className="size-4 text-blue-300" />,
@@ -46,6 +47,8 @@ import Link from "next/link";
 // ];
 
 export default function Home() {
+  
+  
   const testimonials = [
     {
       src: "/airpirt.jpeg",

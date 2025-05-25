@@ -21,7 +21,9 @@ import Link from "next/link";
 import Navbar from "../components/navbar";
 import axios from "axios";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+
 
 
 // Mock property data
@@ -289,7 +291,7 @@ const SearchPage = () => {
   const [favorites, setFavorites] = useState<{ properties: string[] }>({
     properties: [],
   });
-
+  const router = useRouter();
   // Property types from backend
   const propertyTypes = [
     "House",
@@ -1043,9 +1045,7 @@ const SearchPage = () => {
         <div className="container mx-auto px-0 md:px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="hidden md:flex items-center pl-4 md:pl-0">
-              <h1 className="ml-2 text-xl font-semibold text-orange-600">
-                Property Search
-              </h1>
+              <Image src="/logo.png" alt="100Gaj" width={64} height={64}/>
             </div>
 
             <div className="flex items-center gap-3 flex-1 px-4 md:px-0 md:ml-8 md:max-w-xl">
@@ -1380,7 +1380,8 @@ const SearchPage = () => {
       </AnimatePresence>
 
       {/* Mobile Map Toggle Button - Only visible on small screens */}
-      <div className="md:hidden sticky top-[85px] z-20 bg-black py-2 px-4 flex justify-end border-b border-gray-800">
+      <div className="md:hidden sticky top-[85px] z-20 bg-black py-2 px-4 flex justify-between border-b border-gray-800">
+        <Image src="/logo.png" height={64} width={64} alt="100Gaj"/>
         <button
           onClick={() => setShowMap(!showMap)}
           className="px-3 py-1.5 bg-orange-500 text-white rounded-md text-sm font-medium flex items-center gap-1.5"
@@ -1497,7 +1498,9 @@ const SearchPage = () => {
                         animate={{ opacity: 1 }}
                         className={`bg-gray-900 rounded-md shadow-orange-500 shadow-md overflow-hidden hover:shadow-md transition-shadow text-white`}
                       >
-                        <div className="flex flex-col md:flex-row">
+                        <div className="flex flex-col md:flex-row cursor-pointer" onClick={() => {
+                          router.push(`/search/${property._id}`)
+                        }}>
                           <div className="relative md:w-2/5">
                             <img
                               src={

@@ -45,7 +45,7 @@ export default function SellProperty() {
         "Please login to sell a property. Redirecting you to the Home Page!",
       );
       setTimeout(() => {
-        router.push("/");
+        router.push("/?modal=auth");
       }, 1000);
       return;
     }
