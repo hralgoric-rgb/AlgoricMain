@@ -43,10 +43,13 @@ const uploadToCloudinary = (buffer: Buffer, filename: string): Promise<any> => {
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  console.log("The post function is getting fired atleast")
   try {
     // Parse the multipart form data
     const formData = await request.formData();
+    console.log("49")
     const file = formData.get('image') as File;
+    console.log("50")
 
     // Check if file exists
     if (!file) {
@@ -55,7 +58,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    console.log("55")
     // Validate file type
     if (!isValidFileType(file)) {
       return NextResponse.json(
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    console.log("63")
     // Check file size (optional - limit to 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
@@ -72,13 +75,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    console.log("71")
     // Convert file to buffer
     const buffer = await fileToBuffer(file);
-
+    console.log("80")
     // Upload to Cloudinary
     const uploadResult = await uploadToCloudinary(buffer, file.name);
-
+    console.log("83")
     // Return success response
     return NextResponse.json(
       {
