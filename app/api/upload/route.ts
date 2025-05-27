@@ -1,40 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
+import ImageKit from 'imagekit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+// Initialize ImageKit
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || '',
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || '',
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || '',
 });
 
-// Helper function to convert File to Buffer
-const fileToBuffer = async (file: File): Promise<Buffer> => {
+// Helper function to convert File to Base64
+const fileToBase64 = async (file: File): Promise<string> => {
   const arrayBuffer = await file.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+  const buffer = Buffer.from(arrayBuffer);
+  return buffer.toString('base64');
 };
 
-// Helper function to upload to Cloudinary
-const uploadToCloudinary = (buffer: Buffer, filename: string): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      {
-        folder: '100gaj',
-        allowed_formats: ['jpg', 'png', 'jpeg'],
-        public_id: filename.split('.')[0],
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      }
-    ).end(buffer);
-  });
+// Helper function to generate a unique filename
+const generateUniqueFileName = (originalName: string): string => {
+  const timestamp = Date.now();
+  const randomString = Math.random().toString(36).substring(2, 8);
+  const extension = originalName.split('.').pop();
+  return `${timestamp}-${randomString}.${extension}`;
 };
 
 export async function POST(request: NextRequest) {
@@ -67,14 +56,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const buffer = await fileToBuffer(file);
-    const uploadResult = await uploadToCloudinary(buffer, file.name);
+    // Convert file to base64
+    const base64Data = await fileToBase64(file);
+    const uniqueFileName = generateUniqueFileName(file.name);
+
+    // Upload to ImageKit
+    const uploadResponse = await imagekit.upload({
+      file: base64Data,
+      fileName: uniqueFileName,
+      folder: '/100gaj',
+      useUniqueFileName: true,
+    });
 
     return new NextResponse(
       JSON.stringify({
         success: true,
-        url: uploadResult.secure_url,
-        publicId: uploadResult.public_id,
+        url: uploadResponse.url,
+        thumbnailUrl: uploadResponse.thumbnailUrl,
+        fileId: uploadResponse.fileId
       }),
       {
         status: 200,
