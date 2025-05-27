@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { toast } from "sonner";
+import { FeedbackDialog } from "../FeedbackDialog";
 
 const propertyTypes = [
   {
@@ -197,7 +198,7 @@ export default function PropertyForm({
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
- 
+  const [showFeedback, setShowFeedback] = useState(false);
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -547,6 +548,8 @@ export default function PropertyForm({
 
       // Close the form
       onClose();
+
+      setShowFeedback(true);
     } catch (error: any) {
       console.error(
         `Error ${isEditing ? "updating" : "submitting"} property:`,
@@ -1410,6 +1413,7 @@ export default function PropertyForm({
           </div>
         </div>
       </motion.div>
+      <FeedbackDialog isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
     </div>
   );
 }
