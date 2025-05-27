@@ -751,7 +751,7 @@ export default function VerificationAdmin() {
                   >
                     <div className="relative h-40 w-full">
                       <Image
-                        src={""}
+                        src={builder.image}
                         alt={builder.title}
                         fill
                         className="object-cover"
@@ -759,7 +759,7 @@ export default function VerificationAdmin() {
                       <div className="absolute top-4 left-4 bg-gray-800 rounded-md shadow-md p-1">
                         <div className="relative h-10 w-10">
                           <Image
-                            src={""}
+                            src={builder.logo}
                             alt={`${builder.title} logo`}
                             fill
                             className="object-contain"

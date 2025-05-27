@@ -57,6 +57,10 @@ export async function POST(
           specializations: verificationRequest.requestDetails.specializations,
           languages: verificationRequest.requestDetails.languages,
         };
+        // Add image to user profile if provided in verification request
+        if (verificationRequest.requestDetails.image) {
+          user.image = verificationRequest.requestDetails.image;
+        }
       } else {
         if (!user.agentInfo) {
           user.agentInfo = { verified: true };

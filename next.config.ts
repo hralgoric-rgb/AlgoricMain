@@ -2,7 +2,14 @@ import { NextConfig } from 'next';
 
 const config: NextConfig = {
   images:{
-    domains: ['via.placeholder.com','res.cloudinary.com']
+    domains: ['via.placeholder.com','res.cloudinary.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+        pathname: '/**',
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,

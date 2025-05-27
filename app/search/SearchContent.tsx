@@ -289,15 +289,13 @@ const SearchPage = () => {
   const [newlyAddedProperties, setNewlyAddedProperties] = useState<Set<string>>(
     new Set(),
   );
-  const [favorites, setFavorites] = useState<{ properties: string[] }>({
-    properties: [],
-  });
+  const [favorites, setFavorites] = useState<Property[]>([]);
 
   const fetchFavorite = async () =>{
     if(token){
       try{
         const propertiesData = await FavoritesAPI.getProperties();
-        setFavorites(propertiesData);
+        setFavorites(propertiesData.favorites);
       }
       catch(error){
         console.error("Error fetching favorites:", error);
@@ -796,7 +794,7 @@ const SearchPage = () => {
   const toggleFavorite = async (propertyId: string) => {
     try {
       // Check if property is already in favorites
-      const isFavorited = favorites?.properties?.includes(propertyId);
+      const isFavorited = favorites.some((property) => property._id === propertyId);
 
       if (isFavorited) {
         // Remove from favorites
@@ -1549,7 +1547,7 @@ const SearchPage = () => {
                               }}
                             >
                               <FaHeart
-                                className={`h-4 w-4 ${favorites?.properties?.includes(property._id) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
+                                className={`h-4 w-4 ${favorites.some((property) => property._id === property._id) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
                               />
                             </button>
                           </div>
