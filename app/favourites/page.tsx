@@ -100,7 +100,7 @@ export default function FavoritesPage() {
   useEffect(() => {
     // Only run this on the client side
     if (typeof window !== "undefined") {
-      const authToken = sessionStorage.getItem("authToken");
+      const authToken = sessionStorage.getItem("authToken") || document.cookie.split(";").find((cookie) => cookie.startsWith("authToken="))?.split("=")[1];
       if (authToken) {
         setToken(authToken);
         console.log("authToken: ", token);

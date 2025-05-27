@@ -96,7 +96,8 @@ export default function Navbar() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('modal') === 'auth') {
+      const authToken = sessionStorage.getItem("authToken");
+      if (params.get('modal') === 'auth' && !authToken) {
         setIsAuthModalOpen(true); // or your setIsAuthModal(true)
       }
       else{

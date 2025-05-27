@@ -22,7 +22,7 @@ export default function GoogleLoginButton() {
     const authToken = data.authToken;
     // Store token in sessionStorage
     sessionStorage.setItem("authToken", authToken);
-
+    document.cookie = `authToken=${authToken}; path=/;`;
     toast.success("Successfully logged in!");
     setTimeout(() => {
       window.location.reload();
