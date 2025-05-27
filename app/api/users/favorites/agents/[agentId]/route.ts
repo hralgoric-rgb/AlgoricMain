@@ -4,9 +4,16 @@ import User from '@/app/models/User';
 import { withAuth } from '@/app/lib/auth-middleware';
 
 // DELETE /api/users/favorites/agents/:agentId - Remove an agent from favorites
-export const DELETE = withAuth(async (request: NextRequest, userId: string, { params }: { params: { agentId: string } }) => {
-  const { agentId } = params;
-  
+export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/');
+  const agentId = pathSegments[pathSegments.length - 1];
+  if(!agentId || agentId == "agents"){
+    return NextResponse.json(
+      {error:"Agent Id required!!"},
+      {status:400}
+    )
+  }
   try {
     await connectDB();
     

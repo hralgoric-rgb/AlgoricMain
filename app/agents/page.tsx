@@ -207,19 +207,6 @@ export default function AgentsPage() {
     e.stopPropagation();
     try {
       await toggleFavorite(id, "agent");
-      if (isFavorite(id, "agent")) {
-        toast({
-          title: "Removed from favorites",
-          description: "Agent has been removed from your favorites",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Added to favorites",
-          description: "Agent has been added to your favorites",
-          variant: "default",
-        });
-      }
     } catch (error) {
       console.error("Error toggling favorite:", error);
       toast({
@@ -471,7 +458,7 @@ export default function AgentsPage() {
                   {/* Favorite Toggle Button */}
                   <button
                     onClick={(e) => handleToggleFavorite(agent._id, e)}
-                    className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
+                    className="z-20 absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
                   >
                     <FaHeart
                       size={20}

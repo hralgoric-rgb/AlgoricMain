@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   title: "100 Gaj",
   description: "Housing Services for Everyone",
   icons: {
-    icon: "/favicon.jpeg",
+    icon: "/favicon.ico",
   }
 };
 

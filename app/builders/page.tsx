@@ -105,25 +105,24 @@ export default function BuildersPage() {
     setFilteredBuilders(filtered);
   }, [searchTerm, builders, activeFilter, isFavorite]);
 
-  const handleToggleFavorite = (id: string, e: React.MouseEvent) => {
+  const handleToggleFavorite = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleFavorite(id, "builders");
 
-    // Show toast notification
-    if (isFavorite(id, "builders")) {
+    try{
+      await toggleFavorite(id, "builders");
+    }catch (error) {
+      console.error("Error toggling favorite:", error);
       toast({
-        title: "Removed from favorites",
-        description: "Builder has been removed from your favorites",
+        title: "Error",
+        description: "Failed to update favorites",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Added to favorites",
-        description: "Builder has been added to your favorites",
-        variant: "default",
-      });
     }
+    
+
+    // Show toast notification
+    
   };
 
   // Function to render stars based on rating
@@ -400,7 +399,7 @@ export default function BuildersPage() {
                         {/* Favorite Button */}
                         <button
                           onClick={(e) => handleToggleFavorite(builder._id, e)}
-                          className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
+                          className="z-20 absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
                         >
                           <Heart
                             size={20}
