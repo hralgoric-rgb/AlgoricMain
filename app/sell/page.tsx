@@ -11,13 +11,11 @@ import {
   Clock,
   Users,
   CheckCircle,
-  MapPin,
   PenTool,
   ArrowRight,
   Phone,
   Shield,
   DollarSign,
-  Zap,
 } from "lucide-react";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
@@ -325,71 +323,6 @@ export default function SellProperty() {
         </div>
       </section>
 
-      {/* Featured Properties Section */}
-      <section className="py-20 px-4 relative bg-gradient-to-b from-gray-900 to-black">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-10">
-            <div>
-              <h2 className="text-3xl font-bold text-white">Success Stories</h2>
-              <p className="text-gray-400 mt-2">
-                Properties recently sold on our platform
-              </p>
-            </div>
-            <Button className="bg-white text-black hover:bg-gray-200">
-              View All <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((item) => (
-              <motion.div
-                key={item}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="group"
-              >
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden border border-white/10">
-                  <div className="h-48 bg-gray-800 relative">
-                    <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                      SOLD
-                    </div>
-                    <div className="absolute bottom-3 right-3 bg-black/60 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm">
-                      ₹{(Math.random() * 100 + 50).toFixed(2)}L
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-orange-500 transition-colors">
-                      {
-                        ["Luxury Apartment", "Modern Villa", "Spacious House"][
-                          item - 1
-                        ]
-                      }{" "}
-                      in {["Mumbai", "Delhi", "Bangalore"][item - 1]}
-                    </h3>
-                    <div className="flex items-center text-gray-400 text-sm mb-3">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {["Bandra West", "South Delhi", "Koramangala"][item - 1]}
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center text-gray-400">
-                        <Home className="w-4 h-4 mr-1" />
-                        {item + 1} BHK
-                      </div>
-                      <div className="flex items-center text-gray-400">
-                        <Zap className="w-4 h-4 mr-1" />
-                        Sold in {item * 5 + 10} days
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-16">

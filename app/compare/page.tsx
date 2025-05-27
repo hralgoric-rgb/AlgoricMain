@@ -224,65 +224,53 @@ export default function CompareProperties() {
 
   // Fetch favorite properties
   useEffect(() => {
-    async function fetchFavoriteProperties() {
-      setLoading(true);
-      setFetchError(null);
+  async function fetchFavoriteProperties() {
+    setLoading(true);
+    setFetchError(null);
 
-      try {
-        // Only make the API call if we have a token
-        if (token) {
-          console.log("Fetching favorites with token");
+    try {
+      if (token) {
+        const response = await axios.get("/api/users/favorites/properties", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-          const response = await axios.get("/api/users/favorites/properties", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+        if (response.data.success && response.data.favorites) {
+          const transformedData = transformApiDataToPropertyFormat(
+            response.data.favorites,
+          );
+          setProperties(transformedData);
 
-          console.log("API Response:", response.data);
-
-          if (response.data.success && response.data.favorites) {
-            const transformedData = transformApiDataToPropertyFormat(
-              response.data.favorites,
-            );
-            setProperties(transformedData);
-
-            // Auto-select the first two properties if available
-            if (transformedData.length >= 1 && !selectedProperty1) {
-              setSelectedProperty1(transformedData[0].id);
-            }
-            if (transformedData.length >= 2 && !selectedProperty2) {
-              setSelectedProperty2(transformedData[1].id);
-            }
-          } else {
-            console.error("API response format issue:", response.data);
-            throw new Error(
-              "Failed to fetch favorites or invalid response format",
-            );
+          // Auto-select the first two properties if available
+          if (transformedData.length >= 1) {
+            setSelectedProperty1(transformedData[0].id);
+          }
+          if (transformedData.length >= 2) {
+            setSelectedProperty2(transformedData[1].id);
           }
         } else {
-          // If no token is available, use dummy data for demo purposes
-          console.log("No token available, using dummy data for demo");
           setProperties(dummyProperties);
           setFetchError("Demo mode: Using sample properties");
         }
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
-        setFetchError(
-          error instanceof Error
-            ? error.message
-            : "Failed to load favorite properties",
-        );
-
-        // Fallback to dummy data
-        console.log("Using dummy data as fallback");
+      } else {
         setProperties(dummyProperties);
-      } finally {
-        setLoading(false);
+        setFetchError("Demo mode: Using sample properties");
       }
+    } catch (error) {
+      setFetchError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load favorite properties",
+      );
+      setProperties(dummyProperties);
+    } finally {
+      setLoading(false);
     }
-    fetchFavoriteProperties();
-  }, [token, selectedProperty1, selectedProperty2]);
+  }
+  fetchFavoriteProperties();
+  // Only depend on token!
+}, [token]);
 
   // Update the selected properties when the dropdown changes
   useEffect(() => {

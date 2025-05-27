@@ -23,6 +23,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { FavoritesAPI } from "../lib/api-helpers";
 
 
 
@@ -291,6 +292,20 @@ const SearchPage = () => {
   const [favorites, setFavorites] = useState<{ properties: string[] }>({
     properties: [],
   });
+
+  const fetchFavorite = async () =>{
+    if(token){
+      const propertiesData = await FavoritesAPI.getProperties();
+      setFavorites(propertiesData);
+    }
+  }
+
+  useEffect(()=>{
+    if(token){
+      fetchFavorite();
+    }
+  },[token]);
+
   const router = useRouter();
   // Property types from backend
   const propertyTypes = [
@@ -786,11 +801,7 @@ const SearchPage = () => {
           },
         });
         toast.success("Removed from favorites");
-        // Update local state
-        setFavorites((prev) => ({
-          ...prev,
-          properties: prev?.properties?.filter((id) => id !== propertyId) || [],
-        }));
+        fetchFavorite();
       } else {
         // Add to favorites
         await axios.post(
@@ -804,14 +815,10 @@ const SearchPage = () => {
         );
         toast.success("Added to favorites");
         // Update local state
-        setFavorites((prev) => ({
-          ...prev,
-          properties: [...(prev?.properties || []), propertyId],
-        }));
+        fetchFavorite();
       }
     } catch (error) {
       console.error("Error toggling favorite status:", error);
-      toast.error("Please login to add or remove favorites");
     }
   };
 
@@ -1527,7 +1534,9 @@ const SearchPage = () => {
                             )}
                             <button
                               className="absolute top-2 left-2 h-8 w-8 flex items-center justify-center bg-white/80 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition"
-                              onClick={() => toggleFavorite(property._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite(property._id)}}
                               style={{
                                 left: newlyAddedProperties.has(property._id)
                                   ? "55px"

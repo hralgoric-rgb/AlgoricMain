@@ -30,7 +30,7 @@ export default function AIToolsPage() {
       description: "AI systems to control lighting, security and climate",
       icon: "/smart-house.png",
       color: "bg-orange-500/10",
-      link: "/smart-home",
+      link: "/comingsoon",
     },
     {
       name: "Chatbot Assistant",
@@ -334,7 +334,7 @@ export default function AIToolsPage() {
                 Get Started
               </Link>
               <Link
-                href="/demo"
+                href="/contact"
                 className="px-8 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-md hover:bg-white/10 transition-all duration-300"
               >
                 Request Demo

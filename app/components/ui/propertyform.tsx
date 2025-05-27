@@ -197,7 +197,7 @@ export default function PropertyForm({
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>(initialData?.images || []);
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -259,17 +259,21 @@ export default function PropertyForm({
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
-      setFormData({
-        ...formData,
-        images: [...formData.images, ...newFiles],
-      });
 
       // Generate image previews
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
+
+      try{
+        const urls = await uploadImages(newFiles);
+        setUploadedImageUrls((prev)=> [...prev, ...urls]);
+      }
+      catch(error:any){
+        toast.error("Failed to upload images. Please try again.",error);
+      }
     }
   };
 
@@ -282,20 +286,24 @@ export default function PropertyForm({
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const newFiles = Array.from(e.dataTransfer.files);
-      setFormData({
-        ...formData,
-        images: [...formData.images, ...newFiles],
-      });
+      
 
       // Generate image previews
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
+
+      try{
+        const urls = await uploadImages(newFiles);
+        setUploadedImageUrls((prev)=> [...prev, ...urls]);
+      }catch(error:any){
+        toast.error("Failed to upload images. Please try again.",error);
+      }
     }
   };
 
@@ -436,12 +444,11 @@ export default function PropertyForm({
       }
 
       // First, we need to upload any new images
-      const newUploadedImageUrls = await uploadImages(formData.images);
 
       // Combine new and existing images
       const allImageUrls = [
         ...formData.existingImages,
-        ...newUploadedImageUrls,
+        ...uploadedImageUrls,
       ];
 
       // Get latitude and longitude as numbers
@@ -557,7 +564,7 @@ export default function PropertyForm({
         formData.append("file", image);
 
         // Use our custom API endpoint
-        const response = await axios.post("/api/upload", formData);
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, formData);
 
         if (!response.data.success) {
           throw new Error(response.data.error || "Failed to upload image");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FavoritesAPI } from "../lib/api-helpers";
 import Link from "next/link";
 import Image from "next/image";
@@ -113,7 +113,7 @@ export default function FavoritesPage() {
     }
   }, []);
 
-  const fetchFavorites = async () => {
+  const fetchFavorites = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -139,7 +139,7 @@ export default function FavoritesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  },[activeTab]);
 
   useEffect(() => {
     fetchFavorites();

@@ -9,14 +9,14 @@ export async function POST(request: Request) {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
+                user: process.env.EMAIL_SERVER_USER,
+                pass: process.env.EMAIL_SERVER_PASSWORD,
             },
         });
 
         // Email content
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_SERVER_USER,
             to: ownerEmail,
             subject: `New Property Inquiry: ${propertyTitle}`,
             html: `
