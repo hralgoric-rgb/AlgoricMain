@@ -134,9 +134,9 @@ export default function VerificationRequestForm() {
   // Function to upload image
   const uploadImage = async (file: File): Promise<string> => {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
     
-    const response = await fetch('/api/upload-images', {
+    const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData,
     });
@@ -146,7 +146,7 @@ export default function VerificationRequestForm() {
       throw new Error(data.message || 'Failed to upload image');
     }
     
-    return data.imageUrl;
+    return data.url;
   };
 
   // Handle agent form submission
