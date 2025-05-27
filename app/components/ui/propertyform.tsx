@@ -267,13 +267,10 @@ export default function PropertyForm({
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
 
-      try{
-        const urls = await uploadImages(newFiles);
-        setUploadedImageUrls((prev)=> [...prev, ...urls]);
-      }
-      catch(error:any){
-        toast.error("Failed to upload images. Please try again.",error);
-      }
+      setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...newFiles]
+    }));
     }
   };
 
@@ -298,12 +295,10 @@ export default function PropertyForm({
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
 
-      try{
-        const urls = await uploadImages(newFiles);
-        setUploadedImageUrls((prev)=> [...prev, ...urls]);
-      }catch(error:any){
-        toast.error("Failed to upload images. Please try again.",error);
-      }
+      setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...newFiles]
+    }));
     }
   };
 
@@ -324,12 +319,13 @@ export default function PropertyForm({
       setImagePreviewUrls(newPreviews);
     } else {
       // Handle new uploaded images as before
+      const actualIndex = index - formData.existingImages.length;
       const newImages = [...formData.images];
-      newImages.splice(index, 1);
+      newImages.splice(actualIndex, 1);
 
       const newPreviews = [...imagePreviewUrls];
-      URL.revokeObjectURL(newPreviews[index + formData.existingImages.length]);
-      newPreviews.splice(index + formData.existingImages.length, 1);
+      URL.revokeObjectURL(newPreviews[index]);
+      newPreviews.splice(index, 1);
 
       setFormData({
         ...formData,
@@ -363,8 +359,7 @@ export default function PropertyForm({
     } else if (formStep === 3) {
       // Validate step 3 fields (Photos)
       // Validate minimum 5 images
-      const totalImages =
-        formData.images.length + formData.existingImages.length;
+      const totalImages = formData.images.length + formData.existingImages.length;
       if (totalImages < 5) {
         setError(
           `Please add at least 5 images (currently have ${totalImages})`,
@@ -446,10 +441,7 @@ export default function PropertyForm({
       // First, we need to upload any new images
 
       // Combine new and existing images
-      const allImageUrls = [
-        ...formData.existingImages,
-        ...uploadedImageUrls,
-      ];
+      
 
       // Get latitude and longitude as numbers
       const latitude = parseFloat(formData.address.coordinates.latitude);
@@ -482,6 +474,24 @@ export default function PropertyForm({
       // Create address object without coordinates
       const { coordinates, ...addressWithoutCoordinates } = formData.address;
       console.log(coordinates);
+
+      let newImageUrls: string[] = [];
+    if (formData.images.length > 0) {
+      try {
+        newImageUrls = await uploadImages(formData.images);
+        toast.success(`${newImageUrls.length} images uploaded successfully!`);
+      } catch (error) {
+        setError("Failed to upload images. Please try again.");
+        toast.error("Failed to upload images. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const allImageUrls = [
+        ...formData.existingImages,
+        ...newImageUrls,
+      ];
       // Prepare data for submission
       const propertyData = {
         ...formDataWithoutImages,
@@ -564,13 +574,18 @@ export default function PropertyForm({
         formData.append("file", image);
 
         // Use our custom API endpoint
-        const response = await axios.post(`https://100gaj.vercel.app/api/upload`, formData);
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-        if (!response.data.success) {
-          throw new Error(response.data.error || "Failed to upload image");
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || "Failed to upload image");
         }
 
-        return response.data.url;
+        return data.url;
       });
 
       return await Promise.all(uploadPromises);

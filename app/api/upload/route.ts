@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 // Helper function to handle image uploads
-async function uploadImage(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -54,6 +54,3 @@ async function uploadImage(request: NextRequest) {
     );
   }
 }
-
-// POST /api/upload - Upload an image
-export const POST = uploadImage; 
