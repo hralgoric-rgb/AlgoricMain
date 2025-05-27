@@ -575,7 +575,7 @@ export default function PropertyForm({
         formData.append("file", image);
 
         // Use our custom API endpoint
-        const response = await fetch("/api/upload", {
+        const response = await fetch("/api/upload-images", {
           method: "POST",
           body: formData,
         });

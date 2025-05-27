@@ -132,7 +132,7 @@ export default function VerificationRequestForm() {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await fetch('/api/upload', {
+    const response = await fetch('/api/upload-images', {
       method: 'POST',
       body: formData,
     });
