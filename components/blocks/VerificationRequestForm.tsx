@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,7 +22,8 @@ export default function VerificationRequestForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [token, setToken] = useState<string | null>(null);
-  useEffect(()=>{
+  
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     const authtoken = sessionStorage.getItem('authToken');
     if (authtoken) {
@@ -63,17 +65,18 @@ export default function VerificationRequestForm() {
   const [builderImagePreview, setBuilderImagePreview] = useState<string | null>(null);
   const [builderLogoPreview, setBuilderLogoPreview] = useState<string | null>(null);
 
-  // Check for existing requests on mount
-  
-
   // Check for existing requests
   useEffect(() => {
     const checkExistingRequests = async () => {
-      if (!session) return;
+      if (!session || !token) return;
 
       try {
         // Fetch user's existing requests
-        const response = await fetch('/api/requests/user');
+        const response = await fetch('/api/requests/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
         if (response.ok) {
           const { requests }: { requests: { type: 'agent' | 'builder'; status: 'pending' | 'approved' }[] } = await response.json();
@@ -96,10 +99,11 @@ export default function VerificationRequestForm() {
       }
     };
 
-    if (session) {
+    if (session && token) {
       checkExistingRequests();
     }
-  }, [session]);
+  }, [session, token]);
+
   // Handle image upload for agent
   const handleAgentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -130,7 +134,7 @@ export default function VerificationRequestForm() {
   // Function to upload image
   const uploadImage = async (file: File): Promise<string> => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('image', file);
     
     const response = await fetch('/api/upload-images', {
       method: 'POST',
@@ -138,17 +142,28 @@ export default function VerificationRequestForm() {
     });
     
     const data = await response.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to upload image');
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to upload image');
     }
     
-    return data.url;
+    return data.imageUrl;
   };
 
   // Handle agent form submission
   const handleAgentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRequestStatus({ ...requestStatus, agent: 'loading' });
+    
+    if (!token) {
+      toast({
+        title: 'Authentication Error',
+        description: 'Please log in again',
+        variant: 'destructive',
+      });
+      router.push('/login');
+      return;
+    }
+
+    setRequestStatus(prev => ({ ...prev, agent: 'loading' }));
 
     try {
       let imageUrl = '';
@@ -183,7 +198,7 @@ export default function VerificationRequestForm() {
           title: 'Request submitted',
           description: 'Your agent verification request has been submitted successfully',
         });
-        setRequestStatus({ ...requestStatus, agent: 'success' });
+        setRequestStatus(prev => ({ ...prev, agent: 'pending' }));
 
         // Reset form
         setAgentForm({
@@ -199,25 +214,37 @@ export default function VerificationRequestForm() {
       } else {
         toast({
           title: 'Error',
-          description: data.error || 'Failed to submit request',
+          description: data.message || data.error || 'Failed to submit request',
           variant: 'destructive',
         });
-        setRequestStatus({ ...requestStatus, agent: 'error' });
+        setRequestStatus(prev => ({ ...prev, agent: 'error' }));
       }
     } catch (error) {
+      console.error('Agent submission error:', error);
       toast({
         title: 'Error',
-        description: `Failed to submit verification request ${error}`,
+        description: error instanceof Error ? error.message : 'Failed to submit verification request',
         variant: 'destructive',
       });
-      setRequestStatus({ ...requestStatus, agent: 'error' });
+      setRequestStatus(prev => ({ ...prev, agent: 'error' }));
     }
   };
 
   // Handle builder form submission
   const handleBuilderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRequestStatus({ ...requestStatus, builder: 'loading' });
+    
+    if (!token) {
+      toast({
+        title: 'Authentication Error',
+        description: 'Please log in again',
+        variant: 'destructive',
+      });
+      router.push('/login');
+      return;
+    }
+
+    setRequestStatus(prev => ({ ...prev, builder: 'loading' }));
 
     try {
       let imageUrl = '';
@@ -234,7 +261,7 @@ export default function VerificationRequestForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':`Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           type: 'builder',
@@ -257,7 +284,7 @@ export default function VerificationRequestForm() {
           title: 'Request submitted',
           description: 'Your builder verification request has been submitted successfully',
         });
-        setRequestStatus({ ...requestStatus, builder: 'success' });
+        setRequestStatus(prev => ({ ...prev, builder: 'pending' }));
 
         // Reset form
         setBuilderForm({
@@ -274,18 +301,19 @@ export default function VerificationRequestForm() {
       } else {
         toast({
           title: 'Error',
-          description: data.error || 'Failed to submit request',
+          description: data.message || data.error || 'Failed to submit request',
           variant: 'destructive',
         });
-        setRequestStatus({ ...requestStatus, builder: 'error' });
+        setRequestStatus(prev => ({ ...prev, builder: 'error' }));
       }
     } catch (error) {
+      console.error('Builder submission error:', error);
       toast({
         title: 'Error',
-        description: `Failed to submit verification request ${error}`,
+        description: error instanceof Error ? error.message : 'Failed to submit verification request',
         variant: 'destructive',
       });
-      setRequestStatus({ ...requestStatus, builder: 'error' });
+      setRequestStatus(prev => ({ ...prev, builder: 'error' }));
     }
   };
 

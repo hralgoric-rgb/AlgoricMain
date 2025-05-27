@@ -295,17 +295,21 @@ const SearchPage = () => {
 
   const fetchFavorite = async () =>{
     if(token){
-      const propertiesData = await FavoritesAPI.getProperties();
-      setFavorites(propertiesData);
+      try{
+        const propertiesData = await FavoritesAPI.getProperties();
+        setFavorites(propertiesData);
+      }
+      catch(error){
+        console.error("Error fetching favorites:", error);
+        toast.error("Failed to fetch favorites");
+      }
     }
   }
-
   useEffect(()=>{
     if(token){
       fetchFavorite();
     }
   },[token]);
-
   const router = useRouter();
   // Property types from backend
   const propertyTypes = [
@@ -323,6 +327,7 @@ const SearchPage = () => {
   // Fetch initial properties on component mount
   useEffect(() => {
     fetchProperties();
+    fetchFavorite();
     const filterParam = searchParams.get("filter");
     if (filterParam === "sale") {
       setSelectedFilters((prev) => ({
