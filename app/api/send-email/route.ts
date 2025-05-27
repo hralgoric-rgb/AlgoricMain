@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 
 export async function POST(request: Request) {
     try {
-        const { name, email, phone, message, propertyTitle, ownerEmail } = await request.json();
+        const { name, email, phone, message, propertyTitle } = await request.json();
 
         // Create a transporter using SMTP
         const transporter = nodemailer.createTransport({
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         // Email content
         const mailOptions = {
             from: process.env.EMAIL_SERVER_USER,
-            to: ownerEmail,
+            to: process.env.EMAIL_SERVER_USER,
             subject: `New Property Inquiry: ${propertyTitle}`,
             html: `
                 <h2>New Property Inquiry</h2>

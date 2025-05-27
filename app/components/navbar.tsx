@@ -72,7 +72,7 @@ export default function Navbar() {
       return null;
     };
 
-    const authToken = getCookie("authToken");
+    const authToken = sessionStorage.getItem("authToken") || getCookie("authToken");
     if (authToken && typeof window !== "undefined") {
       // Store token in session storage
       sessionStorage.setItem("authToken", authToken);
@@ -225,11 +225,6 @@ export default function Navbar() {
         "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
       // Check if user was logged in via Google (NextAuth)
-      const session = await getSession();
-      if (session) {
-        // Sign out from NextAuth
-        await signOut({ redirect: false });
-      }
 
       setIsAuthenticated(false);
       toast.success("Successfully Logged out");

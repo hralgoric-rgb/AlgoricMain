@@ -204,7 +204,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
           phone: contactForm.phone,
           message: contactForm.message,
           propertyTitle: property.title,
-          ownerEmail: property.owner.email,
+          
         }),
       });
 
@@ -528,7 +528,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                           })
                         }
                         placeholder="Enter your name"
-                        className="w-full px-4 py-2 rounded-md border border-black/20 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-4 py-2 rounded-md border border-black/20 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                       />
                     </div>
                     <div>
@@ -550,7 +550,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                           })
                         }
                         placeholder="Enter your email"
-                        className="w-full px-4 py-2 rounded-md border border-black/20 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-4 py-2 rounded-md border border-black/20 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                       />
                     </div>
                     <div>
@@ -572,7 +572,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                           })
                         }
                         placeholder="Enter your phone number"
-                        className="w-full px-4 py-2 rounded-md border border-black/20 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-4 py-2 rounded-md border border-black/20 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                       />
                     </div>
                     <div>

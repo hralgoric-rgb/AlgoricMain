@@ -9,7 +9,7 @@ export default function GoogleLoginButton() {
     const token = response.credential;
 
     // Send to your backend for verification & storage
-    const res = await fetch("/api/auth/google", {
+    const res = await fetch("/api/custom-google", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -18,9 +18,10 @@ export default function GoogleLoginButton() {
     });
 
     if (!res.ok) throw new Error("Server error");
-
+    const data = await res.json();
+    const authToken = data.authToken;
     // Store token in sessionStorage
-    sessionStorage.setItem("authToken", token);
+    sessionStorage.setItem("authToken", authToken);
 
     toast.success("Successfully logged in!");
     setTimeout(() => {
