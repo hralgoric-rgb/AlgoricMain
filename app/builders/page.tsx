@@ -400,11 +400,15 @@ export default function BuildersPage() {
                         {/* Favorite Button */}
                         <button
                           onClick={(e) => handleToggleFavorite(builder._id, e)}
-                          className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm z-10 hover:bg-black/60 transition-all duration-300 border border-white/10"
+                          className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
                         >
                           <Heart
-                            size={18}
-                            className={`${isFavorite(builder._id, "builders") ? "fill-orange-500 text-orange-500" : "text-white"}`}
+                            size={20}
+                            className={`${
+                              isFavorite(builder._id, "builders")
+                                ? "fill-red-500 text-red-500"
+                                : "text-white"
+                            }`}
                           />
                         </button>
 
@@ -505,7 +509,7 @@ export default function BuildersPage() {
                                 strokeLinejoin="round"
                                 className="text-orange-500 transform transition-transform duration-300 group-hover:translate-x-1"
                               >
-                                <path d="M5 12h14" />
+                                <path d="m5 12h14" />
                                 <path d="m12 5 7 7-7 7" />
                               </svg>
                             </div>

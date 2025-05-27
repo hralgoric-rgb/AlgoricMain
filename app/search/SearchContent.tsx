@@ -1547,7 +1547,7 @@ const SearchPage = () => {
                               }}
                             >
                               <FaHeart
-                                className={`h-4 w-4 ${favorites.some((property) => property._id === property._id) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
+                                className={`h-4 w-4 ${favorites.some((fav) => fav._id === property._id) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
                               />
                             </button>
                           </div>
