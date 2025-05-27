@@ -14,7 +14,6 @@ import {
   Headset,
   Info,
 } from "lucide-react";
-import { getSession, signOut } from "next-auth/react";
 import axios from "axios";
 import { toast } from "sonner";
 import GoogleLoginButton from "./GoogleLoginButton";
