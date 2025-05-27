@@ -197,7 +197,7 @@ export default function PropertyForm({
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>(initialData?.images || []);
+ 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -482,6 +482,7 @@ export default function PropertyForm({
         toast.success(`${newImageUrls.length} images uploaded successfully!`);
       } catch (error) {
         setError("Failed to upload images. Please try again.");
+        console.log(error);
         toast.error("Failed to upload images. Please try again.");
         setIsSubmitting(false);
         return;

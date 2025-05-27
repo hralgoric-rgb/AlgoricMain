@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { UserAPI } from "@/app/lib/api-helpers";
 
 // Types
 interface UserInfo {
@@ -26,6 +27,7 @@ interface UserInfo {
   email: string;
   phone?: string;
   image?: string;
+  admin?: boolean;
 }
 
 interface VerificationRequest {
@@ -117,6 +119,32 @@ export default function VerificationAdmin() {
       }
     }
   }, []);
+  useEffect(() => {
+      const fetchUserProfile = async () => {
+        
+        try {
+          const data = await UserAPI.getProfile();
+
+          if(!data.admin) {
+            toast.error("You do not have permission to access this page.");
+            setTimeout(() => {
+            router.push("/");
+            }
+            , 1500);
+            
+          }
+          
+        } catch (err) {
+          console.error("Failed to fetch user profile:", err);
+          toast.error("Failed to fetch user profile. Please try again later.");
+          setTimeout(() => {
+            router.push("/");
+          }, 1500);
+        }
+      };
+  
+      fetchUserProfile();
+    }, []);
 
   useEffect(() => {
     fetchRequests();
