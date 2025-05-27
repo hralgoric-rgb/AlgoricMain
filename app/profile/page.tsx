@@ -133,6 +133,14 @@ export default function UserProfile() {
     const fetchUserProfile = async () => {
       setLoading(true);
       try {
+        const token = sessionStorage.getItem("authToken") || 
+                   document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+      
+      if (!token) {
+        setError("Authentication token not found. Please log in again.");
+        return;
+      }
+
         const data = await UserAPI.getProfile();
         setUser(data);
         if (data.isAgent) {

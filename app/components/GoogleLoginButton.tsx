@@ -19,7 +19,7 @@ export default function GoogleLoginButton() {
 
     if (!res.ok) throw new Error("Server error");
     const data = await res.json();
-    const authToken = data.authToken;
+    const authToken = data.token;
     // Store token in sessionStorage
     sessionStorage.setItem("authToken", authToken);
     document.cookie = `authToken=${authToken}; path=/;`;

@@ -1,7 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import connectDB from "@/app/lib/mongodb";
 import User from "@/app/models/User";
-import jwt from "jsonwebtoken";
+import { generateToken } from "@/app/lib/utils";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -48,24 +48,19 @@ export async function POST(request: Request) {
       
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      return new Response(JSON.stringify({ message: "JWT secret is not defined in environment variables" }), { status: 500 });
-    }
-
-    const authToken = jwt.sign(
+    const authToken = generateToken(
       {
         userId: user._id,
         email: user.email,
-        name: user.name,
-        image: user.image,
-        role: user.role,
-      },
-      jwtSecret,
-      { expiresIn: "1d" }
+      }
     );
 
-    return new Response(JSON.stringify({ user, authToken }), {
+    return new Response(JSON.stringify({ 
+      success: true,
+      message: 'Google login successful', 
+      user, 
+      token: authToken  // Changed from 'authToken' to 'token'
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

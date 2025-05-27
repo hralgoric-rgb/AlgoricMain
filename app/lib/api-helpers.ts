@@ -1,5 +1,6 @@
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/users";
+// const API_BASE_URL = "http://localhost:3000/api/users";
 
 // Helper function for API requests
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
