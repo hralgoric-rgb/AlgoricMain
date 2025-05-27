@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 // Helper function to handle image uploads
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
