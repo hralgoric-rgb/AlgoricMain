@@ -40,6 +40,8 @@ const uploadToCloudinary = (buffer: Buffer, filename: string): Promise<any> => {
   });
 };
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Parse the multipart form data
@@ -87,7 +89,14 @@ export async function POST(request: NextRequest) {
         width: uploadResult.width,
         height: uploadResult.height,
       },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      }
     );
 
   } catch (error) {
@@ -109,10 +118,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Optional: Handle other HTTP methods
 export async function GET() {
   return NextResponse.json(
     { message: 'Method not allowed. Use POST to upload files.' },
     { status: 405 }
   );
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }
