@@ -564,7 +564,7 @@ export default function PropertyForm({
         formData.append("file", image);
 
         // Use our custom API endpoint
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, formData);
+        const response = await axios.post(`https://100gaj.vercel.app/api/upload`, formData);
 
         if (!response.data.success) {
           throw new Error(response.data.error || "Failed to upload image");
