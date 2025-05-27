@@ -9,6 +9,13 @@ cloudinary.config({
 });
 
 // Helper function to handle image uploads
+export async function GET(request: NextRequest) {
+  return NextResponse.json(
+    { message: 'Upload endpoint ready' },
+    { status: 200 }
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
