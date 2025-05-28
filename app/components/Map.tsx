@@ -62,6 +62,7 @@ interface MapProps {
   }>;
   onMarkerClick?: (propertyId: string) => void;
   onBoundsChanged?: (bounds: MapBounds) => void;
+  onMapLoad?: (map: L.Map) => void;
 }
 
 // Component to handle map events and call onBoundsChanged
@@ -147,6 +148,7 @@ const Map = ({
   properties,
   onMarkerClick,
   onBoundsChanged,
+  onMapLoad,
 }: MapProps) => {
   const mapRef = useRef<L.Map>(null);
   const [visibleProperties, setVisibleProperties] = useState<
@@ -180,6 +182,13 @@ const Map = ({
       `Map rendering ${properties.length} properties, ${visibleProperties.length} visible`,
     );
   }, [properties.length, visibleProperties.length]);
+
+  // Handle map instance after initialization
+  useEffect(() => {
+    if (mapRef.current && onMapLoad) {
+      onMapLoad(mapRef.current);
+    }
+  }, [onMapLoad]);
 
   return (
     <MapContainer

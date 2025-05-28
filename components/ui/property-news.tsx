@@ -35,7 +35,7 @@ export function PropertyNewsSection() {
 
       // Using the Gnews API (has a free tier)
       const response = await fetch(
-        `https://gnews.io/api/v4/search?q=real+estate+property+market&lang=en&max=4&page=${pageNum}&apikey=ee109d074f15362d67dd776ff2b449e8`,
+        `https://gnews.io/api/v4/search?q=real+estate+property+market+india&lang=en&max=4&page=${pageNum}&apikey=ee109d074f15362d67dd776ff2b449e8`,
       );
 
       if (!response.ok) {

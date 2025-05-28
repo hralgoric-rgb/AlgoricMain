@@ -199,6 +199,9 @@ export default function PropertyForm({
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [isLoadingCoordinates, setIsLoadingCoordinates] = useState(false);
+  const [geocodeSearch, setGeocodeSearch] = useState("");
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -598,6 +601,87 @@ export default function PropertyForm({
       throw new Error("Failed to upload images");
     }
   };
+
+  // Function to fetch coordinates from OpenStreetMap Nominatim API
+  const fetchCoordinates = async (address: any) => {
+    if (!address.street || !address.city) return;
+
+    setIsLoadingCoordinates(true);
+    try {
+      const query = `${address.street}, ${address.locality || ''}, ${address.city}, ${address.state || ''}, ${address.zipCode || ''}`;
+      const response = await axios.get(`/api/geocode?q=${encodeURIComponent(query)}`);
+
+      if (response.data && response.data[0]) {
+        const { lat, lon } = response.data[0];
+        setFormData(prev => ({
+          ...prev,
+          address: {
+            ...prev.address,
+            coordinates: {
+              latitude: String(lat),
+              longitude: String(lon),
+            },
+          },
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching coordinates:', error);
+      toast.error('Failed to fetch coordinates. Please enter them manually.');
+    } finally {
+      setIsLoadingCoordinates(false);
+    }
+  };
+
+  const handleGeocodeSearch = async () => {
+    if (!geocodeSearch.trim()) {
+      toast.error("Please enter a location to search");
+      return;
+    }
+
+    setIsLoadingCoordinates(true);
+    try {
+      const response = await axios.get(`/api/geocode?q=${encodeURIComponent(geocodeSearch)}`);
+
+      if (response.data && response.data[0]) {
+        const { lat, lon } = response.data[0];
+        setFormData(prev => ({
+          ...prev,
+          address: {
+            ...prev.address,
+            coordinates: {
+              latitude: String(lat),
+              longitude: String(lon),
+            },
+          },
+        }));
+        toast.success("Location coordinates updated!");
+      } else {
+        toast.error("No location found for the given search");
+      }
+    } catch (error) {
+      console.error('Error fetching coordinates:', error);
+      toast.error('Failed to fetch coordinates. Please try again.');
+    } finally {
+      setIsLoadingCoordinates(false);
+    }
+  };
+
+  // Debounce the coordinate fetch to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.address) {
+        fetchCoordinates(formData.address);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [
+    formData.address?.street,
+    formData.address?.city,
+    formData.address?.locality,
+    formData.address?.state,
+    formData.address?.zipCode,
+  ]);
 
   // Clean up image preview URLs on unmount
   useEffect(() => {
@@ -1252,6 +1336,25 @@ export default function PropertyForm({
                       />
                     </div>
 
+                    <div className="space-y-2">
+                      <Label>Search Location for Coordinates</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter location to find coordinates..."
+                          value={geocodeSearch}
+                          onChange={(e) => setGeocodeSearch(e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleGeocodeSearch}
+                          disabled={isLoadingCoordinates}
+                        >
+                          {isLoadingCoordinates ? "Searching..." : "Search"}
+                        </Button>
+                      </div>
+                    </div>
+
                     {/* Location coordinates */}
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
@@ -1288,9 +1391,9 @@ export default function PropertyForm({
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <Input
-                            id="address.coordinates.latitude"
-                            name="address.coordinates.latitude"
-                            value={formData.address.coordinates.latitude}
+                            type="number"
+                            step="any"
+                            value={formData.address?.coordinates?.latitude || ''}
                             onChange={(e) => {
                               const value = e.target.value;
                               setFormData({
@@ -1298,25 +1401,26 @@ export default function PropertyForm({
                                 address: {
                                   ...formData.address,
                                   coordinates: {
-                                    ...formData.address.coordinates,
+                                    ...formData.address?.coordinates,
                                     latitude: value,
                                   },
                                 },
                               });
                             }}
-                            placeholder="Latitude (e.g., 28.7041)"
+                            placeholder="Latitude (e.g., 28.6139)"
                             required
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
+                            disabled={isLoadingCoordinates}
                           />
                           <p className="text-gray-500 text-xs mt-1">
-                            Latitude (North/South position)
+                            {isLoadingCoordinates ? 'Fetching coordinates...' : 'Latitude (North/South position)'}
                           </p>
                         </div>
                         <div>
                           <Input
-                            id="address.coordinates.longitude"
-                            name="address.coordinates.longitude"
-                            value={formData.address.coordinates.longitude}
+                            type="number"
+                            step="any"
+                            value={formData.address?.coordinates?.longitude || ''}
                             onChange={(e) => {
                               const value = e.target.value;
                               setFormData({
@@ -1324,7 +1428,7 @@ export default function PropertyForm({
                                 address: {
                                   ...formData.address,
                                   coordinates: {
-                                    ...formData.address.coordinates,
+                                    ...formData.address?.coordinates,
                                     longitude: value,
                                   },
                                 },
@@ -1333,9 +1437,10 @@ export default function PropertyForm({
                             placeholder="Longitude (e.g., 77.1025)"
                             required
                             className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
+                            disabled={isLoadingCoordinates}
                           />
                           <p className="text-gray-500 text-xs mt-1">
-                            Longitude (East/West position)
+                            {isLoadingCoordinates ? 'Fetching coordinates...' : 'Longitude (East/West position)'}
                           </p>
                         </div>
                       </div>

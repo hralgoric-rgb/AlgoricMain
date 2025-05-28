@@ -835,7 +835,7 @@ const SearchPage = () => {
         // Using GNews API instead of NewsAPI.org
         const response = await axios.get("https://gnews.io/api/v4/search", {
           params: {
-            q: "real estate property market",
+            q: "real estate property market india",
             lang: "en",
             max: 100,
             apikey: "ee109d074f15362d67dd776ff2b449e8", // GNews API key
@@ -1045,6 +1045,22 @@ const SearchPage = () => {
 
   //   fetchFavorites();
   // }, [mockArticles]);
+
+  // If you are using Leaflet, import Map from 'leaflet' at the top:
+  // import type { Map as LeafletMap } from 'leaflet';
+  // If using another map library, use its map instance type.
+  // For now, we'll use 'any' for compatibility:
+  const [mapInstance, setMapInstance] = useState<any>(null);
+
+  useEffect(() => {
+    if (showMap) {
+      setTimeout(() => {
+        if (mapInstance) {
+          mapInstance.invalidateSize();
+        }
+      }, 1500);
+    }
+  }, [showMap, mapInstance]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -1416,11 +1432,14 @@ const SearchPage = () => {
       >
         {/* Map Section */}
         <div
-          className={`${showMap ? "block" : "hidden"} md:block md:w-1/2 relative h-[calc(100vh-150px)] md:h-auto`}
+          className={`${
+            showMap ? "block" : "hidden"
+          } md:block flex-1 h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] sticky top-16 overflow-hidden`}
         >
           <Map
             center={mapCenter}
             zoom={zoom}
+            onMapLoad={setMapInstance}
             properties={filteredProperties.map((property) => ({
               id: property._id,
               coordinates: property.address?.location?.coordinates

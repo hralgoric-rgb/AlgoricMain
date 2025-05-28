@@ -1,6 +1,14 @@
 /* Map z-index overrides */
 .leaflet-container {
   z-index: 10 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .leaflet-container {
+    height: calc(100vh - 4rem) !important;
+  }
 }
 
 .leaflet-pane,
@@ -22,4 +30,4 @@
 
 .filter-modal {
   z-index: 10000 !important;
-} 
+}

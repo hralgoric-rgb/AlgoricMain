@@ -252,6 +252,11 @@ export default function UserProfile() {
       // Call API to delete the property
       const response = await axios.delete(
         `/api/properties/${propertyToDelete._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.data.success) {
