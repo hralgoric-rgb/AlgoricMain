@@ -75,7 +75,7 @@ export default function SupportCenter() {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               <p className="text-xl md:text-2xl mb-10 max-w-2xl mx-auto drop-shadow-sm">
-              We`&apos;`re here to help! Browse our support resources, find answers to common questions, or get in touch with our support team.
+              We&apos;re here to help! Browse our support resources, find answers to common questions, or get in touch with our support team.
               </p>
             </motion.div>
 
@@ -201,7 +201,7 @@ export default function SupportCenter() {
               className="space-y-4"
             >
               <p className="text-lg text-black/80">
-                <strong>Email:</strong> support@estateelite.com
+                <strong>Email:</strong> support@100gaj.com
               </p>
               <p className="text-lg text-black/80">
                 <strong>Phone:</strong> +91-123-456-7890

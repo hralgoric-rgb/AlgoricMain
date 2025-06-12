@@ -6,10 +6,8 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Link from "next/link";
 import Image from "next/image";
-import { useFavorites } from "../contexts/FavoritesContext";
-import { toast } from "@/components/ui/use-toast";
+
 import {
-  Heart,
   Star,
   Building,
   Search,
@@ -44,8 +42,6 @@ export default function BuildersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
-
-  const { toggleFavorite, isFavorite } = useFavorites();
 
   // Fetch builders from API
   useEffect(() => {
@@ -96,34 +92,10 @@ export default function BuildersPage() {
     } else if (activeFilter === "established") {
       // Assuming established means more than 10 completed projects
       filtered = filtered.filter((builder) => builder.completed > 10);
-    } else if (activeFilter === "favorites") {
-      filtered = filtered.filter((builder) =>
-        isFavorite(builder._id, "builders"),
-      );
     }
 
     setFilteredBuilders(filtered);
-  }, [searchTerm, builders, activeFilter, isFavorite]);
-
-  const handleToggleFavorite = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    try{
-      await toggleFavorite(id, "builders");
-    }catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive",
-      });
-    }
-    
-
-    // Show toast notification
-    
-  };
+  }, [searchTerm, builders, activeFilter]);
 
   // Function to render stars based on rating
   const renderStars = (rating: number) => {
@@ -178,7 +150,6 @@ export default function BuildersPage() {
     { id: "all", label: "All Builders", icon: Building },
     { id: "top-rated", label: "Top Rated", icon: Star },
     { id: "established", label: "Established", icon: Award },
-    { id: "favorites", label: "Favorites", icon: Heart },
   ];
 
   return (
@@ -225,8 +196,8 @@ export default function BuildersPage() {
             </h1>
 
             <p className="text-xl text-gray-300 mb-10 max-w-2xl">
-              Connect with India`&apos;`s most prestigious builders to create
-              the home you`&apos;`ve always envisioned.
+              Connect with India&apos;s most prestigious builders to create the
+              home you&apos;ve always envisioned.
             </p>
 
             <motion.div
@@ -396,21 +367,6 @@ export default function BuildersPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
 
-                        {/* Favorite Button */}
-                        <button
-                          onClick={(e) => handleToggleFavorite(builder._id, e)}
-                          className="z-20 absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
-                        >
-                          <Heart
-                            size={20}
-                            className={`${
-                              isFavorite(builder._id, "builders")
-                                ? "fill-red-500 text-red-500"
-                                : "text-white"
-                            }`}
-                          />
-                        </button>
-
                         {/* Logo Badge */}
                         <div className="absolute bottom-0 left-0 p-4 flex items-end">
                           <div className="flex items-center gap-3">
@@ -531,7 +487,7 @@ export default function BuildersPage() {
                 No builders found
               </h3>
               <p className="text-gray-400 max-w-md mx-auto">
-                We couldn`&apos;`t find any builders matching your search
+                We couldn&apos;t find any builders matching your search
                 criteria. Try adjusting your search or explore our full list of
                 builders.
               </p>

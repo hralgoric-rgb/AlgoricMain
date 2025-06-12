@@ -758,7 +758,7 @@ export default function CompareProperties() {
 
                 <p className="mt-6 text-gray-400 text-sm max-w-md mx-auto">
                   Your favorite properties will appear here for easy comparison
-                  once you`&apos;`ve added them
+                  once you&apos;ve added them
                 </p>
               </motion.div>
             )}
@@ -772,7 +772,7 @@ export default function CompareProperties() {
               >
                 <div className="bg-orange-600/10 rounded-xl p-4 mb-6 text-center max-w-xl">
                   <p className="text-lg">
-                    You`&apos;`ve selected two properties! Compare them now to
+                    You&apos;ve selected two properties! Compare them now to
                     see a detailed side-by-side analysis.
                   </p>
                 </div>

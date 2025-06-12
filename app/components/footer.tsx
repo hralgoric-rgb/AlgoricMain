@@ -249,7 +249,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start group">
                 <span className="w-full group-hover:text-beige transition-all duration-300 break-words whitespace-normal">
-                  contact@estateelite.com
+                  contact@100gaj.com
                 </span>
               </li>
               <li className="flex items-start group">

@@ -62,7 +62,7 @@ export default function Newsletter() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-brown-dark mb-2">Thank you for subscribing!</h3>
-                <p className="text-brown">You`&apos;`ll receive our latest updates in your inbox.</p>
+                <p className="text-brown">You&apos;ll receive our latest updates in your inbox.</p>
               </div>
             )}
             <p className="text-xs text-brown-dark/60 mt-4">

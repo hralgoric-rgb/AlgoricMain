@@ -25,8 +25,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { FavoritesAPI } from "../lib/api-helpers";
 
-
-
 // Mock property data
 const priceRanges = [
   { label: "Any Price", value: [0, 100000000] },
@@ -266,7 +264,7 @@ const SearchPage = () => {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [showMap, setShowMap] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map' | 'split'>('list');
   const [selectedFilters, setSelectedFilters] = useState<FilterState>({
     priceRange: [0, 5000000],
     propertyType: [],
@@ -291,23 +289,22 @@ const SearchPage = () => {
   );
   const [favorites, setFavorites] = useState<Property[]>([]);
 
-  const fetchFavorite = async () =>{
-    if(token){
-      try{
+  const fetchFavorite = async () => {
+    if (token) {
+      try {
         const propertiesData = await FavoritesAPI.getProperties();
         setFavorites(propertiesData.favorites);
-      }
-      catch(error){
+      } catch (error) {
         console.error("Error fetching favorites:", error);
         toast.error("Failed to fetch favorites");
       }
     }
-  }
-  useEffect(()=>{
-    if(token){
+  };
+  useEffect(() => {
+    if (token) {
       fetchFavorite();
     }
-  },[token]);
+  }, [token]);
   const router = useRouter();
   // Property types from backend
   const propertyTypes = [
@@ -735,7 +732,7 @@ const SearchPage = () => {
     });
 
     setFilteredProperties(filtered);
-  },[allProperties,searchQuery,selectedFilters]);
+  }, [allProperties, searchQuery, selectedFilters]);
 
   // Move useEffect to the end of the component
   useEffect(() => {
@@ -758,13 +755,13 @@ const SearchPage = () => {
     }
   }, [allProperties, filterProperties]);
 
-  // Detect screen size and set initial map visibility
+  // Detect screen size and set initial view mode
   useEffect(() => {
     const handleResize = () => {
-      // On larger screens (md and up), both map and list are visible
+      // On larger screens (md and up), use split view
       // On mobile, default to showing the list view
       const isMobile = window.innerWidth < 768;
-      setShowMap(!isMobile);
+      setViewMode(isMobile ? 'list' : 'split');
     };
 
     // Set initial state
@@ -794,7 +791,9 @@ const SearchPage = () => {
   const toggleFavorite = async (propertyId: string) => {
     try {
       // Check if property is already in favorites
-      const isFavorited = favorites.some((property) => property._id === propertyId);
+      const isFavorited = favorites.some(
+        (property) => property._id === propertyId,
+      );
 
       if (isFavorited) {
         // Remove from favorites
@@ -1051,16 +1050,76 @@ const SearchPage = () => {
   // If using another map library, use its map instance type.
   // For now, we'll use 'any' for compatibility:
   const [mapInstance, setMapInstance] = useState<any>(null);
+  // Effect to handle resize and map invalidation
+  useEffect(() => {
+    const handleResize = () => {
+      // On larger screens (md and up), use split view
+      // On mobile, keep current view mode but ensure map is properly sized
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        setViewMode('split');
+      }
+      
+      // If map is visible, make sure to resize it
+      if ((viewMode === 'map' || viewMode === 'split') && mapInstance) {
+        setTimeout(() => {
+          mapInstance.invalidateSize();
+        }, 300);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener("resize", handleResize);
+
+    // Clean up
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mapInstance, viewMode]);
 
   useEffect(() => {
-    if (showMap) {
-      setTimeout(() => {
-        if (mapInstance) {
+    if ((viewMode === 'map' || viewMode === 'split') && mapInstance) {
+      // Use multiple timeouts for better reliability across different devices
+      const timeouts = [100, 300, 600, 1000].map(delay =>
+        setTimeout(() => {
           mapInstance.invalidateSize();
-        }
-      }, 1500);
+        }, delay)
+      );
+      
+      return () => {
+        // Clear all timeouts on cleanup
+        timeouts.forEach(timeout => clearTimeout(timeout));
+      };
     }
-  }, [showMap, mapInstance]);
+  }, [viewMode, mapInstance]);
+
+  // Create ResizeObserver for reliable map sizing
+  useEffect(() => {
+    if (!mapInstance) return;
+    
+    // Try to find the map container element
+    const mapContainer = document.getElementById('map-container');
+    if (!mapContainer) return;
+    
+    // Create a ResizeObserver to watch for container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      // Debounce the resize to avoid too many invalidations
+      if (mapInstance) {
+        setTimeout(() => {
+          mapInstance.invalidateSize();
+        }, 100);
+      }
+    });
+    
+    // Start observing the map container
+    resizeObserver.observe(mapContainer);
+    
+    return () => {
+      // Cleanup observer on component unmount
+      resizeObserver.disconnect();
+    };
+  }, [mapInstance]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -1071,7 +1130,7 @@ const SearchPage = () => {
         <div className="container mx-auto px-0 md:px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="hidden md:flex items-center pl-4 md:pl-0">
-              <Image src="/logo.png" alt="100Gaj" width={64} height={64}/>
+              <Image src="/logo.png" alt="100Gaj" width={64} height={64} />
             </div>
 
             <div className="flex items-center gap-3 flex-1 px-4 md:px-0 md:ml-8 md:max-w-xl">
@@ -1405,25 +1464,25 @@ const SearchPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Map Toggle Button - Only visible on small screens */}
+      {/* Mobile View Toggle Buttons - Only visible on small screens */}
       <div className="md:hidden sticky top-[85px] z-20 bg-black py-2 px-4 flex justify-between border-b border-gray-800">
-        <Image src="/logo.png" height={64} width={64} alt="100Gaj"/>
-        <button
-          onClick={() => setShowMap(!showMap)}
-          className="px-3 py-1.5 bg-orange-500 text-white rounded-md text-sm font-medium flex items-center gap-1.5"
-        >
-          {showMap ? (
-            <>
-              <FaList className="h-3 w-3" />
-              <span>Show List</span>
-            </>
-          ) : (
-            <>
-              <FaMap className="h-3 w-3" />
-              <span>Show Map</span>
-            </>
-          )}
-        </button>
+        <Image src="/logo.png" height={64} width={64} alt="100Gaj" />
+        <div className="flex">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-3 py-1.5 ${viewMode === 'list' ? 'bg-orange-500' : 'bg-gray-700'} text-white rounded-l-md text-sm font-medium flex items-center gap-1.5`}
+          >
+            <FaList className="h-3 w-3" />
+            <span>List</span>
+          </button>
+          <button
+            onClick={() => setViewMode('map')}
+            className={`px-3 py-1.5 ${viewMode === 'map' ? 'bg-orange-500' : 'bg-gray-700'} text-white rounded-r-md text-sm font-medium flex items-center gap-1.5`}
+          >
+            <FaMap className="h-3 w-3" />
+            <span>Map</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -1432,11 +1491,14 @@ const SearchPage = () => {
       >
         {/* Map Section */}
         <div
+          id="map-container"
           className={`${
-            showMap ? "block" : "hidden"
-          } md:block flex-1 h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] sticky top-16 overflow-hidden`}
+            viewMode === 'list' ? "hidden md:block" : "block"
+          } flex-1 h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] sticky top-16 overflow-hidden`}
+          style={{ display: (viewMode === 'map' || viewMode === 'split' || window.innerWidth >= 768) ? 'block' : 'none' }}
         >
           <Map
+            key={`map-${viewMode}`} // Force remount on view mode change
             center={mapCenter}
             zoom={zoom}
             onMapLoad={setMapInstance}
@@ -1470,7 +1532,10 @@ const SearchPage = () => {
               onClick={() => {
                 if (mapBounds) {
                   searchPropertiesInMapBounds();
-                  setShowMap(false); // Hide map after search
+                  // On mobile, switch to list view after search
+                  if (window.innerWidth < 768) {
+                    setViewMode('list');
+                  }
                 }
               }}
               className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm hover:bg-orange-600 transition-colors font-bold"
@@ -1479,13 +1544,13 @@ const SearchPage = () => {
             </button>
 
             {/* List view toggle button - only visible on mobile when map is shown */}
-            
           </div>
         </div>
 
         {/* Properties List + Articles Section */}
         <div
-          className={`${!showMap ? "block" : "hidden"} md:block md:w-1/2 bg-black overflow-y-auto`}
+          className={`${viewMode === 'map' ? "hidden md:block" : "block"} md:w-1/2 bg-black overflow-y-auto`}
+          style={{ display: (viewMode === 'list' || viewMode === 'split' || window.innerWidth >= 768) ? 'block' : 'none' }}
         >
           <div className="p-4 md:p-6">
             {/* Properties Count + Article Toggle */}
@@ -1527,9 +1592,12 @@ const SearchPage = () => {
                         animate={{ opacity: 1 }}
                         className={`bg-gray-900 rounded-md shadow-orange-500 shadow-md overflow-hidden hover:shadow-md transition-shadow text-white`}
                       >
-                        <div className="flex flex-col md:flex-row cursor-pointer" onClick={() => {
-                          router.push(`/search/${property._id}`)
-                        }}>
+                        <div
+                          className="flex flex-col md:flex-row cursor-pointer"
+                          onClick={() => {
+                            router.push(`/search/${property._id}`);
+                          }}
+                        >
                           <div className="relative md:w-2/5">
                             <img
                               src={
@@ -1558,7 +1626,14 @@ const SearchPage = () => {
                               className="absolute top-2 left-2 h-8 w-8 flex items-center justify-center bg-white/80 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleFavorite(property._id)}}
+                                if (!token) {
+                                  toast.error(
+                                    "Please login to add to favorites",
+                                  );
+                                } else {
+                                  toggleFavorite(property._id);
+                                }
+                              }}
                               style={{
                                 left: newlyAddedProperties.has(property._id)
                                   ? "55px"

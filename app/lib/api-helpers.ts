@@ -1,14 +1,14 @@
 // API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/users";
-// const API_BASE_URL = "http://localhost:3000/api/users";
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/users";
+const API_BASE_URL = "http://localhost:3000/api/users";
 
 // Helper function for API requests
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   try {
     // Get auth token from sessionStorage if we're in a browser environment
     let token;
-    if (typeof window !== 'undefined') {
-      token = sessionStorage.getItem('authToken');
+    if (typeof window !== "undefined") {
+      token = sessionStorage.getItem("authToken");
     }
 
     const url = `${API_BASE_URL}${endpoint}`;
@@ -16,7 +16,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.headers || {}),
       },
       credentials: "include", // Include cookies for authentication
@@ -36,7 +36,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 // User API helpers
 export const UserAPI = {
   getProfile: () => apiRequest("/profile"),
-  updateProfile: (userData: any) => 
+  updateProfile: (userData: any) =>
     apiRequest("/profile", {
       method: "PUT",
       body: JSON.stringify(userData),
@@ -46,11 +46,14 @@ export const UserAPI = {
 // Property API helpers
 export const PropertyAPI = {
   getAll: (params?: Record<string, string>) => {
-    const queryString = params ? `?${new URLSearchParams(params).toString()}` : "";
+    const queryString = params
+      ? `?${new URLSearchParams(params).toString()}`
+      : "";
     return apiRequest(`/properties${queryString}`);
   },
   getById: (id: string) => apiRequest(`/properties/${id}`),
-  search: (query: string) => apiRequest(`/properties/search?q=${encodeURIComponent(query)}`),
+  search: (query: string) =>
+    apiRequest(`/properties/search?q=${encodeURIComponent(query)}`),
   getRecommended: () => apiRequest("/properties/recommended"),
   getFeatured: () => apiRequest("/properties/featured"),
 };
@@ -78,12 +81,12 @@ export const LocalityAPI = {
 
 // User authentication API helpers
 export const AuthAPI = {
-  login: (email: string, password: string) => 
+  login: (email: string, password: string) =>
     apiRequest("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
-  register: (userData: any) => 
+  register: (userData: any) =>
     apiRequest("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
@@ -98,44 +101,44 @@ export const FavoritesAPI = {
   getAgents: () => apiRequest("/favorites/agents"),
   getBuilders: () => apiRequest("/favorites/builders"),
   getLocalities: () => apiRequest("/favorites/localities"),
-  
-  addProperty: (id: string) => 
+
+  addProperty: (id: string) =>
     apiRequest("/favorites/properties", {
       method: "POST",
       body: JSON.stringify({ propertyId: id }),
     }),
-  removeProperty: (id: string) => 
+  removeProperty: (id: string) =>
     apiRequest(`/favorites/${id}`, {
       method: "DELETE",
     }),
-    
-  addAgent: (id: string) => 
+
+  addAgent: (id: string) =>
     apiRequest("/favorites/agents", {
       method: "POST",
       body: JSON.stringify({ agentId: id }),
     }),
-  removeAgent: (id: string) => 
+  removeAgent: (id: string) =>
     apiRequest(`/favorites/agents/${id}`, {
       method: "DELETE",
     }),
-    
-  addBuilder: (id: string) => 
+
+  addBuilder: (id: string) =>
     apiRequest("/favorites/builders", {
       method: "POST",
       body: JSON.stringify({ builderId: id }),
     }),
-  removeBuilder: (id: string) => 
+  removeBuilder: (id: string) =>
     apiRequest(`/favorites/builders/${id}`, {
       method: "DELETE",
     }),
-    
-  addLocality: (id: string) => 
+
+  addLocality: (id: string) =>
     apiRequest("/favorites/localities", {
       method: "POST",
       body: JSON.stringify({ localityId: id }),
     }),
-  removeLocality: (id: string) => 
+  removeLocality: (id: string) =>
     apiRequest(`/favorites/localities/${id}`, {
       method: "DELETE",
     }),
-}; 
+};

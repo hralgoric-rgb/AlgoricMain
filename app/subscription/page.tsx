@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 import { PricingUI } from "@/components/blocks/pricing";
+import { useRouter } from "next/navigation";
 
 export default function Pricing() {
+  const router = useRouter();
   // const [isAnnual, setIsAnnual] = useState(true);
   // const [processing, setProcessing] = useState(false);
   // const router = useRouter();
@@ -68,7 +70,7 @@ export default function Pricing() {
       ],
       description: "Perfect for individuals and small projects",
       buttonText: "Get Started",
-      href: "/sign-up",
+      href: "/free",
       isPopular: false,
     },
     {
@@ -85,7 +87,7 @@ export default function Pricing() {
       ],
       description: "Ideal for growing teams and businesses",
       buttonText: "Get Started",
-      href: "/sign-up",
+      href: "/free",
       isPopular: true,
     },
     {
@@ -490,10 +492,10 @@ export default function Pricing() {
                 Ready to Unlock Premium Features?
               </h3>
               <p className="text-white/90 max-w-2xl mx-auto mb-6">
-                Join thousands of satisfied users who`&apos;`ve upgraded to premium for
+                Join thousands of satisfied users who&apos;ve upgraded to premium for
                 an enhanced real estate experience
               </p>
-              <button className="px-8 py-4 bg-white text-orange-500 font-semibold rounded-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center mx-auto">
+              <button className="px-8 py-4 bg-white text-orange-500 font-semibold rounded-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center mx-auto" onClick={() => router.push("/free")}>
                 <span>Upgrade Now</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

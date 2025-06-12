@@ -136,28 +136,28 @@ export default function Home() {
     {
       name: "Rahul Sharma",
       role: "Luxury Property Specialist",
-      image: "/canada.jpeg",
+      image: "/a1.jpg",
       properties: 24,
       rating: 4.9,
     },
     {
       name: "Priya Patel",
       role: "Commercial Real Estate",
-      image: "/image1.jpg",
+      image: "/a2.jpg",
       properties: 18,
       rating: 4.7,
     },
     {
       name: "Vikram Singh",
       role: "Investment Advisor",
-      image: "/dwarka.jpeg",
+      image: "/a4.jpg",
       properties: 31,
       rating: 4.8,
     },
     {
       name: "Neha Khanna",
       role: "Residential Expert",
-      image: "/image3.webp",
+      image: "/a5.jpg",
       properties: 27,
       rating: 4.9,
     },
@@ -650,7 +650,7 @@ export default function Home() {
               viewport={{ once: true }}
               className="text-lg text-gray-600 max-w-2xl mx-auto"
             >
-              Partner with India`&apos;`s most reputable builders known for
+              Partner with India&apos;s most reputable builders known for
               their quality construction, timely delivery, and innovative design
               principles
             </motion.p>

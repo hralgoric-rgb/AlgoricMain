@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-
 // Define type for news articles
 type NewsArticle = {
   title: string;
@@ -16,26 +15,33 @@ type NewsArticle = {
   };
 };
 
-export function PropertyNewsSection() {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+// Define pagination settings
+type PaginationSettings = {
+  articlesPerPage: number;
+  currentPage: number;
+  totalPages: number;
+};
 
-  // Define fetchPropertyNews outside useEffect so it can be reused
-  const fetchPropertyNews = async (pageNum = 1, loadMore = false) => {
+export function PropertyNewsSection() {
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
+  const [displayedArticles, setDisplayedArticles] = useState<NewsArticle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationSettings>({
+    articlesPerPage: 4,
+    currentPage: 1,
+    totalPages: 1,
+  });
+
+  // Fetch all property news at once
+  const fetchAllPropertyNews = async () => {
     try {
-      if (pageNum === 1) {
-        setIsLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
+      setIsLoading(true);
 
       // Using the Gnews API (has a free tier)
+      const query = `"real estate" AND India`;
       const response = await fetch(
-        `https://gnews.io/api/v4/search?q=real+estate+property+market+india&lang=en&max=4&page=${pageNum}&apikey=ee109d074f15362d67dd776ff2b449e8`,
+        `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&country=in&lang=en&max=100&sortby=publishedAt&apikey=ee109d074f15362d67dd776ff2b449e8`,
       );
 
       if (!response.ok) {
@@ -45,102 +51,128 @@ export function PropertyNewsSection() {
       const data = await response.json();
 
       if (data.articles && Array.isArray(data.articles)) {
-        if (loadMore) {
-          setArticles(prev => [...prev, ...data.articles]);
-        } else {
-          setArticles(data.articles);
-        }
-        
-        // If we received fewer articles than requested, there are no more to load
-        setHasMore(data.articles.length === 4);
+        // Store all articles and update pagination settings
+        const articles = data.articles;
+        setAllArticles(articles);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(
+          articles.length / pagination.articlesPerPage,
+        );
+
+        // Update pagination settings
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: totalPages,
+        }));
+
+        // Set first page of articles for display
+        updateDisplayedArticles(articles, 1, pagination.articlesPerPage);
       } else {
         throw new Error("Invalid response format");
       }
 
       setIsLoading(false);
-      setIsLoadingMore(false);
     } catch (err) {
       console.error("Error fetching property news:", err);
       setError("Unable to load the latest property news");
       setIsLoading(false);
-      setIsLoadingMore(false);
 
-      // Fallback content in case the API fails
-      const fallbackArticles: NewsArticle[] = [
-          {
-            title: "Housing Market Trends: What to Expect in 2023",
-            description:
-              "Experts predict steady growth in the housing market with increased focus on sustainable properties.",
-            url: "#",
-            image:
-              "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=773&q=80",
-            publishedAt: "2023-06-15T09:30:00Z",
-            source: { name: "Property Insights" },
-          },
-          {
-            title: "New Tax Benefits for First-Time Home Buyers",
-            description:
-              "Government introduces new incentives to help first-time buyers enter the property market.",
-            url: "#",
-            image:
-              "https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=996&q=80",
-            publishedAt: "2023-06-12T14:45:00Z",
-            source: { name: "Real Estate Daily" },
-          },
-          {
-            title: "Smart Home Technology: The Future of Living",
-            description:
-              "How smart technology is revolutionizing homes and changing buyer expectations.",
-            url: "#",
-            image:
-              "https://images.unsplash.com/photo-1558002038-bb4237d2e3e9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-            publishedAt: "2023-06-10T11:20:00Z",
-            source: { name: "Tech & Homes" },
-          },
-          {
-            title: "Commercial Real Estate: Post-Pandemic Recovery",
-            description:
-              "Office spaces see gradual return as companies adopt hybrid work models.",
-            url: "#",
-            image:
-              "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1169&q=80",
-            publishedAt: "2023-06-08T16:10:00Z",
-            source: { name: "Business Property Review" },
-          },
+      // Generate fallback content in case the API fails
+      const generateFallbackArticles = (count: number = 40) => {
+        const topics = [
+          "Housing Market Trends",
+          "Tax Benefits for Home Buyers",
+          "Smart Home Technology",
+          "Commercial Real Estate",
+          "Sustainable Housing",
+          "Luxury Properties",
+          "Rental Market Analysis",
+          "Property Investment",
+          "Real Estate Technology",
+          "Urban Development",
         ];
 
-        setArticles(fallbackArticles);
-      }
-    };
+        const fallbackArticles: NewsArticle[] = Array(count)
+          .fill(0)
+          .map((_, index) => {
+            const topicIndex = index % topics.length;
+            return {
+              title: `${topics[topicIndex]}: Latest Updates ${index + 1}`,
+              description: `The latest trends and insights about ${topics[topicIndex].toLowerCase()} in the real estate market. Stay informed with our comprehensive analysis.`,
+              url: "#",
+              image: `https://images.unsplash.com/photo-${1560518883 + index * 17}-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80`,
+              publishedAt: new Date(
+                Date.now() - index * 86400000,
+              ).toISOString(),
+              source: {
+                name:
+                  index % 2 === 0 ? "Property Insights" : "Real Estate Daily",
+              },
+            };
+          });
 
-  useEffect(() => {
-    fetchPropertyNews(1, false);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  
-  const loadMoreArticles = async () => {
-    if (isLoadingMore || !hasMore) return;
-    
-    const nextPage = page + 1;
-    setPage(nextPage);
-    
-    try {
-      await fetchPropertyNews(nextPage, true);
-    } catch (err) {
-      console.error("Error loading more articles:", err);
-      
-      // Generate 8 more fallback articles when API fails
-      const moreFallbackArticles: NewsArticle[] = Array(8).fill(0).map((_, index) => ({
-        title: `Property Market Insight #${articles.length + index + 1}`,
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Sed euismod, nisl eget ultricies ultrices, nisl nisl aliquam nisl.",
-        url: "#",
-        image: `https://images.unsplash.com/photo-${1560518883 + (index * 10)}-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80`,
-        publishedAt: new Date(Date.now() - index * 86400000).toISOString(),
-        source: { name: "Property Insights" }
-      }));
-      
-      setArticles(prev => [...prev, ...moreFallbackArticles]);
+        setAllArticles(fallbackArticles);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(
+          fallbackArticles.length / pagination.articlesPerPage,
+        );
+
+        // Update pagination settings
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: totalPages,
+        }));
+
+        // Set first page of articles for display
+        updateDisplayedArticles(
+          fallbackArticles,
+          1,
+          pagination.articlesPerPage,
+        );
+      };
+
+      generateFallbackArticles(40);
     }
   };
+
+  // Helper function to update displayed articles based on page number
+  const updateDisplayedArticles = (
+    allArticles: NewsArticle[],
+    page: number,
+    articlesPerPage: number,
+  ) => {
+    const startIndex = (page - 1) * articlesPerPage;
+    const endIndex = startIndex + articlesPerPage;
+    const articlesToShow = allArticles.slice(startIndex, endIndex);
+    setDisplayedArticles(articlesToShow);
+  };
+
+  // Handle page change
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber < 1 || pageNumber > pagination.totalPages) return;
+
+    setPagination((prev) => ({
+      ...prev,
+      currentPage: pageNumber,
+    }));
+
+    updateDisplayedArticles(
+      allArticles,
+      pageNumber,
+      pagination.articlesPerPage,
+    );
+
+    // Scroll to top of the articles section
+    document
+      .getElementById("news-articles")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  useEffect(() => {
+    fetchAllPropertyNews();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatDate = (dateString: string): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -151,7 +183,7 @@ export function PropertyNewsSection() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  if (isLoading && !articles.length) {
+  if (isLoading && !displayedArticles.length) {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -163,8 +195,11 @@ export function PropertyNewsSection() {
     <div>
       {error && <div className="text-center text-orange-500 mb-8">{error}</div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {articles.map((article, index) => (
+      <div
+        id="news-articles"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        {displayedArticles.map((article, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}
@@ -241,38 +276,116 @@ export function PropertyNewsSection() {
         viewport={{ once: true }}
         className="mt-12 text-center"
       >
-        <button
-          onClick={loadMoreArticles}
-          disabled={isLoadingMore || !hasMore}
-          className={`px-6 py-3 border border-orange-500/30 text-orange-400 font-medium rounded-md hover:bg-orange-500/10 transition-all duration-300 inline-flex items-center ${!hasMore ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {isLoadingMore ? (
-            <>
-              <div className="animate-spin w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full mr-2"></div>
-              Loading More...
-            </>
-          ) : !hasMore ? (
-            "No More Articles"
-          ) : (
-            <>
-              Load More Articles
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 ml-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 12h14m-7 7l7-7-7-7"
-                />
-              </svg>
-            </>
+        <div className="flex flex-wrap justify-center items-center gap-2">
+          {/* Previous page button */}
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className={`px-3 py-2 border border-orange-500/30 text-orange-400 font-medium rounded-md hover:bg-orange-500/10 transition-all duration-300 ${
+              pagination.currentPage === 1
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Page number buttons */}
+          {Array.from(
+            { length: Math.min(pagination.totalPages, 5) },
+            (_, i) => {
+              // Logic to show pages around current page
+              let pageToShow;
+              if (pagination.totalPages <= 5) {
+                // If we have 5 or fewer pages, show all pages
+                pageToShow = i + 1;
+              } else if (pagination.currentPage <= 3) {
+                // If we're on pages 1-3, show pages 1-5
+                pageToShow = i + 1;
+              } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                // If we're on the last 3 pages, show the last 5 pages
+                pageToShow = pagination.totalPages - 4 + i;
+              } else {
+                // Otherwise show 2 pages before and after current page
+                pageToShow = pagination.currentPage - 2 + i;
+              }
+
+              return (
+                <button
+                  key={pageToShow}
+                  onClick={() => handlePageChange(pageToShow)}
+                  className={`w-10 h-10 rounded-md font-medium transition-all duration-300 ${
+                    pagination.currentPage === pageToShow
+                      ? "bg-orange-500 text-white"
+                      : "border border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                  }`}
+                >
+                  {pageToShow}
+                </button>
+              );
+            },
           )}
-        </button>
+
+          {/* Show ellipsis if there are more pages */}
+          {pagination.totalPages > 5 &&
+            pagination.currentPage < pagination.totalPages - 2 && (
+              <span className="text-orange-400 px-1">...</span>
+            )}
+
+          {/* Show last page if not visible in the current range */}
+          {pagination.totalPages > 5 &&
+            pagination.currentPage < pagination.totalPages - 2 && (
+              <button
+                onClick={() => handlePageChange(pagination.totalPages)}
+                className="w-10 h-10 rounded-md font-medium border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 transition-all duration-300"
+              >
+                {pagination.totalPages}
+              </button>
+            )}
+
+          {/* Next page button */}
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
+            className={`px-3 py-2 border border-orange-500/30 text-orange-400 font-medium rounded-md hover:bg-orange-500/10 transition-all duration-300 ${
+              pagination.currentPage === pagination.totalPages
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="text-gray-500 text-sm mt-4">
+          Page {pagination.currentPage} of {pagination.totalPages}
+        </div>
       </motion.div>
     </div>
   );

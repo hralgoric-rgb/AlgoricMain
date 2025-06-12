@@ -80,12 +80,24 @@ interface Agent {
 interface Builder {
   _id: string;
   title: string;
-  logo?: string;
-  established?: number;
-  projects?: number;
-  specializations?: string[];
+  image: string;
+  logo: string;
+  projects: number;
   description: string;
+  established: string;
+  headquarters: string;
+  specialization: string;
   rating: number;
+  completed: number;
+  ongoing: number;
+  about?: string;
+  reviews?: Array<{ user: string; rating: number; date: string; text: string }>;
+  contact?: {
+    email?: string;
+    phone?: string;
+    website?: string;
+    address?: string;
+  };
 }
 
 export default function FavoritesPage() {
@@ -120,7 +132,6 @@ export default function FavoritesPage() {
       switch (activeTab) {
         case "properties":
           const propertiesData = await FavoritesAPI.getProperties();
-
           setProperties(propertiesData.favorites || []);
           break;
         case "agents":
@@ -129,13 +140,43 @@ export default function FavoritesPage() {
           break;
         case "builders":
           const buildersData = await FavoritesAPI.getBuilders();
-
-          setBuilders(buildersData.favorites || []);
+          
+          if (buildersData.favorites && buildersData.favorites.length > 0) {
+            toast.info(`Loading details for ${buildersData.favorites.length} builders...`);
+            
+            // Fetch detailed information for each builder
+            const builderDetailsPromises = buildersData.favorites.map(async (builder: any) => {
+              try {
+                const response = await fetch(`/api/builders/${builder._id}`);
+                if (response.ok) {
+                  const data = await response.json();
+                  return data.builder;
+                }
+                console.warn(`Could not fetch details for builder ${builder._id}, using basic data`);
+                return builder; // Fall back to basic data if fetch fails
+              } catch (error) {
+                console.error(`Error fetching details for builder ${builder._id}:`, error);
+                return builder; // Fall back to basic data if fetch fails
+              }
+            });
+            
+            const builderDetails = await Promise.all(builderDetailsPromises);
+            const validBuilders = builderDetails.filter(builder => builder !== null && builder !== undefined);
+            
+            if (validBuilders.length < builderDetails.length) {
+              toast.warning(`Some builder details could not be loaded completely.`);
+            }
+            
+            setBuilders(validBuilders);
+          } else {
+            setBuilders([]);
+          }
           break;
       }
     } catch (error) {
       console.error("Error fetching favorites:", error);
       setError("Failed to load favorites. Please try again later.");
+      toast.error("Failed to load favorites. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -147,23 +188,29 @@ export default function FavoritesPage() {
 
   const removeFromFavorites = async (type: string, id: string) => {
     try {
+      toast.info(`Removing ${type} from favorites...`);
+      
       switch (type) {
         case "property":
           await FavoritesAPI.removeProperty(id);
           setProperties(properties.filter((p) => p._id !== id));
+          toast.success(`Property removed from favorites`);
           break;
         case "agent":
           await FavoritesAPI.removeAgent(id);
           setAgents(agents.filter((a) => a._id !== id));
+          toast.success(`Agent removed from favorites`);
           break;
         case "builder":
           await FavoritesAPI.removeBuilder(id);
           setBuilders(builders.filter((b) => b._id !== id));
+          toast.success(`Builder removed from favorites`);
           break;
       }
     } catch (error) {
       console.error(`Error removing ${type} from favorites:`, error);
       setError(`Failed to remove ${type} from favorites. Please try again.`);
+      toast.error(`Failed to remove ${type} from favorites. Please try again.`);
     }
   };
 
@@ -491,24 +538,27 @@ function BuilderCard({
   builder: Builder;
   onRemove: () => void;
 }) {
+  const [imageError, setImageError] = useState(false);
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="bg-gray-800 border border-gray-700 text-white">
-        <div className="relative h-48 w-full">
+      <Card className="bg-gray-800 border border-gray-700 text-white overflow-hidden hover:border-orange-500 transition-all duration-300 h-full flex flex-col">
+        <div className="relative h-48 w-full bg-gray-900">
           <Image
-            src={builder.logo || "/images/builder-placeholder.jpg"}
+            src={imageError ? "/images/builder-placeholder.jpg" : (builder.logo || "/images/builder-placeholder.jpg")}
             alt={builder.title}
             fill
             className="object-contain p-4"
+            onError={() => setImageError(true)}
           />
           <Button
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 z-10 opacity-80 hover:opacity-100 transition-opacity"
             onClick={onRemove}
           >
             <Trash2 size={16} />
@@ -518,29 +568,61 @@ function BuilderCard({
           <CardTitle className="text-center text-orange-500">
             {builder.title}
           </CardTitle>
-          <CardDescription>{builder.description}</CardDescription>
+          <CardDescription className="line-clamp-2 text-gray-300">
+            {builder.description || builder.about || "Premier building developer and constructor"}
+          </CardDescription>
           <CardDescription className="text-center text-gray-400">
             {builder.established ? `Est. ${builder.established}` : ""}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center">
-          <p className="text-sm text-gray-500 mb-2">
-            {`${builder.projects} projects completed`}
-          </p>
-          <div className="flex justify-center gap-2 mt-3">
-            {builder.specializations?.slice(0, 3).map((spec, i) => (
-              <span
-                key={i}
-                className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full"
-              >
-                {spec}
-              </span>
-            ))}
+        <CardContent className="text-center flex-grow">
+          <div className="flex justify-center items-center gap-2 mb-3">
+            <div className="flex items-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <svg
+                  key={star}
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill={star <= builder.rating ? "currentColor" : "none"}
+                  stroke={star <= builder.rating ? "none" : "currentColor"}
+                  className={`w-4 h-4 ${
+                    star <= builder.rating ? "text-orange-500" : "text-gray-500"
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+                  />
+                </svg>
+              ))}
+            </div>
+            <span className="text-orange-500">{builder.rating ? builder.rating.toFixed(1) : "N/A"}</span>
           </div>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="bg-gray-900 p-2 rounded">
+              <p className="text-xs text-gray-400">Projects</p>
+              <p className="font-semibold">{builder.projects || 0}</p>
+            </div>
+            <div className="bg-gray-900 p-2 rounded">
+              <p className="text-xs text-gray-400">Completed</p>
+              <p className="font-semibold">{builder.completed || 0}</p>
+            </div>
+          </div>
+          <div className="bg-gray-900 p-2 rounded mb-3">
+            <p className="text-xs text-gray-400">Specialization</p>
+            <p className="text-sm truncate">{builder.specialization || "Real Estate"}</p>
+          </div>
+          <p className="text-xs text-gray-400">
+            {builder.headquarters ? `HQ: ${builder.headquarters}` : ""}
+          </p>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex justify-center mt-auto">
           <Link href={`/builders/${builder._id}`}>
-            <Button variant="outline">View Projects</Button>
+            <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors">
+              View Details
+            </Button>
           </Link>
         </CardFooter>
       </Card>

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import VerificationRequestForm from "@/components/blocks/VerificationRequestForm";
 import { toast } from "sonner";
+import Navbar from "../components/navbar";
 
 export default function VerificationPage() {
   const { status } = useSession();
@@ -20,8 +21,8 @@ export default function VerificationPage() {
       } else {
         toast.error("Please login to proceed!! Redirecting to home page!");
         setTimeout(() => {
-          router.push("/");
-        }, 1500);
+          router.push("/?modal=auth");
+        }, 1000);
       }
     }
   }, []);
@@ -36,7 +37,8 @@ export default function VerificationPage() {
 
   return (
     <div className="container mx-auto py-8 sm:py-12 px-3 sm:px-4 bg-gradient-to-r from-black via-gray-900 to-black text-white min-h-screen">
-      <div className="max-w-3xl mx-auto relative">
+      <Navbar />
+      <div className="max-w-3xl mx-auto relative mt-16">
         {/* Background Decorations */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -288,7 +290,7 @@ export default function VerificationPage() {
                   Get verified
                 </h4>
                 <p className="text-gray-400 text-xs sm:text-sm">
-                  Once approved, you`&apos;`ll receive a verification badge and
+                  Once approved, you&apos;ll receive a verification badge and
                   enhanced features.
                 </p>
               </div>

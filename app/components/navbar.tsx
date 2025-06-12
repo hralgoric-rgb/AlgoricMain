@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { useRouter } from "next/navigation";
 
-
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -46,10 +45,10 @@ export default function Navbar() {
       // Handle specific OAuth errors
       if (errorParam === "OAuthAccountNotLinked") {
         setError(
-          "Google account not linked. If this is your first time signing in, please try signing up first. If you have previously used another sign-in method (like email/password), please use that method."
+          "Google account not linked. If this is your first time signing in, please try signing up first. If you have previously used another sign-in method (like email/password), please use that method.",
         );
         toast.error(
-          "Google account not linked. Try signing up first or use your original sign-in method."
+          "Google account not linked. Try signing up first or use your original sign-in method.",
         );
       } else {
         setError("An error occurred during sign in. Please try again.");
@@ -71,7 +70,8 @@ export default function Navbar() {
       return null;
     };
 
-    const authToken = sessionStorage.getItem("authToken") || getCookie("authToken");
+    const authToken =
+      sessionStorage.getItem("authToken") || getCookie("authToken");
     if (authToken && typeof window !== "undefined") {
       // Store token in session storage
       sessionStorage.setItem("authToken", authToken);
@@ -94,13 +94,12 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const authToken = sessionStorage.getItem("authToken");
-      if (params.get('modal') === 'auth' && !authToken) {
+      if (params.get("modal") === "auth" && !authToken) {
         setIsAuthModalOpen(true); // or your setIsAuthModal(true)
-      }
-      else{
+      } else {
         setIsAuthModalOpen(false);
       }
     }
@@ -261,7 +260,7 @@ export default function Navbar() {
         if (typeof window === "undefined") {
           return;
         }
-        
+
         document.cookie = `authToken=${response.data.token}; path=/;`;
         sessionStorage.setItem("authToken", response.data.token);
         toast.success("Successfully Logged In!!");
@@ -269,7 +268,7 @@ export default function Navbar() {
         setSuccess("Login successful!");
         const url = new URL(window.location.href);
         url.searchParams.delete("modal");
-        router.replace(url.pathname + url.search,{scroll: false});
+        router.replace(url.pathname + url.search, { scroll: false });
         // Close the auth modal after a brief delay to show success message
         setTimeout(() => {
           setIsAuthModalOpen(false);
@@ -331,7 +330,6 @@ export default function Navbar() {
         setSuccess("Account created! Please verify your email.");
         setCurrentView("verify-email");
         toast.success("Successfully Signed Up !");
-        
       }
     } catch (err: any) {
       const errorMsg =
@@ -371,8 +369,8 @@ export default function Navbar() {
 
         setSuccess("Email verified successfully!");
         const url = new URL(window.location.href);
-    url.searchParams.delete("modal");
-    router.replace(url.pathname + url.search,{scroll: false});
+        url.searchParams.delete("modal");
+        router.replace(url.pathname + url.search, { scroll: false });
         // Close the auth modal after a brief delay
         setTimeout(() => {
           setIsAuthModalOpen(false);
@@ -496,12 +494,12 @@ export default function Navbar() {
     }
   };
 
-  const closeAuthModal = () =>{
-    setIsAuthModalOpen(false)
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
     const url = new URL(window.location.href);
     url.searchParams.delete("modal");
-    router.replace(url.pathname + url.search,{scroll: false});
-  }
+    router.replace(url.pathname + url.search, { scroll: false });
+  };
   return (
     <>
       <header
@@ -672,12 +670,12 @@ export default function Navbar() {
             <div className="flex items-center space-x-8">
               <Link
                 href="/sell"
-                className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-white rounded-md group bg-gradient-to-br from-orange-600 via-black to-orange-600 group-hover:from-orange-600 group-hover:via-orange-800 group-hover:to-black dark:text-white focus:ring-4 focus:outline-none focus:ring-orange-300 dark:focus:ring-orange-800"
+                className="relative inline-flex items-center justify-center overflow-hidden text-sm font-medium text-white rounded-lg shadow-md bg-orange-600 hover:bg-orange-700 transition-all duration-300 group"
               >
-                <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-black rounded-md group-hover:bg-opacity-0 flex items-center font-bold">
+                <span className="relative px-6 py-3 flex items-center gap-2 font-bold">
                   Post Property
-                  <span className="ml-2 bg-orange-600 rounded-md p-1 text-sm text-white font-bold transition-all duration-300">
-                    Free
+                  <span className="ml-1 bg-white text-orange-600 rounded-md px-2 py-0.5 text-xs font-bold">
+                    FREE
                   </span>
                 </span>
               </Link>
@@ -808,14 +806,14 @@ export default function Navbar() {
           >
             <div className="px-4 pt-2 pb-4 space-y-2">
               <Link
-                href="/buy"
+                href="/search?filter=sale"
                 className="block px-4 py-3 text-white hover:bg-gray-700 rounded-md transition-all"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Buy
               </Link>
               <Link
-                href="/rent"
+                href="/search?filter=rent"
                 className="block px-4 py-3 text-white hover:bg-gray-700 rounded-md transition-all"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -828,33 +826,26 @@ export default function Navbar() {
               >
                 Sell
               </Link>
-              <Link
-                href="/blog"
-                className="block px-4 py-3 text-white hover:bg-gray-700 rounded-md transition-all"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Blog
-              </Link>
               {/* Tools dropdown for mobile */}
               <div className="block px-4 py-1 text-white">
                 <div className="font-medium py-2">Tools</div>
                 <div className="pl-4 space-y-1">
                   <Link
-                    href="/ai-tools"
+                    href="/comingsoon"
                     className="block px-2 py-2 text-white hover:bg-gray-700 rounded-md transition-all text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Virtual Property Tour
                   </Link>
                   <Link
-                    href="/ai-tools/price-prediction"
+                    href="/house-price-prediction"
                     className="block px-2 py-2 text-white hover:bg-gray-700 rounded-md transition-all text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Price Prediction
                   </Link>
                   <Link
-                    href="/ai-tools/neighborhood"
+                    href="/comingsoon"
                     className="block px-2 py-2 text-white hover:bg-gray-700 rounded-md transition-all text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -1181,7 +1172,7 @@ export default function Navbar() {
                           </button>
 
                           <p className="text-sm text-gray-600 text-center">
-                            By submitting, I accept 100 GAJ`&apos;`s{" "}
+                            By submitting, I accept 100 GAJ&apos;s{" "}
                             <a
                               href="#"
                               className="text-orange-500 hover:text-orange-600"
@@ -1206,7 +1197,6 @@ export default function Navbar() {
 
                       <div className="space-y-3">
                         <GoogleLoginButton />
-                        
                       </div>
                     </>
                   )}
@@ -1241,8 +1231,8 @@ export default function Navbar() {
                       </h3>
 
                       <p className="text-gray-600 mb-6">
-                        Enter your email address and we`&apos;`ll send you a
-                        link to reset your password.
+                        Enter your email address and we&apos;ll send you a link
+                        to reset your password.
                       </p>
 
                       {/* Error/Success Messages */}

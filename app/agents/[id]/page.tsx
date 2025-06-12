@@ -6,6 +6,9 @@ import Footer from "../../components/footer";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FavoritesAPI } from "@/app/lib/api-helpers";
+import { useRouter } from "next/navigation";
 
 // Type definitions
 interface Agent {
@@ -104,6 +107,7 @@ export default function AgentDetailPage({
 }: {
   params: { id: string };
 }) {
+  const router = useRouter();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [stats, setStats] = useState<AgentStats | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -123,16 +127,44 @@ export default function AgentDetailPage({
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [token, setToken] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Agent[]>([]);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     // Only run this on the client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const authToken = sessionStorage.getItem("authToken");
       if (authToken) {
         setToken(authToken);
       }
     }
   }, []);
+  const fetchFavorite = async () => {
+    if (token) {
+      try {
+        const agentsData = await FavoritesAPI.getAgents();
+        setFavorites(agentsData.favorites);
+
+        // Check if current agent is in favorites
+        if (
+          agent &&
+          agentsData.favorites.some((fav: Agent) => fav._id === agent._id)
+        ) {
+          setIsFavorited(true);
+        } else {
+          setIsFavorited(false);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        toast.error("Failed to fetch favorites");
+      }
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      fetchFavorite();
+    }
+  }, [token]);
   const fetchReviews = async () => {
     try {
       const response = await fetch(`/api/agents/${params.id}/reviews`);
@@ -149,6 +181,13 @@ export default function AgentDetailPage({
     fetchAgentDetails();
     fetchReviews();
   }, [params.id]);
+
+  // Update isFavorited when agent or favorites change
+  useEffect(() => {
+    if (agent && favorites.length > 0) {
+      setIsFavorited(favorites.some((fav) => fav._id === agent._id));
+    }
+  }, [agent, favorites]);
 
   const fetchAgentDetails = async (page = 1) => {
     setLoading(true);
@@ -216,7 +255,6 @@ export default function AgentDetailPage({
         const data = await response.json();
         alert(`Error: ${data.error || "Failed to submit review"}`);
       }
-     
     } catch (error: any) {
       toast.error(error);
       alert("Failed to submit review. Please try again.");
@@ -332,6 +370,37 @@ export default function AgentDetailPage({
     return stars;
   };
 
+  const toggleFavorite = async (agentId: string) => {
+    if (!token) {
+      toast.error("Please login to add favorites");
+      return;
+    }
+
+    try {
+      // Optimistically update UI first for responsive feedback
+      setIsFavorited((prev) => !prev);
+
+      if (isFavorited) {
+        // Remove from favorites
+        await FavoritesAPI.removeAgent(agentId);
+        toast.success("Agent removed from favorites");
+        // Update local state
+        setFavorites(favorites.filter((agent) => agent._id !== agentId));
+      } else {
+        // Add to favorites
+        await FavoritesAPI.addAgent(agentId);
+        toast.success("Agent added to favorites");
+        // Refresh favorites to get the updated list
+        fetchFavorite();
+      }
+    } catch (error) {
+      // Revert UI state if operation fails
+      setIsFavorited((prev) => !prev);
+      console.error("Error toggling favorite status:", error);
+      toast.error("Failed to update favorites");
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-900 text-white">
@@ -389,6 +458,16 @@ export default function AgentDetailPage({
                     fill
                     className="object-cover "
                   />
+                  <div
+                    className="absolute top-4 right-4 h-10 w-10 rounded-full bg-gray-800/70 flex items-center justify-center cursor-pointer hover:bg-gray-700/70 transition-all duration-300 transform hover:scale-110"
+                    onClick={() => toggleFavorite(agent._id)}
+                  >
+                    {isFavorited ? (
+                      <FaHeart className="h-5 w-5 text-red-600" />
+                    ) : (
+                      <FaRegHeart className="h-5 w-5 text-white hover:text-red-600 transition-colors duration-300" />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -526,10 +605,16 @@ export default function AgentDetailPage({
               </div>
 
               <div className="mt-8 space-x-4">
-                <button className="px-6 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors">
+                <button
+                  className="px-6 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+                  onClick={() => router.push("/contact")}
+                >
                   Contact Agent
                 </button>
-                <button className="px-6 py-3 bg-transparent border border-orange-500 text-orange-500 rounded-md hover:bg-orange-500/10 transition-colors">
+                <button
+                  className="px-6 py-3 bg-transparent border border-orange-500 text-orange-500 rounded-md hover:bg-orange-500/10 transition-colors"
+                  onClick={() => router.push("/contact")}
+                >
                   Schedule Meeting
                 </button>
               </div>
@@ -631,7 +716,13 @@ export default function AgentDetailPage({
               Client Reviews
             </h2>
             <button
-              onClick={() => setShowReviewForm(!showReviewForm)}
+              onClick={() => {
+                if (!token) {
+                  toast.error("Please login to write a review");
+                } else {
+                  setShowReviewForm(!showReviewForm);
+                }
+              }}
               className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors text-sm"
             >
               {showReviewForm ? "Cancel Review" : "Write a Review"}
@@ -683,8 +774,7 @@ export default function AgentDetailPage({
 
           {reviews.length > 0 ? (
             <div className="space-y-6">
-              
-              {reviews.map((review:any) => (
+              {reviews.map((review: any) => (
                 <div
                   key={review.id}
                   className="border-b border-gray-700 pb-6 last:border-0"

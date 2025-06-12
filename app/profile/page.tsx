@@ -999,7 +999,7 @@ export default function UserProfile() {
                                 No assigned properties
                               </h4>
                               <p className="text-gray-400 mb-6">
-                                You haven`&apos;`t been assigned any properties
+                                You haven&apos;t been assigned any properties
                                 yet.
                               </p>
                             </div>

@@ -242,7 +242,7 @@ export default function AboutUs() {
               {
                 name: 'Aryan Panda',
                 role: 'CEO',
-                description: 'With over 20 years of experience in luxury real estate, John leads the vision and strategy at EstateElite.',
+                description: 'Meet our CEO, a visionary leader at the start of an exciting journey, driven by innovation and bold ambition.With fresh perspectives and unwavering dedication, he\'s shaping the future of our company from day one.',
                 social: {
                   linkedin: '#',
                   twitter: '#',
@@ -252,7 +252,7 @@ export default function AboutUs() {
               {
                 name: 'Bhoomi Singh',
                 role: 'Chief Operating Officer',
-                description: 'Jane oversees the day-to-day operations, ensuring our services meet the highest standards of quality and excellence.',
+                description: 'Our COO brings energy and precision to operations, laying strong foundations for scalable growth from the ground up.With a sharp focus on efficiency and execution, he\'s committed to turning strategy into lasting impact.',
                 social: {
                   linkedin: '#',
                   twitter: '#',
@@ -263,7 +263,7 @@ export default function AboutUs() {
                 name: 'Shrishti Parihar',
                 role: 'HR Manager',
                 
-                description: 'Emily focuses on building strong relationships with our clients, understanding their needs, and exceeding their expectations.',
+                description: 'Our HR Manager champions a people-first culture, building a supportive and inclusive environment from the very start.She is passionate about nurturing talent, fostering collaboration, and shaping a thriving workplace.',
                 social: {
                   linkedin: '#',
                   twitter: '#',
@@ -435,7 +435,7 @@ export default function AboutUs() {
                       viewport={{ once: true }}
                       className="text-lg text-gray-300 mb-8 max-w-xl"
                     >
-                      Whether youre looking to buy, sell, or invest, our team is here to guide you every step of the way. Let`&apos;`s build your dream together.
+                      Whether youre looking to buy, sell, or invest, our team is here to guide you every step of the way. Let&apos;s build your dream together.
                     </motion.p>
                     
                     <motion.div 

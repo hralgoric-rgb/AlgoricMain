@@ -6,10 +6,6 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Image from "next/image";
 import Link from "next/link";
-import { useFavorites } from "../contexts/FavoritesContext";
-import { toast } from "@/components/ui/use-toast";
-import { FaHeart } from "react-icons/fa";
-
 
 // Define the Agent interface based on the API response
 interface Agent {
@@ -149,7 +145,6 @@ export default function AgentsPage() {
     limit: 10,
     pages: 0,
   });
-  const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
     // Fetch agents from API
@@ -201,21 +196,6 @@ export default function AgentsPage() {
       fetchAgents();
     }
   }, [searchTerm, activeFilter]);
-
-  const handleToggleFavorite = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await toggleFavorite(id, "agent");
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   // Function to render stars based on rating
   const renderStars = (rating: number) => {
@@ -455,23 +435,8 @@ export default function AgentsPage() {
                   whileHover={{ y: -5 }}
                   className="bg-gray-100/10 rounded-xl shadow-lg overflow-hidden border border-gray-800 hover:border-orange-500/30 transition-all group"
                 >
-                  {/* Favorite Toggle Button */}
-                  <button
-                    onClick={(e) => handleToggleFavorite(agent._id, e)}
-                    className="z-20 absolute top-4 right-4 bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300"
-                  >
-                    <FaHeart
-                      size={20}
-                      className={`${
-                        isFavorite(agent._id, "agent")
-                          ? "fill-red-500 text-red-500"
-                          : "text-white"
-                      }`}
-                    />
-                  </button>
-
                   {/* Agent Image */}
-                  <div className="h-80 relative overflow-hidden">
+                  <div className="h-80 relative overflow-hidden hover:scale-105 transition-transform duration-500">
                     <Image
                       src={agent.image || "/placeholder-agent.png"}
                       alt={agent.name}
@@ -757,8 +722,8 @@ export default function AgentsPage() {
               Ready to Work With Our Expert Agents?
             </h2>
             <p className="text-white/90 max-w-2xl mx-auto mb-8 text-lg">
-              Whether you`&apos;`re buying, selling, or investing, our agents
-              will guide you through every step of the process.
+              Whether you&apos;re buying, selling, or investing, our agents will
+              guide you through every step of the process.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
