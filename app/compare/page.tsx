@@ -506,31 +506,8 @@ export default function CompareProperties() {
               </motion.div>
             )}
 
-            {/* Empty State - No Favorites */}
-            {!loading && properties.length === 0 && (
-              <motion.div
-                variants={fadeIn}
-                className="bg-white/5 border border-white/10 rounded-xl p-8 text-center my-8"
-              >
-                <Heart className="w-16 h-16 text-orange-500/30 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-2">
-                  No Favorite Properties Yet
-                </h3>
-                <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                  Start adding properties to your favorites to compare them side
-                  by side.
-                </p>
-                <Button
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
-                  onClick={() => (window.location.href = "/search")}
-                >
-                  Browse Properties
-                </Button>
-              </motion.div>
-            )}
-
             {/* Property Selection */}
-            {!loading && properties.length > 0 && (
+            {!loading && properties.length >= 2 && (
               <motion.div
                 variants={fadeIn}
                 initial="hidden"
@@ -693,8 +670,10 @@ export default function CompareProperties() {
               </motion.div>
             )}
             {/* Empty State - No Favorites */}
-            {!loading && properties.length === 0 && (
+            {!loading && properties.length < 2 && (
               <motion.div
+                initial="hidden"
+                animate="visible"
                 variants={fadeIn}
                 className="bg-gradient-to-br from-black to-gray-900 rounded-xl p-12 text-center my-8 border border-orange-600/30 shadow-lg relative overflow-hidden"
               >
@@ -705,7 +684,7 @@ export default function CompareProperties() {
 
                 <Heart className="w-20 h-20 text-orange-500/70 mx-auto mb-6 animate-pulse" />
                 <h3 className="text-3xl font-bold mb-4 text-white">
-                  Your Favorites List is Empty
+                  Not enough properties to compare
                 </h3>
                 <p className="text-gray-300 mb-8 max-w-lg mx-auto text-lg">
                   Add properties to your favorites to compare features,

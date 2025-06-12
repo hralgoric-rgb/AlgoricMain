@@ -507,7 +507,7 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main navigation - desktop */}
-          <nav className="hidden md:flex items-center space-x-8 justify-between">
+          <nav className="hidden custom:flex items-center space-x-8 justify-between">
             <div className="flex items-center space-x-8">
               <Link
                 href="/search?filter=sale"
@@ -740,11 +740,11 @@ export default function Navbar() {
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center justify-between py-2">
+          <div className="custom:hidden flex items-center justify-between py-2">
             <Link href="/" className="flex items-center">
               <div className="h-10 w-12 flex items-center justify-center text-white">
                 <img
-                  src={`logo.png`}
+                  src={`/logo.png`}
                   alt="100Gaj"
                   className="w-full h-full object-cover"
                 />
@@ -802,7 +802,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-black/65 backdrop-blur-md sticky top-14 z-50 w-full"
+            className="custom:hidden bg-black/65 backdrop-blur-md sticky top-14 z-50 w-full"
           >
             <div className="px-4 pt-2 pb-4 space-y-2">
               <Link

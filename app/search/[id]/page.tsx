@@ -6,13 +6,14 @@ import { IoLocationOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import { BsBuilding } from "react-icons/bs";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Navbar from "@/app/components/navbar";
+
 import Footer from "@/app/components/footer";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import CirclePattern from "../../components/CirclePattern";
 import { toast } from "sonner";
+import Navbar from "@/app/components/navbar";
 
 // Decorative components matching other pages
 // const HouseIcon = () => (

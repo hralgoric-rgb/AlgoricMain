@@ -16,6 +16,9 @@ module.exports = {
   		},
   	},
   	extend: {
+		screens:{
+			'custom':'1115px'
+		},
   		colors: {
         beige: {
           light: '#F5F1E9',

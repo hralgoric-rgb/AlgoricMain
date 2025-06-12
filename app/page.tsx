@@ -497,7 +497,7 @@ export default function Home() {
         id="localities"
         className="py-10 md:py-14 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden mb-0"
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ">
           <div className="text-center mb-8 md:mb-12 px-4 md:px-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -532,7 +532,7 @@ export default function Home() {
           </div>
 
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10 max-w-6xl mx-auto mb-10"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10 max-w-6xl mx-auto mb-10 justify-items-center"
             variants={{
               hidden: { opacity: 0 },
               show: {
@@ -744,7 +744,7 @@ export default function Home() {
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10 max-w-6xl mx-auto mb-10 justify-items-center">
             {popularAgents.map((agent, index) => (
               <motion.div
                 key={index}
@@ -755,7 +755,7 @@ export default function Home() {
                 className="group relative"
               >
                 {/* Card with hover effect */}
-                <div className="relative rounded-xl overflow-hidden aspect-[3/4] shadow-xl h-[350px] sm:h-auto">
+                <div className="relative rounded-xl overflow-hidden aspect-[3/4] shadow-xl w-60">
                   {/* Image container with gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"></div>
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
