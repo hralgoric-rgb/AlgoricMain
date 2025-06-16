@@ -186,6 +186,34 @@ export default function Home() {
       ),
     },
     {
+      name: "Delhi Area Analyzer",
+      description:
+        "A Powerful AI tool to analyze the pros and cons of different areas in Delhi",
+      icon: (
+        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth="1.5"
+  className="w-6 h-6 text-orange-500"
+>
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    d="M12 2.25c-3.9 0-7.5 3.2-7.5 7.5 0 5.25 7.5 12 7.5 12s7.5-6.75 7.5-12c0-4.3-3.6-7.5-7.5-7.5z"
+  />
+  <circle cx="12" cy="9.75" r="2.25" />
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    d="M15.75 3.75l4.5 4.5m-4.5-4.5v3m0-3h3"
+  />
+</svg>
+
+      ),
+    },
+    {
       name: "Price Prediction",
       description:
         "Machine learning algorithms to predict property value trends",

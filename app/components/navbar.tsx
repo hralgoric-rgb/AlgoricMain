@@ -571,6 +571,35 @@ export default function Navbar() {
                       </div>
                     </Link>
                     <Link
+                      href="/delhi-area-analyzer"
+                      className={`block px-4 py-2 text-sm hover:bg-orange-500/10 ${scrolled ? "text-orange-500" : "text-white"}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          className="w-6 h-6 text-orange-500"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 2.25c-3.9 0-7.5 3.2-7.5 7.5 0 5.25 7.5 12 7.5 12s7.5-6.75 7.5-12c0-4.3-3.6-7.5-7.5-7.5z"
+                          />
+                          <circle cx="12" cy="9.75" r="2.25" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 3.75l4.5 4.5m-4.5-4.5v3m0-3h3"
+                          />
+                        </svg>
+
+                        <span>Delhi Area Analyzer</span>
+                      </div>
+                    </Link>
+                    <Link
                       href="/house-price-prediction"
                       className={`block px-4 py-2 text-sm hover:bg-orange-500/10 ${scrolled ? "text-orange-500" : "text-white"}`}
                     >
@@ -690,7 +719,7 @@ export default function Navbar() {
                 href="/about"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
               >
-                <Info className="h-5 w-5 mr-2 hover:text-orange-500 hover:text-orange-500" />
+                <Info className="h-5 w-5 mr-2 hover:text-orange-500" />
               </Link>
               {isAuthenticated ? (
                 <div className="flex items-center gap-2">
@@ -836,6 +865,13 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Virtual Property Tour
+                  </Link>
+                  <Link
+                    href="/delhi-area-analyzer"
+                    className="block px-2 py-2 text-white hover:bg-gray-700 rounded-md transition-all text-sm"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Area Analyzer
                   </Link>
                   <Link
                     href="/house-price-prediction"

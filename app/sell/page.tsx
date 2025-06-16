@@ -289,7 +289,7 @@ export default function SellProperty() {
                 >
                   {/* Step number with pulsing effect */}
                   <div className="relative mx-auto mb-8">
-                    <div className="absolute inset-0 rounded-full bg-orange-500/20 animate-ping"></div>
+                    <div className="absolute inset-0 rounded-full"></div>
                     <div
                       className={`w-20 h-20 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center mx-auto shadow-xl border-4 border-black`}
                     >
@@ -322,7 +322,6 @@ export default function SellProperty() {
           </div>
         </div>
       </section>
-
 
       {/* CTA Section */}
       <section className="py-16">

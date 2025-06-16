@@ -18,6 +18,14 @@ export default function AIToolsPage() {
       link: "/comingsoon",
     },
     {
+      name: "Delhi Area Analyzer",
+      description:
+        "A Powerful AI tool to analyze the pros and cons of different areas in Delhi",
+      icon: "/virtual-tour.png",
+      color: "bg-orange-500/10",
+      link: "/delhi-area-analyzer",
+    },
+    {
       name: "Price Prediction",
       description:
         "Machine learning algorithms to predict property value trends",
