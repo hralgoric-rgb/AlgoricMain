@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaCalculator, FaRupeeSign, FaChartLine, FaPercentage } from "react-icons/fa";
+import { FaCalculator, FaRupeeSign } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -323,7 +323,7 @@ export default function InvestmentCalculator({ property }: InvestmentCalculatorP
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-sm text-yellow-200">
                 <strong>Disclaimer:</strong> These projections are based on historical data and current market conditions.
-                Actual returns may vary. Real estate investments carry risks and past performance doesn't guarantee future results.
+                Actual returns may vary. Real estate investments carry risks and past performance doesn&apos;t guarantee future results.
               </p>
             </div>
           </motion.div>

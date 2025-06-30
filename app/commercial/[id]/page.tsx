@@ -7,10 +7,10 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   FaArrowLeft,
-  FaBuilding,
+  
   FaMapMarkerAlt,
   FaUsers,
-  FaCalendarAlt,
+  
   FaChartLine,
   FaPercentage,
   FaRupeeSign,

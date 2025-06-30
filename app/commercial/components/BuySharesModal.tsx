@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CommercialProperty } from "../../data/commercialProperties";
 import { toast } from "sonner";
@@ -108,6 +107,7 @@ export default function BuySharesModal({
       onClose();
     } catch (error) {
       toast.error("Purchase failed. Please try again.");
+      console.error("Purchase error:", error);
     } finally {
       setIsProcessing(false);
       setCurrentStep("details");

@@ -11,9 +11,6 @@ import {
   FaDownload,
   FaPlus,
   FaArrowUp,
-  FaArrowDown,
-  FaCalendarAlt,
-  FaPercentage,
   FaMapMarkerAlt,
   FaFileAlt
 } from "react-icons/fa";
@@ -112,12 +109,12 @@ export default function InvestorDashboard() {
     });
   };
 
-  const handleDownloadStatement = (investmentId: string) => {
+  const handleDownloadStatement = () => {
     toast.success("Investment statement will be downloaded shortly");
     // Mock download functionality
   };
 
-  const handleDownloadOwnershipDoc = (investmentId: string) => {
+  const handleDownloadOwnershipDoc = () => {
     toast.success("Ownership document will be downloaded shortly");
     // Mock download functionality
   };
@@ -401,7 +398,7 @@ export default function InvestorDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDownloadStatement(investment._id)}
+                            onClick={() => handleDownloadStatement()}
                           >
                             <FaDownload className="w-4 h-4" />
                           </Button>
@@ -473,7 +470,7 @@ export default function InvestorDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDownloadOwnershipDoc(investment._id)}
+                              onClick={() => handleDownloadOwnershipDoc()}
                             >
                               <FaDownload className="w-4 h-4" />
                             </Button>
@@ -489,7 +486,7 @@ export default function InvestorDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDownloadStatement(investment._id)}
+                              onClick={() => handleDownloadStatement()}
                             >
                               <FaDownload className="w-4 h-4" />
                             </Button>

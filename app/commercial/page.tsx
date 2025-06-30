@@ -8,13 +8,13 @@ import {
   FaBuilding,
   FaChartLine,
   FaPercentage,
-  FaRupeeSign,
+  
   FaMapMarkerAlt,
   FaUsers,
-  FaFilter,
+  
   FaSearch
 } from "react-icons/fa";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -54,11 +54,10 @@ export default function CommercialListingsPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [sortBy, setSortBy] = useState("roi_desc");
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     let filtered = [...properties];
-
+    setProperties(mockCommercialProperties);
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(property =>
