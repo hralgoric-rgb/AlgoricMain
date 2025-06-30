@@ -98,7 +98,7 @@ async function generateAIDescription(propertyData: any) {
   ${locationText ? `Location: ${locationText}` : ""}
   ${amenitiesText}
 
-  Write a professional and engaging description highlighting the property's features and benefits. Keep it under 150 words, focus on selling points, and make it appealing to potential buyers. Do not include the price.
+  Write a professional and engaging description highlighting the property's features and benefits. Keep it under 150 words, focus on selling points, and make it appealing to potential buyers. Do not include the price. Don't include any markdown or formatting tags, just provide the plain text description. Write the description directly without any preamble or additional text.
 
   Description:`;
 
@@ -1114,7 +1114,7 @@ export default function PropertyForm({
                         htmlFor="description"
                         className="text-white mb-1.5 block"
                       >
-                        Property Description{" "}
+                        Description{" "}
                         <span className="text-orange-500">*</span>
                       </Label>
 

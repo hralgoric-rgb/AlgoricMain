@@ -138,6 +138,12 @@ export default function UserProfile() {
       
       if (!token) {
         setError("Authentication token not found. Please log in again.");
+        toast.error("Please log in to access your profile.");
+
+        setTimeout(() => {
+          router.push("/?modal=auth");
+        }, 1000);
+
         return;
       }
 

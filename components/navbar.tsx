@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -16,23 +16,23 @@ export default function Navbar() {
 
   useEffect(() => {
     // Check if user is authenticated
-    if(typeof window === "undefined") return;
-    const token = sessionStorage.getItem('authToken');
+    if (typeof window === "undefined") return;
+    const token = sessionStorage.getItem("authToken");
     setIsAuthenticated(!!token);
   }, []);
 
   const handleLogout = () => {
-    if(typeof window === "undefined") return;
-    sessionStorage.removeItem('authToken');
+    if (typeof window === "undefined") return;
+    sessionStorage.removeItem("authToken");
     setIsAuthenticated(false);
-    router.push('/');
+    router.push("/");
   };
 
   const handleProtectedLinkClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
       e.preventDefault();
       router.push(`/`);
-      toast.error("Please login to proceed!!")
+      toast.error("Please login to proceed!!");
     }
   };
 
@@ -51,7 +51,9 @@ export default function Navbar() {
             <Link
               href="/"
               className={`text-sm font-medium ${
-                pathname === "/" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
               Home
@@ -59,7 +61,9 @@ export default function Navbar() {
             <Link
               href="/buy"
               className={`text-sm font-medium ${
-                pathname === "/buy" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/buy"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
               Buy
@@ -67,7 +71,9 @@ export default function Navbar() {
             <Link
               href="/rent"
               className={`text-sm font-medium ${
-                pathname === "/rent" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/rent"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
               Rent
@@ -75,18 +81,43 @@ export default function Navbar() {
             <Link
               href="/sell"
               className={`text-sm font-medium ${
-                pathname === "/sell" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/sell"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
               onClick={(e) => handleProtectedLinkClick(e)}
             >
               Sell
             </Link>
+            <Link
+              href="/commercial"
+              className={`text-sm font-medium ${
+                pathname === "/commercial" ||
+                pathname?.startsWith("/commercial/")
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              Commercial
+            </Link>
             {isAuthenticated ? (
               <>
                 <Link
+                  href="/dashboard"
+                  className={`text-sm font-medium ${
+                    pathname === "/dashboard"
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link
                   href="/profile"
                   className={`text-sm font-medium ${
-                    pathname === "/profile" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                    pathname === "/profile"
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-white"
                   }`}
                 >
                   Profile
@@ -94,7 +125,9 @@ export default function Navbar() {
                 <Link
                   href="/favourites"
                   className={`text-sm font-medium ${
-                    pathname === "/favourites" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                    pathname === "/favourites"
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-white"
                   }`}
                 >
                   Favourites
@@ -122,7 +155,11 @@ export default function Navbar() {
               className="text-gray-300 hover:text-white focus:outline-none z-50"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -135,7 +172,9 @@ export default function Navbar() {
             <Link
               href="/"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
-                pathname === "/" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -144,7 +183,9 @@ export default function Navbar() {
             <Link
               href="/buy"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
-                pathname === "/buy" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/buy"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -153,7 +194,9 @@ export default function Navbar() {
             <Link
               href="/rent"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
-                pathname === "/rent" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/rent"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -162,7 +205,9 @@ export default function Navbar() {
             <Link
               href="/sell"
               className={`block px-3 py-2 rounded-md text-base font-medium ${
-                pathname === "/sell" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                pathname === "/sell"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
               }`}
               onClick={(e) => {
                 handleProtectedLinkClick(e);
@@ -171,12 +216,37 @@ export default function Navbar() {
             >
               Sell
             </Link>
+            <Link
+              href="/commercial"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                pathname === "/commercial" ||
+                pathname?.startsWith("/commercial/")
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Commercial
+            </Link>
             {isAuthenticated ? (
               <>
                 <Link
+                  href="/dashboard"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    pathname === "/dashboard"
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
                   href="/profile"
                   className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    pathname === "/profile" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                    pathname === "/profile"
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-white"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -185,7 +255,9 @@ export default function Navbar() {
                 <Link
                   href="/favourites"
                   className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    pathname === "/favourites" ? "text-orange-500" : "text-gray-300 hover:text-white"
+                    pathname === "/favourites"
+                      ? "text-orange-500"
+                      : "text-gray-300 hover:text-white"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -215,4 +287,4 @@ export default function Navbar() {
       )}
     </nav>
   );
-} 
+}

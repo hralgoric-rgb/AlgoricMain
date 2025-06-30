@@ -248,11 +248,29 @@ export default function Footer() {
                 </span>
               </li>
               <li className="flex items-start group">
+                <a href="mailto:contact@100gaj.com">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 mt-0.5 text-beige-dark group-hover:text-beige transition-all duration-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M3 8l9 6 9-6M21 8v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8"
+                  />
+                </svg>
+
                 <span className="w-full group-hover:text-beige transition-all duration-300 break-words whitespace-normal">
                   contact@100gaj.com
                 </span>
+                </a>
               </li>
               <li className="flex items-start group">
+                <a href="tel:+919876543210">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2 mt-0.5 text-beige-dark group-hover:text-beige transition-all duration-300"
@@ -270,6 +288,7 @@ export default function Footer() {
                 <span className="group-hover:text-beige transition-all duration-300">
                   +91 9876 543 210
                 </span>
+                </a>
               </li>
             </ul>
           </div>

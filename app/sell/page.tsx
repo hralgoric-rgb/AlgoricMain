@@ -350,11 +350,11 @@ export default function SellProperty() {
       </section>
 
       {/* Sticky Button */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+      {!isFormOpen && <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1, type: "spring" }}
+          transition={{ delay: 0.5, type: "spring" }}
         >
           <Button
             onClick={handleOpenForm}
@@ -364,7 +364,7 @@ export default function SellProperty() {
             Post Now!
           </Button>
         </motion.div>
-      </div>
+      </div>}
 
       <Footer />
     </main>

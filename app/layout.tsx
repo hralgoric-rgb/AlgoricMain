@@ -10,9 +10,6 @@ import { Toaster } from "sonner";
 // Dynamically import the PremiumPopup component with no SSR to avoid hydration issues
 const PremiumPopup = dynamic(() => import('@/components/ui/PremiumPopup'));
 
-const ActiveUsersCounter = dynamic(() => import('./components/ActiveUsersCounter'), {
-  ssr: true
-});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +48,6 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <PremiumPopup />
-          <ActiveUsersCounter />
         </AuthProvider>
         
       </body>
