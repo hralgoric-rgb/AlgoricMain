@@ -12,7 +12,7 @@ interface IUser {
   resetPasswordToken?: string;
   resetPasswordTokenExpiry?: Date;
   phone?: string;
-  role: string; // user, agent, admin
+  role: string; // landlord, tenant
   bio?: string;
   address?: {
     street?: string;
