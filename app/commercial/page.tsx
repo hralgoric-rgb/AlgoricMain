@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/app/components/navbar";
 import { mockCommercialProperties, CommercialProperty } from "../data/commercialProperties";
+import Footer from "../components/footer";
 
 const propertyTypeOptions = [
   { value: "all", label: "All Types" },
@@ -365,6 +366,7 @@ export default function CommercialListingsPage() {
           </Card>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }
