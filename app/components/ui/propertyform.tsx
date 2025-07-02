@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { toast } from "sonner";
 import { FeedbackDialog } from "../FeedbackDialog";
+import Image from "next/image";
 
 const propertyTypes = [
   {
@@ -208,6 +209,27 @@ export default function PropertyForm({
     >,
   ) => {
     const { name, value } = e.target;
+    
+    // Special handling for phone numbers - only allow digits
+    if (name === "ownerDetails.phone") {
+      const numericValue = value.replace(/\D/g, ''); // Remove non-digits
+      if (numericValue.length <= 10) { // Limit to 10 digits
+        if (name.includes(".")) {
+          const [parent, child] = name.split(".");
+          if (parent === "ownerDetails") {
+            setFormData({
+              ...formData,
+              ownerDetails: {
+                ...formData.ownerDetails,
+                [child]: numericValue,
+              },
+            });
+          }
+        }
+      }
+      return;
+    }
+    
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
       if (parent === "ownerDetails") {
@@ -233,6 +255,71 @@ export default function PropertyForm({
         [name]: value,
       });
     }
+  };
+  
+  // Enhanced validation function
+  const validateField = (name: string, value: string): string | null => {
+    const trimmedValue = value?.trim();
+    
+    // Check for empty or whitespace-only values
+    if (!trimmedValue) {
+      return `${name.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`;
+    }
+    
+    // Specific validations
+    switch (name) {
+      case 'title':
+        if (trimmedValue.length < 10) {
+          return 'Title must be at least 10 characters';
+        }
+        break;
+      case 'description':
+        if (trimmedValue.length < 50) {
+          return 'Description must be at least 50 characters';
+        }
+        break;
+      case 'price':
+        const price = parseFloat(value);
+        if (isNaN(price) || price <= 0) {
+          return 'Price must be a valid positive number';
+        }
+        if (price < 1000) {
+          return 'Price must be at least ₹1,000';
+        }
+        break;
+      case 'area':
+        const area = parseFloat(value);
+        if (isNaN(area) || area <= 0) {
+          return 'Area must be a valid positive number';
+        }
+        if (area < 100) {
+          return 'Area must be at least 100 sq ft';
+        }
+        break;
+      case 'ownerDetails.phone':
+        const phoneRegex = /^[6-9]\d{9}$/; // Indian mobile number pattern
+        if (!phoneRegex.test(trimmedValue)) {
+          return 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9';
+        }
+        break;
+      case 'ownerDetails.name':
+        if (trimmedValue.length < 2) {
+          return 'Name must be at least 2 characters';
+        }
+        if (!/^[a-zA-Z\s]+$/.test(trimmedValue)) {
+          return 'Name should only contain letters and spaces';
+        }
+        break;
+      case 'address.street':
+      case 'address.city':
+      case 'address.locality':
+        if (trimmedValue.length < 2) {
+          return `${name.split('.')[1]} must be at least 2 characters`;
+        }
+        break;
+    }
+    
+    return null;
   };
 
   const handleAmenityChange = (amenity: string) => {
@@ -340,29 +427,57 @@ export default function PropertyForm({
   };
 
   const handleNextStep = () => {
-    // Basic validations before allowing to proceed to next step
+    // Enhanced validations before allowing to proceed to next step
     if (formStep === 1) {
-      // Validate step 1 fields (Property Details)
-      if (
-        !formData.title ||
-        !formData.propertyType ||
-        !formData.price ||
-        !formData.area
-      ) {
+      // Validate step 1 fields (Property Details) with trim check
+      const titleError = validateField('title', formData.title);
+      const priceError = validateField('price', formData.price);
+      const areaError = validateField('area', formData.area);
+      const ownerNameError = validateField('ownerDetails.name', formData.ownerDetails.name);
+      const ownerPhoneError = validateField('ownerDetails.phone', formData.ownerDetails.phone);
+      
+      if (!formData.title?.trim() || !formData.propertyType?.trim() || !formData.price?.trim() || !formData.area?.trim()) {
         setError("Please fill all required fields in this step");
         toast.error("Please fill all required fields before proceeding");
         return;
       }
+      
+      if (titleError || priceError || areaError) {
+        setError(titleError || priceError || areaError || "Please fix the field errors");
+        toast.error(titleError || priceError || areaError || "Please fix the field errors");
+        return;
+      }
+      
+      if (!formData.ownerDetails.name?.trim() || !formData.ownerDetails.phone?.trim()) {
+        setError("Please provide owner name and phone number");
+        toast.error("Please provide owner name and phone number");
+        return;
+      }
+      
+      if (ownerNameError || ownerPhoneError) {
+        setError(ownerNameError || ownerPhoneError || "Please fix owner details");
+        toast.error(ownerNameError || ownerPhoneError || "Please fix owner details");
+        return;
+      }
+      
     } else if (formStep === 2) {
       // Validate step 2 fields (Description & Features)
-      if (!formData.description) {
+      const descriptionError = validateField('description', formData.description);
+      
+      if (!formData.description?.trim()) {
         setError("Please add a description for your property");
         toast.error("Please add a description before proceeding");
         return;
       }
+      
+      if (descriptionError) {
+        setError(descriptionError);
+        toast.error(descriptionError);
+        return;
+      }
+      
     } else if (formStep === 3) {
       // Validate step 3 fields (Photos)
-      // Validate minimum 5 images
       const totalImages = formData.images.length + formData.existingImages.length;
       if (totalImages < 5) {
         setError(
@@ -373,22 +488,26 @@ export default function PropertyForm({
         );
         return;
       }
+      
     } else if (formStep === 4) {
       // Validate step 4 fields (Location)
-      if (
-        !formData.address.city ||
-        !formData.address.locality ||
-        !formData.address.street
-      ) {
+      const streetError = validateField('address.street', formData.address.street);
+      const cityError = validateField('address.city', formData.address.city);
+      const localityError = validateField('address.locality', formData.address.locality);
+      
+      if (!formData.address.city?.trim() || !formData.address.locality?.trim() || !formData.address.street?.trim()) {
         setError("Please fill in all address fields");
         toast.error("Please fill in all address fields before proceeding");
         return;
       }
+      
+      if (streetError || cityError || localityError) {
+        setError(streetError || cityError || localityError || "Please fix address fields");
+        toast.error(streetError || cityError || localityError || "Please fix address fields");
+        return;
+      }
 
-      if (
-        !formData.address.coordinates.latitude ||
-        !formData.address.coordinates.longitude
-      ) {
+      if (!formData.address.coordinates.latitude?.trim() || !formData.address.coordinates.longitude?.trim()) {
         setError("Please provide location coordinates");
         toast.error("Please provide location coordinates before proceeding");
         return;
@@ -401,6 +520,19 @@ export default function PropertyForm({
       if (isNaN(latitude) || isNaN(longitude)) {
         setError("Please provide valid coordinates");
         toast.error("Please provide valid coordinates");
+        return;
+      }
+      
+      // Validate latitude and longitude ranges
+      if (latitude < -90 || latitude > 90) {
+        setError("Latitude must be between -90 and 90 degrees");
+        toast.error("Invalid latitude value");
+        return;
+      }
+      
+      if (longitude < -180 || longitude > 180) {
+        setError("Longitude must be between -180 and 180 degrees");
+        toast.error("Invalid longitude value");
         return;
       }
     }
@@ -426,8 +558,26 @@ export default function PropertyForm({
     setError(null);
 
     try {
-      // Validate owner details
-      if (!formData.ownerDetails.name || !formData.ownerDetails.phone) {
+      // Enhanced validation before submission
+      const titleError = validateField('title', formData.title);
+      const descriptionError = validateField('description', formData.description);
+      const priceError = validateField('price', formData.price);
+      const areaError = validateField('area', formData.area);
+      const ownerNameError = validateField('ownerDetails.name', formData.ownerDetails.name);
+      const ownerPhoneError = validateField('ownerDetails.phone', formData.ownerDetails.phone);
+      
+      // Check for any validation errors
+      const validationErrors = [titleError, descriptionError, priceError, areaError, ownerNameError, ownerPhoneError].filter(Boolean);
+      
+      if (validationErrors.length > 0) {
+        setError(validationErrors[0]); // Show first error
+        toast.error(validationErrors[0]);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate owner details with trim
+      if (!formData.ownerDetails.name?.trim() || !formData.ownerDetails.phone?.trim()) {
         setError("Please provide owner name and phone number");
         toast.error("Please provide owner name and phone number");
         setIsSubmitting(false);
@@ -440,6 +590,27 @@ export default function PropertyForm({
         toast.error("Please add at least 5 images");
         setIsSubmitting(false);
         return;
+      }
+      
+      // Validate all required text fields are not just whitespace
+      const requiredFields = [
+        { field: 'title', value: formData.title },
+        { field: 'description', value: formData.description },
+        { field: 'propertyType', value: formData.propertyType },
+        { field: 'price', value: formData.price },
+        { field: 'area', value: formData.area },
+        { field: 'address.street', value: formData.address.street },
+        { field: 'address.city', value: formData.address.city },
+        { field: 'address.locality', value: formData.address.locality }
+      ];
+      
+      for (const { field, value } of requiredFields) {
+        if (!value || !value.toString().trim()) {
+          setError(`${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`);
+          toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // First, we need to upload any new images
@@ -666,29 +837,27 @@ export default function PropertyForm({
     }
   };
 
-  // Debounce the coordinate fetch to avoid too many API calls
+  // Auto-fetch coordinates when address changes
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (formData.address) {
+      if (formData.address?.street && formData.address?.city) {
         fetchCoordinates(formData.address);
       }
-    }, 1000);
+    }, 1000); // Debounce by 1 second
 
     return () => clearTimeout(timer);
-  }, [
-    formData.address?.street,
-    formData.address?.city,
-    formData.address?.locality,
-    formData.address?.state,
-    formData.address?.zipCode,
-  ]);
+  }, [formData.address?.street, formData.address?.city, formData.address?.locality, formData.address?.state, formData.address?.zipCode]);
 
-  // Clean up image preview URLs on unmount
+  // Handle image removal
   useEffect(() => {
-    return () => {
-      imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, []);
+    const currentImageCount = imagePreviewUrls.length;
+    if (currentImageCount === 0 && formData.images && formData.images.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        images: []
+      }));
+    }
+  }, [imagePreviewUrls.length, formData.images?.length]);
 
   const handleGenerateAIDescription = async () => {
     // Basic validation before sending to API
@@ -718,14 +887,18 @@ export default function PropertyForm({
   };
 
   const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser");
-      toast.error("Geolocation is not supported by your browser");
+    // Ensure we're on the client side
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser. Please enter coordinates manually.");
+      toast.error("Geolocation is not supported by your browser. Please enter coordinates manually.");
       return;
     }
 
     setIsLoadingLocation(true);
     setLocationError(null);
+
+    // Show loading feedback
+    toast.loading("Getting your location...", { id: "location-form-toast" });
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -740,14 +913,36 @@ export default function PropertyForm({
           },
         });
         setIsLoadingLocation(false);
-        toast.success("Location detected successfully!");
+        toast.success("Location detected successfully!", { id: "location-form-toast" });
       },
       (error) => {
         setIsLoadingLocation(false);
-        setLocationError(`Failed to get your location: ${error.message}`);
-        toast.error(`Failed to get your location: ${error.message}`);
+        
+        let errorMessage = "Failed to get your location: ";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += "Location access denied. Please allow location access in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += "Location information is unavailable. Please enter coordinates manually.";
+            break;
+          case error.TIMEOUT:
+            errorMessage += "Location request timed out. Please try again or enter coordinates manually.";
+            break;
+          default:
+            errorMessage += error.message || "Unknown error occurred. Please enter coordinates manually.";
+            break;
+        }
+        
+        setLocationError(errorMessage);
+        toast.error(errorMessage, { id: "location-form-toast", duration: 6000 });
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+      { 
+        enableHighAccuracy: true, 
+        timeout: 20000, // Increased timeout to 20 seconds
+        maximumAge: 300000 // Cache location for 5 minutes
+      },
     );
   };
 
@@ -1254,10 +1449,12 @@ export default function PropertyForm({
                                 key={index}
                                 className="relative group rounded-lg overflow-hidden h-24"
                               >
-                                <img
+                                <Image
                                   src={url}
                                   alt={`Preview ${index}`}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                  className="object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                   <button

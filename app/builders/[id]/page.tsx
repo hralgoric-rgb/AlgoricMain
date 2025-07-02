@@ -53,7 +53,7 @@ interface Builder {
 export default function BuilderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [builder, setBuilder] = useState<Builder | null>(null);
   const [userRating, setUserRating] = useState(0);
@@ -68,6 +68,16 @@ export default function BuilderDetailPage({
   const [token, setToken] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Builder[]>([]);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [builderId, setBuilderId] = useState<string>('');
+
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setBuilderId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
 
   useEffect(() => {
     // Only run this on the client side
@@ -113,11 +123,14 @@ export default function BuilderDetailPage({
       setIsFavorited(favorites.some((fav) => fav._id === builder._id));
     }
   }, [builder, favorites]);
+  
   useEffect(() => {
     const fetchBuilder = async () => {
+      if (!builderId) return;
+      
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/builders/${params.id}`);
+        const response = await fetch(`/api/builders/${builderId}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -138,7 +151,7 @@ export default function BuilderDetailPage({
     };
 
     fetchBuilder();
-  }, [params.id]);
+  }, [builderId]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +175,7 @@ export default function BuilderDetailPage({
         text: reviewText,
       };
 
-      const response = await fetch(`/api/builders/${params.id}`, {
+      const response = await fetch(`/api/builders/${builderId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

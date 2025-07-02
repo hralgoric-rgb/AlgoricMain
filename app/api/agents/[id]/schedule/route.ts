@@ -21,10 +21,10 @@ function doTimeSlotsOverlap(
 // GET /api/agents/[id]/schedule - Get agent's schedule
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: agentId } = params;
+    const { id: agentId } = await params;
     
     if (!isValidObjectId(agentId)) {
       return NextResponse.json(

@@ -118,7 +118,7 @@ interface ContactFormData {
   message: string;
 }
 
-export default function PropertyPage({ params }: { params: { id: string } }) {
+export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,16 +132,28 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   const [contactFormSubmitting, setContactFormSubmitting] = useState(false);
   const [contactFormSuccess, setContactFormSuccess] = useState(false);
   const [contactFormError, setContactFormError] = useState<string | null>(null);
+  const [propertyId, setPropertyId] = useState<string>('');
 
   const { data: session } = useSession();
   const router = useRouter();
 
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setPropertyId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
+
   const fetchPropertyData = async () => {
+    if (!propertyId) return;
+    
     try {
       setLoading(true);
       setError(null);
 
-      const response = await axios.get(`/api/properties/${params.id}`);
+      const response = await axios.get(`/api/properties/${propertyId}`);
       console.log("Property: ", response.data);
       setProperty(response.data);
 
@@ -161,7 +173,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   };
   useEffect(() => {
     fetchPropertyData();
-  }, [params.id]);
+  }, [propertyId]);
 
   const fetchSimilarProperties = async (currentProperty: Property) => {
     try {
@@ -1523,11 +1535,13 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                 className="bg-white rounded-xl overflow-hidden border border-black/10 hover:border-orange-500/30 hover:shadow-lg transition-all duration-300 group"
               >
                 <a href={article.url} className="block">
-                  <div className="h-48 overflow-hidden">
-                    <img
+                  <div className="relative h-48 overflow-hidden">
+                    <Image
                       src={article.image}
                       alt={article.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
                   <div className="p-5">

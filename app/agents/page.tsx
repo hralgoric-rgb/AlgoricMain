@@ -142,7 +142,7 @@ export default function AgentsPage() {
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
-    limit: 10,
+    limit: 12,
     pages: 0,
   });
 
@@ -153,32 +153,61 @@ export default function AgentsPage() {
 
   const fetchAgents = async (page = 1, filterParams = {}) => {
     setLoading(true);
+    setError(null);
+    
     try {
       // Build URL with query parameters
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: "10",
+        limit: "12", // Increased to show more agents per page
         ...filterParams,
       });
 
-      const response = await fetch(`/api/agents?${params}`);
+      const response = await fetch(`/api/agents?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Add timeout
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch agents");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      setAgents(data.agents);
-      setFilteredAgents(data.agents);
-      setFilters(data.filters);
-      setPagination(data.pagination);
+      
+      // Validate response data
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format');
+      }
+      
+      setAgents(data.agents || []);
+      setFilteredAgents(data.agents || []);
+      setFilters(data.filters || { agencies: [], specializations: [], languages: [] });
+      setPagination(data.pagination || { total: 0, page: 1, limit: 12, pages: 0 });
       setError(null);
     } catch (err) {
       console.error("Error fetching agents:", err);
-      setError("Failed to load agents. Using fallback data.");
-      // Use fallback data when API fails
-      // setAgents(fallbackAgents);
-      // setFilteredAgents(fallbackAgentsData);
+      
+      let errorMessage = "Failed to load agents. ";
+      
+      if (err instanceof Error) {
+        if (err.name === 'TimeoutError') {
+          errorMessage += "Request timed out. Please check your connection and try again.";
+        } else if (err.message.includes('HTTP error')) {
+          errorMessage += "Server error occurred. Please try again later.";
+        } else {
+          errorMessage += err.message;
+        }
+      } else {
+        errorMessage += "Unknown error occurred. Please try again.";
+      }
+      
+      setError(errorMessage);
+      setAgents([]);
+      setFilteredAgents([]);
     } finally {
       setLoading(false);
     }
@@ -395,8 +424,42 @@ export default function AgentsPage() {
 
       {/* Agents Grid */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-12 text-center">
-          <motion.h2
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+              <p className="text-gray-300">Loading our amazing agents...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-20">
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-8 max-w-md mx-auto">
+              <div className="text-red-400 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Something went wrong</h3>
+              <p className="text-gray-300 mb-4">{error}</p>
+              <button
+                onClick={() => fetchAgents()}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Agents Content */}
+        {!loading && !error && (
+          <>
+            <div className="mb-12 text-center">
+              <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -647,6 +710,8 @@ export default function AgentsPage() {
               )}
             </div>
           </div>
+        )}
+          </>
         )}
       </section>
 

@@ -105,7 +105,7 @@ interface Review {
 export default function AgentDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -119,6 +119,7 @@ export default function AgentDetailPage({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string>('');
 
   const [userRating, setUserRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -129,6 +130,15 @@ export default function AgentDetailPage({
   const [token, setToken] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Agent[]>([]);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setAgentId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
 
   useEffect(() => {
     // Only run this on the client side
@@ -166,8 +176,9 @@ export default function AgentDetailPage({
     }
   }, [token]);
   const fetchReviews = async () => {
+    if (!agentId) return;
     try {
-      const response = await fetch(`/api/agents/${params.id}/reviews`);
+      const response = await fetch(`/api/agents/${agentId}/reviews`);
       if (response.ok) {
         const data = await response.json();
         setReviews(data.reviews);
@@ -178,9 +189,11 @@ export default function AgentDetailPage({
   };
   useEffect(() => {
     // Fetch agent details when component mounts
-    fetchAgentDetails();
-    fetchReviews();
-  }, [params.id]);
+    if (agentId) {
+      fetchAgentDetails();
+      fetchReviews();
+    }
+  }, [agentId]);
 
   // Update isFavorited when agent or favorites change
   useEffect(() => {
@@ -190,10 +203,11 @@ export default function AgentDetailPage({
   }, [agent, favorites]);
 
   const fetchAgentDetails = async (page = 1) => {
+    if (!agentId) return;
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/agents/${params.id}?page=${page}&limit=6`,
+        `/api/agents/${agentId}?page=${page}&limit=6`,
       );
 
       if (!response.ok) {
@@ -227,7 +241,7 @@ export default function AgentDetailPage({
     }
 
     try {
-      const response = await fetch(`/api/agents/${params.id}/reviews`, {
+      const response = await fetch(`/api/agents/${agentId}/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

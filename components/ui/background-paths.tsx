@@ -186,63 +186,89 @@ function PropertySearchBar() {
   const handleNearMe = () => {
     setIsLocationLoading(true);
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-
-          // Create params including current active tab filters
-          const params = new URLSearchParams();
-          params.append("lat", latitude.toString());
-          params.append("lng", longitude.toString());
-          params.append("nearMe", "true");
-
-          // Add filter based on active tab
-          switch (activeTab) {
-            case "buy":
-              params.append("filter", "sale");
-              break;
-            case "rent":
-              params.append("filter", "rent");
-              break;
-            case "new":
-              params.append("filter", "sale");
-              params.append("isNew", "true");
-              break;
-            case "pg":
-              params.append("filter", "rent");
-              params.append("propertyType", "PG/Hostel");
-              break;
-            case "plot":
-              params.append("filter", "sale");
-              params.append("propertyType", "Plot");
-              break;
-            case "commercial":
-              params.append("filter", "sale");
-              params.append("propertyType", "Commercial");
-              break;
-            default:
-              break;
-          }
-
-          // Navigate to search page with location and filters
-          router.push(`/search?${params.toString()}`);
-          setIsLocationLoading(false);
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast.error(
-            "Unable to get your location. Please check your browser permissions.",
-          );
-          setIsLocationLoading(false);
-        },
-        { timeout: 10000, enableHighAccuracy: true },
-      );
-    } else {
-      toast.error("Geolocation is not supported by your browser");
+    // Ensure we're on the client side
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser. Please search manually.");
       setIsLocationLoading(false);
+      return;
     }
-  };
+
+    // Show loading feedback immediately
+    toast.loading("Getting your location...", { id: "location-toast" });
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Create params including current active tab filters
+        const params = new URLSearchParams();
+        params.append("lat", latitude.toString());
+        params.append("lng", longitude.toString());
+        params.append("nearMe", "true");
+
+        // Add filter based on active tab
+        switch (activeTab) {
+          case "buy":
+            params.append("filter", "sale");
+            break;
+          case "rent":
+            params.append("filter", "rent");
+            break;
+          case "new":
+            params.append("filter", "sale");
+            params.append("isNew", "true");
+            break;
+          case "pg":
+            params.append("filter", "rent");
+            params.append("propertyType", "PG/Hostel");
+            break;
+          case "plot":
+            params.append("filter", "sale");
+            params.append("propertyType", "Plot");
+            break;
+          case "commercial":
+            params.append("filter", "sale");
+            params.append("propertyType", "Commercial");
+            break;
+          default:
+            break;
+        }
+
+        // Navigate to search page with location and filters
+        router.push(`/search?${params.toString()}`);
+        setIsLocationLoading(false);
+        toast.success("Location found! Searching nearby properties...", { id: "location-toast" });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setIsLocationLoading(false);
+        
+        let errorMessage = "Unable to get your location. ";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += "Please allow location access in your browser settings and try again.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += "Location information is unavailable. Please try again or search manually.";
+            break;
+          case error.TIMEOUT:
+            errorMessage += "Location request timed out. Please try again or search manually.";
+            break;
+          default:
+            errorMessage += "Please try again or search manually.";
+            break;
+        }
+        
+        toast.error(errorMessage, { id: "location-toast", duration: 5000 });
+      },
+      { 
+        timeout: 15000, // Increased timeout to 15 seconds
+        enableHighAccuracy: true,
+        maximumAge: 60000 // Cache location for 1 minute
+      },
+    );
+  }
 
   // Handle Enter key press in search input
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -645,15 +671,15 @@ export function BackgroundPaths() {
         <FloatingPaths position={-1} />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center py-20 min-h-screen flex flex-col justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 flex flex-col ">
-            <span className="mb-4 ">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-8 flex flex-col leading-tight overflow-visible">
+            <span className="mb-4 min-h-[1.2em] flex flex-wrap items-center justify-center">
               {/* First part - "Find your" - handling each word */}
               {firstPartWords.map((word, wordIndex) => (
                 <span key={`word-${wordIndex}`} className="inline-block mr-4">
@@ -685,7 +711,7 @@ export function BackgroundPaths() {
               />
             </span>
 
-            <span className="mb-4">
+            <span className="mb-4 min-h-[1.2em] flex flex-wrap items-center justify-center">
               {/* Second part - "Home with" - handling each word */}
               {secondPartWords.map((word, wordIndex) => (
                 <span
@@ -716,7 +742,7 @@ export function BackgroundPaths() {
               ))}
             </span>
 
-            <span>
+            <span className="min-h-[1.2em] flex flex-wrap items-center justify-center">
               {/* Brand name - "100 Gaj" with animated gradient */}
               {brandNameWords.map((word, wordIndex) => (
                 <span

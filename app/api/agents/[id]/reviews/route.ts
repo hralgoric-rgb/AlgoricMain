@@ -45,10 +45,10 @@ async function updateAgentRating(agentId: string) {
 // GET /api/agents/[id]/reviews - Get reviews for an agent
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!isValidObjectId(id)) {
       return NextResponse.json(

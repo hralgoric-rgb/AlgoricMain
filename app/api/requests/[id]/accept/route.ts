@@ -9,7 +9,7 @@ import { verifyToken } from '@/app/lib/utils';
 // POST /api/requests/:id/accept - Accept a verification request
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -21,7 +21,7 @@ export async function POST(
     const token = authHeader.split(' ')[1];
     const decodedUser = verifyToken(token);
     
-    const { id: requestId } = context.params;
+    const { id: requestId } = await context.params;
     
     if (!mongoose.Types.ObjectId.isValid(requestId)) {
       return NextResponse.json({ error: 'Invalid request ID' }, { status: 400 });

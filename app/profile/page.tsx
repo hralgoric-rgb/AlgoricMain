@@ -5,11 +5,20 @@ import type React from "react";
 import { motion } from "framer-motion";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ClientOnly from "../components/ClientOnly";
+import dynamic from "next/dynamic";
+
+// Dynamically import problematic components to avoid SSR issues
+const Tabs = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.Tabs })), { ssr: false });
+const TabsContent = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.TabsContent })), { ssr: false });
+const TabsList = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.TabsList })), { ssr: false });
+const TabsTrigger = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.TabsTrigger })), { ssr: false });
+const Avatar = dynamic(() => import("@/components/ui/avatar").then(mod => ({ default: mod.Avatar })), { ssr: false });
+const AvatarFallback = dynamic(() => import("@/components/ui/avatar").then(mod => ({ default: mod.AvatarFallback })), { ssr: false });
+const AvatarImage = dynamic(() => import("@/components/ui/avatar").then(mod => ({ default: mod.AvatarImage })), { ssr: false });
 import {
   Edit,
   LogOut,
@@ -133,34 +142,55 @@ export default function UserProfile() {
     const fetchUserProfile = async () => {
       setLoading(true);
       try {
-        const token = sessionStorage.getItem("authToken") || 
-                   document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+        // Check for authentication token in multiple locations
+        const token = 
+          sessionStorage.getItem("authToken") || 
+          document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1] ||
+          localStorage.getItem("authToken");
       
-      if (!token) {
-        setError("Authentication token not found. Please log in again.");
-        toast.error("Please log in to access your profile.");
+        if (!token) {
+          setError("Please log in to access your profile.");
+          toast.error("Please log in to access your profile.");
+          
+          // Redirect to home page with auth modal
+          setTimeout(() => {
+            router.push("/?modal=auth");
+          }, 2000);
+          
+          setLoading(false);
+          return;
+        }
 
-        setTimeout(() => {
-          router.push("/?modal=auth");
-        }, 1000);
+        // Store token for other API calls
+        setToken(token);
 
-        return;
-      }
-
+        // Attempt to fetch user profile
         const data = await UserAPI.getProfile();
+        
+        if (!data || !data._id) {
+          throw new Error("Invalid user data received");
+        }
+        
         setUser(data);
+        
         if (data.isAgent) {
           // Fetch assigned properties if user is an agent
-          const response = await axios.get("/api/properties/assigned", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          try {
+            const response = await axios.get("/api/properties/assigned", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
-          if (response.data.success) {
-            setAssignedProperties(response.data.properties);
+            if (response.data.success) {
+              setAssignedProperties(response.data.properties);
+            }
+          } catch (agentErr) {
+            console.warn("Failed to fetch assigned properties:", agentErr);
+            // Don't fail the whole page for agent properties
           }
         }
+        
         // Initialize form data with user values
         setFormData({
           name: data.name || "",
@@ -175,9 +205,26 @@ export default function UserProfile() {
         });
 
         setError("");
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to fetch user profile:", err);
-        setError("Failed to load user profile. Please try again later.");
+        
+        // Handle specific error cases
+        if (err.message?.includes("401") || err.message?.includes("Authentication")) {
+          setError("Your session has expired. Please log in again.");
+          toast.error("Session expired. Redirecting to login...");
+          
+          // Clear invalid token
+          sessionStorage.removeItem("authToken");
+          localStorage.removeItem("authToken");
+          document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          
+          setTimeout(() => {
+            router.push("/?modal=auth");
+          }, 2000);
+        } else {
+          setError("Failed to load user profile. Please try again later.");
+          toast.error("Failed to load profile. Please try again.");
+        }
       } finally {
         setLoading(false);
         setIsAssignedPropertiesLoading(false);
@@ -185,7 +232,7 @@ export default function UserProfile() {
     };
 
     fetchUserProfile();
-  }, []);
+  }, [router]);
 
   // Fetch user properties
   useEffect(() => {
@@ -383,18 +430,60 @@ export default function UserProfile() {
     return (
       <main className="min-h-screen bg-black text-white">
         <Navbar />
-        <div className="flex flex-col justify-center items-center h-[80vh]">
-          <div className="bg-red-500/10 p-8 rounded-xl border border-red-500/20 mb-6">
-            <p className="text-xl text-red-500 font-medium">
+        <div className="flex flex-col justify-center items-center h-[80vh] px-4">
+          <div className="bg-red-500/10 p-8 rounded-xl border border-red-500/20 mb-6 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-xl text-red-500 font-medium mb-2">
               {error || "Failed to load user profile"}
             </p>
+            <p className="text-gray-400 text-sm">
+              Please log in to access your profile and manage your properties.
+            </p>
           </div>
-          <Button
-            onClick={() => window.location.reload()}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            Try Again
-          </Button>
+          
+          <div className="flex gap-4">
+            <Button
+              onClick={() => router.push("/?modal=auth")}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2"
+            >
+              Login / Sign Up
+            </Button>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-2"
+            >
+              Try Again
+            </Button>
+          </div>
+          
+          {/* Quick demo access for testing */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm mb-3">
+              For testing purposes, you can create a demo account:
+            </p>
+            <Button
+              onClick={() => {
+                // Create demo account credentials
+                const demoEmail = "demo@100gaj.com";
+                const demoPassword = "demo123";
+                
+                // Show instructions
+                toast.info(`Demo credentials: Email: ${demoEmail}, Password: ${demoPassword}`, {
+                  duration: 5000,
+                });
+                
+                // Redirect to auth modal
+                router.push("/?modal=auth");
+              }}
+              variant="outline"
+              className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 text-sm px-4 py-1"
+            >
+              Get Demo Credentials
+            </Button>
+          </div>
         </div>
         <Footer />
       </main>
@@ -620,7 +709,12 @@ export default function UserProfile() {
             </motion.div>
 
             <motion.div variants={fadeIn}>
-              <Tabs defaultValue="details" className="w-full">
+              <ClientOnly fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                </div>
+              }>
+                <Tabs defaultValue="details" className="w-full">
                 <div className="relative mb-8">
                   <div className="absolute h-0.5 bottom-0 left-0 right-0 bg-gray-800"></div>
                   <TabsList className="relative z-10 bg-transparent border-b border-transparent h-auto p-0 gap-2">
@@ -1098,6 +1192,7 @@ export default function UserProfile() {
                   </TabsContent>
                 )}
               </Tabs>
+              </ClientOnly>
             </motion.div>
           </motion.div>
         </div>

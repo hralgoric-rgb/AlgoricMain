@@ -28,7 +28,7 @@ function genId() {
 }
 
 type ActionType = typeof actionTypes
-console.log("actionTypes", actionTypes)
+
 type Action =
   | {
       type: ActionType["ADD_TOAST"]
@@ -177,7 +177,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, [])
 
   return {
     ...state,

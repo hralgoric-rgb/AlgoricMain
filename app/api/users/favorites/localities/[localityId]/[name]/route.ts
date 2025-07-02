@@ -7,11 +7,13 @@ import { withAuth } from '@/app/lib/auth-middleware';
 // DELETE /api/users/favorites/localities/[localityId] - Remove a locality from favorites
 export const DELETE = withAuth(async (
   request: NextRequest,
-  userId: string,
-  { params }: { params: { localityId: string } }
+  userId: string
 ) => {
   try {
-    const { localityId } = params;
+    // Extract localityId from URL
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/').filter(segment => segment);
+    const localityId = pathSegments[pathSegments.length - 1]; // Get the last segment
     
     if (!localityId) {
       return NextResponse.json(

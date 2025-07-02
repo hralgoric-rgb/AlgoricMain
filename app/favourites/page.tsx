@@ -109,82 +109,82 @@ export default function FavoritesPage() {
   const [error, setError] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
-  useEffect(() => {
-    // Only run this on the client side
-    if (typeof window !== "undefined") {
-      const authToken = sessionStorage.getItem("authToken") || document.cookie.split(";").find((cookie) => cookie.startsWith("authToken="))?.split("=")[1];
-      if (authToken) {
-        setToken(authToken);
-        console.log("authToken: ", token);
-      } else {
-        toast.error("Please login to proceed!! Redirecting to home page!");
-        setTimeout(() => {
-          router.push("/");
-        }, 1500);
-      }
-    }
-  }, []);
 
-  const fetchFavorites = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      switch (activeTab) {
-        case "properties":
-          const propertiesData = await FavoritesAPI.getProperties();
-          setProperties(propertiesData.favorites || []);
-          break;
-        case "agents":
-          const agentsData = await FavoritesAPI.getAgents();
-          setAgents(agentsData.favorites || []);
-          break;
-        case "builders":
-          const buildersData = await FavoritesAPI.getBuilders();
-          
-          if (buildersData.favorites && buildersData.favorites.length > 0) {
-            toast.info(`Loading details for ${buildersData.favorites.length} builders...`);
+  // Check authentication on mount
+  useEffect(() => {
+    const storedToken = sessionStorage.getItem("authToken");
+    
+    if (!storedToken) {
+      router.push("/");
+      return;
+    }
+    
+    setToken(storedToken);
+  }, [router]);
+
+  // Fetch favorites when token or activeTab changes
+  useEffect(() => {
+    if (!token) return;
+    
+    const fetchFavorites = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        switch (activeTab) {
+          case "properties":
+            const propertiesData = await FavoritesAPI.getProperties();
+            setProperties(propertiesData.favorites || []);
+            break;
+          case "agents":
+            const agentsData = await FavoritesAPI.getAgents();
+            setAgents(agentsData.favorites || []);
+            break;
+          case "builders":
+            const buildersData = await FavoritesAPI.getBuilders();
             
-            // Fetch detailed information for each builder
-            const builderDetailsPromises = buildersData.favorites.map(async (builder: any) => {
-              try {
-                const response = await fetch(`/api/builders/${builder._id}`);
-                if (response.ok) {
-                  const data = await response.json();
-                  return data.builder;
+            if (buildersData.favorites && buildersData.favorites.length > 0) {
+              toast.info(`Loading details for ${buildersData.favorites.length} builders...`);
+              
+              // Fetch detailed information for each builder
+              const builderDetailsPromises = buildersData.favorites.map(async (builder: any) => {
+                try {
+                  const response = await fetch(`/api/builders/${builder._id}`);
+                  if (response.ok) {
+                    const data = await response.json();
+                    return data.builder;
+                  }
+                  console.warn(`Could not fetch details for builder ${builder._id}, using basic data`);
+                  return builder; // Fall back to basic data if fetch fails
+                } catch (error) {
+                  console.error(`Error fetching details for builder ${builder._id}:`, error);
+                  return builder; // Fall back to basic data if fetch fails
                 }
-                console.warn(`Could not fetch details for builder ${builder._id}, using basic data`);
-                return builder; // Fall back to basic data if fetch fails
-              } catch (error) {
-                console.error(`Error fetching details for builder ${builder._id}:`, error);
-                return builder; // Fall back to basic data if fetch fails
+              });
+              
+              const builderDetails = await Promise.all(builderDetailsPromises);
+              const validBuilders = builderDetails.filter(builder => builder !== null && builder !== undefined);
+              
+              if (validBuilders.length < builderDetails.length) {
+                toast.warning(`Some builder details could not be loaded completely.`);
               }
-            });
-            
-            const builderDetails = await Promise.all(builderDetailsPromises);
-            const validBuilders = builderDetails.filter(builder => builder !== null && builder !== undefined);
-            
-            if (validBuilders.length < builderDetails.length) {
-              toast.warning(`Some builder details could not be loaded completely.`);
+              
+              setBuilders(validBuilders);
+            } else {
+              setBuilders([]);
             }
-            
-            setBuilders(validBuilders);
-          } else {
-            setBuilders([]);
-          }
-          break;
+            break;
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        setError("Failed to load favorites. Please try again later.");
+        toast.error("Failed to load favorites. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching favorites:", error);
-      setError("Failed to load favorites. Please try again later.");
-      toast.error("Failed to load favorites. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  },[activeTab]);
+    };
 
-  useEffect(() => {
     fetchFavorites();
-  }, [activeTab, fetchFavorites]);
+  }, [token, activeTab]);
 
   const removeFromFavorites = async (type: string, id: string) => {
     try {
@@ -355,7 +355,7 @@ function EmptyState({ type }: { type: string }) {
       title: "No favorite properties yet",
       description: "Start exploring properties and save your favorites here.",
       action: "Browse Properties",
-      link: "/properties",
+      link: "/search",
       icon: <HomeIcon className="w-16 h-16 text-gray-500" />,
     },
     agents: {

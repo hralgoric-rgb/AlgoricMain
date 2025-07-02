@@ -51,12 +51,12 @@ const mockProperties: Property[] = [
     location: "Rohini, New Delhi",
     address: {
       street: "123 Main St",
-      city: "New Delhi",
+      city: "Rohini",
       state: "Delhi",
-      zipCode: "110001",
+      zipCode: "110085",
       location: {
         type: "Point",
-        coordinates: [77.1907, 28.7091],
+        coordinates: [77.1025, 28.7041],
       },
     },
     price: 2500000,
@@ -74,13 +74,13 @@ const mockProperties: Property[] = [
     title: "Modern Villa with Pool",
     location: "Dwarka, New Delhi",
     address: {
-      street: "123 Main St",
-      city: "New Delhi",
+      street: "456 Garden St",
+      city: "Dwarka",
       state: "Delhi",
-      zipCode: "110001",
+      zipCode: "110075",
       location: {
         type: "Point",
-        coordinates: [77.1907, 28.7091],
+        coordinates: [77.0469, 28.5921],
       },
     },
     price: 4200000,
@@ -98,13 +98,13 @@ const mockProperties: Property[] = [
     title: "Waterfront Condo",
     location: "East Delhi",
     address: {
-      street: "123 Main St",
-      city: "New Delhi",
+      street: "789 River Side",
+      city: "Laxmi Nagar",
       state: "Delhi",
-      zipCode: "110001",
+      zipCode: "110092",
       location: {
         type: "Point",
-        coordinates: [77.1907, 28.7091],
+        coordinates: [77.2773, 28.6363],
       },
     },
     price: 1800000,
@@ -122,13 +122,13 @@ const mockProperties: Property[] = [
     title: "Historic Townhouse",
     location: "Vasant Vihar, New Delhi",
     address: {
-      street: "123 Main St",
-      city: "New Delhi",
+      street: "321 Heritage Lane",
+      city: "Vasant Vihar",
       state: "Delhi",
-      zipCode: "110001",
+      zipCode: "110057",
       location: {
         type: "Point",
-        coordinates: [77.1907, 28.7091],
+        coordinates: [77.1525, 28.5677],
       },
     },
     price: 1950000,
@@ -146,13 +146,13 @@ const mockProperties: Property[] = [
     title: "Luxury Apartment for Rent",
     location: "South Delhi",
     address: {
-      street: "123 Main St",
-      city: "New Delhi",
+      street: "567 Premium Heights",
+      city: "Greater Kailash",
       state: "Delhi",
-      zipCode: "110001",
+      zipCode: "110048",
       location: {
         type: "Point",
-        coordinates: [77.1907, 28.7091],
+        coordinates: [77.2424, 28.5244],
       },
     },
     price: 8500,
@@ -168,15 +168,15 @@ const mockProperties: Property[] = [
   {
     _id: "6",
     title: "Modern Office Space",
-    location: "Model Town, New Delhi",
+    location: "Gurgaon",
     address: {
-      street: "123 Main St",
-      city: "New Delhi",
-      state: "Delhi",
-      zipCode: "110001",
+      street: "890 Business Hub",
+      city: "Gurgaon",
+      state: "Haryana",
+      zipCode: "122001",
       location: {
         type: "Point",
-        coordinates: [77.1907, 28.7091],
+        coordinates: [77.0266, 28.4595],
       },
     },
     price: 3200000,
@@ -266,12 +266,12 @@ const SearchPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map' | 'split'>('list');
   const [selectedFilters, setSelectedFilters] = useState<FilterState>({
-    priceRange: [0, 5000000],
+    priceRange: [0, 100000000],
     propertyType: [],
     status: [],
     beds: [],
     baths: [],
-    area: [0, 5000],
+    area: [0, 10000],
   });
   const [mapCenter, setMapCenter] = useState({ lat: 28.7041, lng: 77.1025 }); // Delhi coordinates
   const [zoom, setZoom] = useState(12);
@@ -1599,14 +1599,16 @@ const SearchPage = () => {
                           }}
                         >
                           <div className="relative md:w-2/5">
-                            <img
+                            <Image
                               src={
                                 property.images && property.images.length > 0
                                   ? property.images[0]
                                   : "/placeholder.jpg"
                               }
                               alt={property.title}
-                              className="w-full h-48 md:h-48 object-cover"
+                              fill
+                              sizes="(max-width: 768px) 100vw, 40vw"
+                              className="object-cover"
                             />
                             <div className="absolute top-2 right-2">
                               <span className="bg-orange-600/80 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">
@@ -1747,10 +1749,12 @@ const SearchPage = () => {
                         className="bg-white rounded-md shadow-orange-500 shadow-sm overflow-hidden border border-gray-700 flex flex-col"
                       >
                         <div className="relative h-40">
-                          <img
+                          <Image
                             src={article.urlToImage}
                             alt={article.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                            className="object-cover"
                           />
                           <div className="absolute top-2 right-2">
                             <span className="bg-black/80 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">

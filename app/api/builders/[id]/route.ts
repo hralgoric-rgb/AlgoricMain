@@ -6,12 +6,12 @@ import mongoose from 'mongoose';
 // GET a specific builder by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const { id } = params;
+    const { id } = await params;
     
     // Validate if the ID is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -44,12 +44,12 @@ export async function GET(
 // PUT/PATCH to update a builder
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const { id } = params;
+    const { id } = await params;
     const updateData = await req.json();
     
     // Validate if the ID is a valid MongoDB ObjectId
@@ -87,12 +87,12 @@ export async function PATCH(
 // Add a review to a builder
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     
-    const { id } = params;
+    const { id } = await params;
     const reviewData = await req.json();
     
     // Validate required fields

@@ -10,7 +10,7 @@ const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 // GET /api/agents/[id] - Get agent details and their properties
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;

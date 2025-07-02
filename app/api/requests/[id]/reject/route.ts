@@ -8,7 +8,7 @@ import { verifyToken } from '@/app/lib/utils';
 // POST /api/requests/:id/reject - Reject a verification request
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -31,7 +31,7 @@ export async function POST(
     //   );
     // }
     
-    const {id:requestId} = context.params;
+    const {id:requestId} = await context.params;
     
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(requestId)) {

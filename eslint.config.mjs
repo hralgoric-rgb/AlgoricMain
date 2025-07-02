@@ -22,6 +22,18 @@ const eslintConfig = [
           "ts-expect-error": false, // allow ts-expect-error
         },
       ],
+      // Reduce React hooks dependency warnings to warnings instead of errors
+      "react-hooks/exhaustive-deps": "warn",
+      // Allow img elements with warning instead of error for gradual migration
+      "@next/next/no-img-element": "warn",
+      // Allow unused variables with underscore prefix
+      "@typescript-eslint/no-unused-vars": ["warn", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_" 
+      }],
+      // Development-friendly settings
+      "prefer-const": "warn",
+      "no-console": "warn",
     },
   },
 ];
