@@ -1,40 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvents,
-  useMap,
-} from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import "../styles/map-overrides.css";
-
-// Fix for default marker icons in Leaflet
-const icon = L.icon({
-  iconUrl: "/location.png",
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -35],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  shadowSize: [45, 45],
-  shadowAnchor: [10, 40],
-});
-
-const highlightIcon = L.icon({
-  iconUrl: "/gps.png",
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -35],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  shadowSize: [45, 45],
-  shadowAnchor: [10, 40],
-});
+import { useEffect, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 
 interface MapBounds {
   north: number;
@@ -58,180 +25,58 @@ interface MapProps {
     title: string;
     price: string;
     type: string;
-    isNew?: boolean; // Optional flag to highlight newly added properties
+    isNew?: boolean;
   }>;
   onMarkerClick?: (propertyId: string) => void;
   onBoundsChanged?: (bounds: MapBounds) => void;
-  onMapLoad?: (map: L.Map) => void;
+  onMapLoad?: (map: any) => void;
 }
 
-// Component to handle map events and call onBoundsChanged
-function MapEventsHandler({
-  onBoundsChanged,
-}: {
-  onBoundsChanged?: (bounds: MapBounds) => void;
-}) {
-  const map = useMapEvents({
-    moveend: () => {
-      if (onBoundsChanged) {
-        const bounds = map.getBounds();
-        onBoundsChanged({
-          north: bounds.getNorth(),
-          south: bounds.getSouth(),
-          east: bounds.getEast(),
-          west: bounds.getWest(),
-        });
-      }
-    },
-    zoomend: () => {
-      if (onBoundsChanged) {
-        const bounds = map.getBounds();
-        onBoundsChanged({
-          north: bounds.getNorth(),
-          south: bounds.getSouth(),
-          east: bounds.getEast(),
-          west: bounds.getWest(),
-        });
-      }
-    },
-  });
-  return null;
-}
+// Dynamic import of the actual map component to prevent SSR issues
+const LeafletMap = dynamic(
+  () => import("./LeafletMapComponent"),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500 mx-auto mb-2"></div>
+          <div className="text-gray-500">Loading map...</div>
+        </div>
+      </div>
+    )
+  }
+);
 
-// Component to track property updates and ensure they're visible
-function PropertyTracker({
-  properties,
-}: {
-  properties: MapProps["properties"];
-}) {
-  const map = useMap();
-  const prevPropertiesRef = useRef<string[]>([]);
+const Map = (props: MapProps) => {
+  const [isClient, setIsClient] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
 
   useEffect(() => {
-    // Check for new properties by comparing IDs
-    const currentIds = properties.map((p) => p.id);
-    const prevIds = prevPropertiesRef.current;
+    setIsClient(true);
+  }, []);
 
-    // Find newly added properties
-    const newPropertyIds = currentIds.filter((id) => !prevIds.includes(id));
+  const handleMapError = useCallback(() => {
+    // Map error occurred, attempting recovery
+    setMapKey(prev => prev + 1);
+  }, []);
 
-    if (newPropertyIds.length > 0) {
-      // If there are new properties, ensure they're visible on the map
-      const newProperties = properties.filter((p) =>
-        newPropertyIds.includes(p.id),
-      );
-
-      if (newProperties.length > 0) {
-        // Create bounds that include all new properties
-        const bounds = L.latLngBounds(
-          newProperties.map((p) => [p.coordinates.lat, p.coordinates.lng]),
-        );
-
-        // Extend bounds to include existing view
-        bounds.extend(map.getBounds());
-
-        // Fit map to these bounds
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-      }
-    }
-
-    // Update previous properties ref
-    prevPropertiesRef.current = currentIds;
-  }, [properties, map]);
-
-  return null;
-}
-
-const Map = ({
-  center,
-  zoom,
-  properties,
-  onMarkerClick,
-  onBoundsChanged,
-  onMapLoad,
-}: MapProps) => {
-  const mapRef = useRef<L.Map>(null);
-  const [visibleProperties, setVisibleProperties] = useState<
-    MapProps["properties"]
-  >([]);
-
-  // Update map view when center or zoom changes
-  useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.setView([center.lat, center.lng], zoom);
-    }
-  }, [center, zoom]);
-
-  // Track which properties are visible (useful for debugging)
-  useEffect(() => {
-    if (mapRef.current && properties.length > 0) {
-      const bounds = mapRef.current.getBounds();
-      const visible = properties.filter((property) => {
-        const { lat, lng } = property.coordinates;
-        return bounds.contains([lat, lng]);
-      });
-      setVisibleProperties(visible);
-    } else {
-      setVisibleProperties(properties);
-    }
-  }, [properties]);
-
-  // Log property changes to help with debugging
-  useEffect(() => {
-    console.log(
-      `Map rendering ${properties.length} properties, ${visibleProperties.length} visible`,
+  if (!isClient) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-gray-100">
+        <div className="text-gray-500">Initializing map...</div>
+      </div>
     );
-  }, [properties.length, visibleProperties.length]);
-
-  // Handle map instance after initialization
-  useEffect(() => {
-    if (mapRef.current && onMapLoad) {
-      onMapLoad(mapRef.current);
-    }
-  }, [onMapLoad]);
+  }
 
   return (
-    <MapContainer
-      center={[center.lat, center.lng]}
-      zoom={zoom}
-      style={{ height: "100%", width: "100%", zIndex: 10 }}
-      ref={mapRef}
-      className="z-10"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div className="h-full w-full">
+      <LeafletMap 
+        key={mapKey}
+        {...props}
+        onError={handleMapError}
       />
-      {properties.map((property) => (
-        <Marker
-          key={property.id}
-          position={[property.coordinates.lat, property.coordinates.lng]}
-          icon={property.isNew ? highlightIcon : icon}
-          eventHandlers={{
-            click: () => {
-              if (onMarkerClick) {
-                onMarkerClick(property.id);
-              }
-            },
-          }}
-        >
-          <Popup>
-            <div className="p-2">
-              <h3 className="font-semibold text-[#FF6B6B]">{property.title}</h3>
-              <p className="text-sm text-gray-600">{property.price}</p>
-              <p className="text-xs text-gray-500">{property.type}</p>
-              {property.isNew && (
-                <p className="text-xs text-green-500 font-semibold mt-1">
-                  New Listing
-                </p>
-              )}
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-      <MapEventsHandler onBoundsChanged={onBoundsChanged} />
-      <PropertyTracker properties={properties} />
-    </MapContainer>
+    </div>
   );
 };
 

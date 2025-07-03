@@ -1,29 +1,28 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Component, ErrorInfo, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaSearch,
-  FaFilter,
   FaBed,
   FaBath,
   FaRulerCombined,
+  FaFilter,
   FaTimes,
   FaHeart,
   FaMapMarkerAlt,
   FaArrowRight,
-  FaNewspaper,
   FaMap,
   FaList,
+  FaNewspaper,
 } from "react-icons/fa";
-
-import Map from "../components/Map";
-import Link from "next/link";
-import Navbar from "../components/navbar";
-import axios from "axios";
-import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import Link from "next/link";
 import Image from "next/image";
 import { FavoritesAPI } from "../lib/api-helpers";
+import Map from "../components/Map";
+import Navbar from "../components/navbar";
 
 // Mock property data
 const priceRanges = [
@@ -294,8 +293,8 @@ const SearchPage = () => {
       try {
         const propertiesData = await FavoritesAPI.getProperties();
         setFavorites(propertiesData.favorites);
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
+      } catch (_error) {
+
         toast.error("Failed to fetch favorites");
       }
     }
@@ -378,7 +377,7 @@ const SearchPage = () => {
 
       if (response.data.success) {
         const properties = response.data.properties;
-        console.log("Properties: ", properties);
+
         // Store the properties in sessionStorage for quick access on refresh
         if (typeof window !== "undefined") {
           try {
@@ -390,8 +389,8 @@ const SearchPage = () => {
               "propertiesCacheTime",
               new Date().toString(),
             );
-          } catch (e) {
-            console.warn("Failed to cache properties in sessionStorage:", e);
+          } catch (_e) {
+
           }
         }
         setAllProperties(properties);
@@ -401,8 +400,7 @@ const SearchPage = () => {
         setAllProperties(mockProperties);
         setFilteredProperties(mockProperties);
       }
-    } catch (error) {
-      console.error("Error fetching properties:", error);
+    } catch (_error) {
 
       // Try to get cached properties from sessionStorage
       if (typeof window !== "undefined") {
@@ -414,8 +412,8 @@ const SearchPage = () => {
             setFilteredProperties(properties);
             return;
           }
-        } catch (e) {
-          console.warn("SessionStorage error:", e);
+        } catch (_e) {
+
         }
       }
 
@@ -477,7 +475,6 @@ const SearchPage = () => {
       }
 
       // Log the params for debugging
-      console.log("Search params:", params);
 
       try {
         const response = await axios.get("/api/properties/map-search", {
@@ -505,14 +502,13 @@ const SearchPage = () => {
 
           setFilteredProperties(propertiesInBounds);
         }
-      } catch (error) {
-        console.error("Error fetching properties in map bounds:", error);
+      } catch (_error) {
 
         // Fallback to client-side filtering based on map bounds
         fallbackToClientFiltering();
       }
-    } catch (error) {
-      console.error("Error in searchPropertiesInMapBounds:", error);
+    } catch (_error) {
+
       fallbackToClientFiltering();
     } finally {
       setIsLoading(false);
@@ -618,9 +614,9 @@ const SearchPage = () => {
     setFilteredProperties(propertiesInBounds);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("SearchQuery: ", searchQuery);
+  const handleSearch = (_e: React.FormEvent) => {
+    _e.preventDefault();
+
     filterProperties();
   };
 
@@ -738,9 +734,7 @@ const SearchPage = () => {
   useEffect(() => {
     // Add a small delay to prevent too many rapid calls when changing filters
     const timer = setTimeout(() => {
-      console.log("Filtering properties due to filter/search change");
-      console.log("Current filters:", selectedFilters);
-      console.log("Search query:", searchQuery);
+
       filterProperties();
     }, 300);
 
@@ -750,7 +744,7 @@ const SearchPage = () => {
   // Make a separate useEffect for property data changes
   useEffect(() => {
     if (allProperties.length > 0) {
-      console.log("Filtering properties due to data change");
+
       filterProperties();
     }
   }, [allProperties, filterProperties]);
@@ -819,8 +813,8 @@ const SearchPage = () => {
         // Update local state
         fetchFavorite();
       }
-    } catch (error) {
-      console.error("Error toggling favorite status:", error);
+    } catch (_error) {
+
     }
   };
 
@@ -873,8 +867,8 @@ const SearchPage = () => {
         } else {
           setArticlesError("No articles found");
         }
-      } catch (error) {
-        console.error("Error fetching articles:", error);
+      } catch (_error) {
+
         setArticlesError("Failed to fetch articles");
 
         // Use fallback articles similar to what we do in property-news.tsx
@@ -927,76 +921,6 @@ const SearchPage = () => {
     }
   };
 
-  // Mock articles for fallback
-  // const mockArticles: Article[] = [
-  //   {
-  //     id: "1",
-  //     title: "Real Estate Trends in India for 2024",
-  //     description:
-  //       "Find out the latest market trends and investment opportunities in the Indian real estate sector for 2024.",
-  //     url: "#",
-  //     urlToImage: "/article1.jpg",
-  //     publishedAt: "2024-05-01T10:00:00Z",
-  //     source: { name: "Real Estate News" },
-  //     category: "Market",
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "New Housing Policies Announced in Delhi",
-  //     description:
-  //       "The Delhi government has announced new housing policies to make affordable housing accessible to more citizens.",
-  //     url: "#",
-  //     urlToImage: "/article2.jpg",
-  //     publishedAt: "2024-05-02T09:30:00Z",
-  //     source: { name: "Delhi News" },
-  //     category: "Policy",
-  //   },
-  //   {
-  //     id: "3",
-  //     title: "Tips for First-Time Home Buyers in India",
-  //     description:
-  //       "Essential advice for first-time home buyers navigating the complex real estate market in India.",
-  //     url: "#",
-  //     urlToImage: "/article3.jpg",
-  //     publishedAt: "2024-05-03T11:15:00Z",
-  //     source: { name: "Home Buying Guide" },
-  //     category: "Advice",
-  //   },
-  //   {
-  //     id: "4",
-  //     title: "Luxury Real Estate Booming in Mumbai",
-  //     description:
-  //       "The luxury real estate segment in Mumbai is experiencing unprecedented growth despite economic challenges.",
-  //     url: "#",
-  //     urlToImage: "/image1.jpg",
-  //     publishedAt: "2024-05-04T08:45:00Z",
-  //     source: { name: "Mumbai Property News" },
-  //     category: "Market",
-  //   },
-  //   {
-  //     id: "5",
-  //     title: "Environmental Considerations in Modern Housing",
-  //     description:
-  //       "How sustainable practices are being incorporated into modern housing developments across India.",
-  //     url: "#",
-  //     urlToImage: "/image2.avif",
-  //     publishedAt: "2024-05-05T14:20:00Z",
-  //     source: { name: "Green Living" },
-  //     category: "News",
-  //   },
-  //   {
-  //     id: "6",
-  //     title: "Commercial Real Estate Outlook Post-Pandemic",
-  //     description:
-  //       "Analysis of how commercial real estate in India has evolved after the pandemic and what to expect in the future.",
-  //     url: "#",
-  //     urlToImage: "/image3.webp",
-  //     publishedAt: "2024-05-06T16:10:00Z",
-  //     source: { name: "Business Property Review" },
-  //     category: "Market",
-  //   },
-  // ];
-
   // Format publication date
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -1019,8 +943,8 @@ const SearchPage = () => {
         if (storedNewProperties) {
           setNewlyAddedProperties(new Set(JSON.parse(storedNewProperties)));
         }
-      } catch (e) {
-        console.warn("SessionStorage error:", e);
+      } catch (_e) {
+
       }
     }
   }, []);
@@ -1037,9 +961,8 @@ const SearchPage = () => {
   //           (fav: { _id: string }) => fav._id,
   //         ),
   //       });
-  //     } catch (error) {
-  //       console.error("Error fetching favorites:", error);
-  //     }
+  //     } catch (_error) {
+  //       //     }
   //   };
 
   //   fetchFavorites();
@@ -1138,10 +1061,10 @@ const SearchPage = () => {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
+                  onChange={(_e) => setSearchQuery(_e.target.value)}
+                  onKeyDown={(_e) => {
+                    if (_e.key === "Enter") {
+                      _e.preventDefault();
                       filterProperties();
                     }
                   }}
@@ -1290,7 +1213,7 @@ const SearchPage = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(_e) => _e.stopPropagation()}
             >
               <div className="sticky top-0 bg-gradient-to-r from-orange-600 to-orange-500 z-10 flex items-center justify-between p-4 border-b border-gray-700">
                 <h2 className="text-lg font-medium text-white">Filters</h2>
@@ -1497,54 +1420,55 @@ const SearchPage = () => {
           } flex-1 h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] sticky top-16 overflow-hidden`}
           style={{ display: (viewMode === 'map' || viewMode === 'split' || window.innerWidth >= 768) ? 'block' : 'none' }}
         >
-          <Map
-            key={`map-${viewMode}`} // Force remount on view mode change
-            center={mapCenter}
-            zoom={zoom}
-            onMapLoad={setMapInstance}
-            properties={filteredProperties.map((property) => ({
-              id: property._id,
-              coordinates: property.address?.location?.coordinates
-                ? {
-                    lat: property.address.location.coordinates[1],
-                    lng: property.address.location.coordinates[0],
-                  }
-                : { lat: 28.7041, lng: 77.1025 }, // Default to Delhi if no coordinates
-              title: property.title,
-              price:
-                typeof property.price === "string"
-                  ? property.price
-                  : `₹${property.price.toLocaleString()}`,
-              type: property.propertyType,
-              isNew: newlyAddedProperties.has(property._id), // Mark as new if in our tracked set
-            }))}
-            onMarkerClick={(propertyId) => {
-              const element = document.getElementById(`property-${propertyId}`);
-              if (element) {
-                element.scrollIntoView({ behavior: "smooth" });
-              }
-            }}
-            onBoundsChanged={handleMapBoundsChange}
-            // mapStyle="dark" // Set the map style to dark
-          />
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center z-10">
-            <button
-              onClick={() => {
-                if (mapBounds) {
-                  searchPropertiesInMapBounds();
-                  // On mobile, switch to list view after search
-                  if (window.innerWidth < 768) {
-                    setViewMode('list');
-                  }
+          <MapErrorBoundary>
+            <Map
+              center={mapCenter}
+              zoom={zoom}
+              onMapLoad={setMapInstance}
+              properties={filteredProperties.map((property) => ({
+                id: property._id,
+                coordinates: property.address?.location?.coordinates
+                  ? {
+                      lat: property.address.location.coordinates[1],
+                      lng: property.address.location.coordinates[0],
+                    }
+                  : { lat: 28.7041, lng: 77.1025 }, // Default to Delhi if no coordinates
+                title: property.title,
+                price:
+                  typeof property.price === "string"
+                    ? property.price
+                    : `₹${property.price.toLocaleString()}`,
+                type: property.propertyType,
+                isNew: newlyAddedProperties.has(property._id), // Mark as new if in our tracked set
+              }))}
+              onMarkerClick={(propertyId) => {
+                const element = document.getElementById(`property-${propertyId}`);
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth" });
                 }
               }}
-              className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm hover:bg-orange-600 transition-colors font-bold"
-            >
-              Search this area
-            </button>
+              onBoundsChanged={handleMapBoundsChange}
+              // mapStyle="dark" // Set the map style to dark
+            />
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center z-10">
+              <button
+                onClick={() => {
+                  if (mapBounds) {
+                    searchPropertiesInMapBounds();
+                    // On mobile, switch to list view after search
+                    if (window.innerWidth < 768) {
+                      setViewMode('list');
+                    }
+                  }
+                }}
+                className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm hover:bg-orange-600 transition-colors font-bold"
+              >
+                Search this area
+              </button>
 
-            {/* List view toggle button - only visible on mobile when map is shown */}
-          </div>
+              {/* List view toggle button - only visible on mobile when map is shown */}
+            </div>
+          </MapErrorBoundary>
         </div>
 
         {/* Properties List + Articles Section */}
@@ -1626,8 +1550,8 @@ const SearchPage = () => {
                             )}
                             <button
                               className="absolute top-2 left-2 h-8 w-8 flex items-center justify-center bg-white/80 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition"
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={(_e) => {
+                                _e.stopPropagation();
                                 if (!token) {
                                   toast.error(
                                     "Please login to add to favorites",
@@ -1826,5 +1750,50 @@ const SearchPage = () => {
     </div>
   );
 };
+
+// Error boundary for Map component
+class MapErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Map error occurred - silent logging
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="h-full w-full flex items-center justify-center bg-gray-100">
+          <div className="text-center p-8">
+            <div className="text-gray-500 mb-4">
+              <FaMap className="h-12 w-12 mx-auto mb-2" />
+              <h3 className="text-lg font-medium">Map temporarily unavailable</h3>
+              <p className="text-sm mt-2">
+                The map is having trouble loading. Please refresh the page or try again later.
+              </p>
+            </div>
+            <button
+              onClick={() => this.setState({ hasError: false })}
+              className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export default SearchPage;
