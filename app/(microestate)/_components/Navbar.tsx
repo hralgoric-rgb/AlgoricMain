@@ -24,11 +24,15 @@ function Navbar() {
         setIsOpen(false);
     }, [pathname]);
 
+    if (pathname.includes('/microestate/auth')) {
+        return null;
+    }
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-6 py-4">
                 <div className="flex items-center justify-between">
-                    
+
                     <div className="flex items-center space-x-2">
                         <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                             <Building className="w-5 h-5 text-white" />
@@ -58,7 +62,7 @@ function Navbar() {
                         <Button
                             variant="outline"
                             className="bg-primary/10 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-                            onClick={() => { }}
+                            onClick={() => router.push("/microestate/auth")}
                         >
                             let's talk
                         </Button>
