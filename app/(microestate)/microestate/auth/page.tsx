@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // Import your icons and GoogleLoginButton here
 // import { Mail, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 // import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 const Login = () => {
-  const [currentView, setCurrentView] = useState<"main" | "forgot-password" | "verify-email">("main");
+  const [currentView, setCurrentView] = useState<"main" | "forgot-password">("main");
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,9 +15,34 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState<0 | 1 | 2 | 3 | 4>(0); // 0-4 strength levels
+
+  // Password strength calculation
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength(0);
+      return;
+    }
+
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+
+    setPasswordStrength(Math.min(4, strength) as 0 | 1 | 2 | 3 | 4);
+  }, [password]);
+
+  const getPasswordStrengthColor = (level: number) => {
+    const colors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-400", "bg-green-500"];
+    return colors[level] || "bg-gray-200";
+  };
+
+  const getPasswordStrengthLabel = (level: number) => {
+    const labels = ["Very weak", "Weak", "Medium", "Strong", "Very strong"];
+    return labels[level] || "";
+  };
 
   // Dummy handlers for demonstration
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,8 +65,7 @@ const Login = () => {
     // TODO: Implement signup logic
     setTimeout(() => {
       setLoading(false);
-      setCurrentView("verify-email");
-      setSuccess("Verification code sent to your email.");
+      setSuccess("Account created successfully! You can now log in.");
     }, 1000);
   };
 
@@ -53,47 +77,7 @@ const Login = () => {
     // TODO: Implement forgot password logic
     setTimeout(() => {
       setLoading(false);
-      setCurrentView("verify-email");
-      setSuccess("Reset code sent to your email.");
-    }, 1000);
-  };
-
-  const handleVerifyEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    // TODO: Implement email verification logic
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess("Email verified! You can now log in.");
-      setCurrentView("main");
-      setActiveTab("login");
-    }, 1000);
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    // TODO: Implement password reset logic
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess("Password reset! You can now log in.");
-      setCurrentView("main");
-      setActiveTab("login");
-    }, 1000);
-  };
-
-  const handleResendCode = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    // TODO: Implement resend code logic
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess("Code resent to your email.");
+      setSuccess("Reset instructions have been sent to your email.");
     }, 1000);
   };
 
@@ -250,6 +234,33 @@ const Login = () => {
                         {showPassword ? "🙈" : "👁️"}
                       </button>
                     </div>
+                    
+                    {/* Password Strength Indicator */}
+                    <div className="mt-3">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs text-gray-500">Password strength:</span>
+                        <span className={`text-xs font-medium ${
+                          passwordStrength === 0 ? 'text-red-500' :
+                          passwordStrength === 1 ? 'text-orange-500' :
+                          passwordStrength === 2 ? 'text-yellow-500' : 'text-green-500'
+                        }`}>
+                          {getPasswordStrengthLabel(passwordStrength)}
+                        </span>
+                      </div>
+                      <div className="w-full flex space-x-1">
+                        {[1, 2, 3, 4].map((bar) => (
+                          <div 
+                            key={bar}
+                            className={`h-1 flex-1 rounded-full ${
+                              bar <= passwordStrength 
+                                ? getPasswordStrengthColor(passwordStrength) 
+                                : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
                     <div className="mt-2 space-y-1 text-sm text-gray-600">
                       <p>At least 8 characters</p>
                       <p>Mix of letters and numbers</p>
@@ -351,116 +362,7 @@ const Login = () => {
                   disabled={loading}
                   className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Sending..." : "Send Reset Code"}
-                </button>
-              </form>
-            </>
-          )}
-
-          {/* Verify Email / OTP View */}
-          {currentView === "verify-email" && (
-            <>
-              <button
-                type="button"
-                onClick={() => setCurrentView("main")}
-                className="flex items-center text-orange-500 hover:text-orange-600 mb-6"
-              >
-                ← Back
-              </button>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Verification Code
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {activeTab === "signup"
-                  ? "Please enter the verification code sent to your email to complete your registration."
-                  : "Please enter the verification code sent to your email to reset your password."}
-              </p>
-              {error && (
-                <div className="mb-4 p-3 rounded-md bg-red-50 text-red-500 text-sm flex items-start">
-                  {/* <AlertCircle size={16} className="mr-2 mt-0.5 flex-shrink-0" /> */}
-                  <span>{error}</span>
-                </div>
-              )}
-              {success && (
-                <div className="mb-4 p-3 rounded-md bg-green-50 text-green-500 text-sm flex items-start">
-                  {/* <CheckCircle size={16} className="mr-2 mt-0.5 flex-shrink-0" /> */}
-                  <span>{success}</span>
-                </div>
-              )}
-              <form
-                onSubmit={activeTab === "signup" ? handleVerifyEmail : handleResetPassword}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="text-gray-700 text-sm font-medium mb-2 block">
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    placeholder="Enter code"
-                    className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                  />
-                </div>
-                {/* Additional fields for password reset */}
-                {activeTab === "login" && (
-                  <>
-                    <div>
-                      <label className="text-gray-700 text-sm font-medium mb-2 block">
-                        New Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Enter new password"
-                          className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          tabIndex={-1}
-                        >
-                          {/* {showPassword ? <EyeOff size={16} className="text-gray-400" /> : <Eye size={16} className="text-gray-400" />} */}
-                          {showPassword ? "🙈" : "👁️"}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-gray-700 text-sm font-medium mb-2 block">
-                        Confirm New Password
-                      </label>
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                        className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
-                      />
-                    </div>
-                  </>
-                )}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {loading
-                    ? "Processing..."
-                    : activeTab === "signup"
-                    ? "Verify Email"
-                    : "Reset Password"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResendCode}
-                  disabled={loading}
-                  className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-                >
-                  Resend Code
+                  {loading ? "Sending..." : "Send Reset Instructions"}
                 </button>
               </form>
             </>
@@ -472,4 +374,3 @@ const Login = () => {
 };
 
 export default Login;
-// ...existing code...
