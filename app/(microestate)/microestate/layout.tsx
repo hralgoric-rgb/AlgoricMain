@@ -1,9 +1,7 @@
-// microestate layout
 import React from 'react';
 import { Metadata } from 'next';
-// import Sidebar from '@/components/microestate/AgentSidebar';
-// import Navbar from '@/components/Navbar';
-// import '@/styles/microestate.module.css';
+import Navbar from '../_components/Navbar';
+import Footer from '../_components/Footer';
 
 export const metadata: Metadata = {
   title: 'Microestate Dashboard | 100गज',
@@ -17,13 +15,10 @@ export default function MicroestateLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar for agent/builder navigation */}
-      {/* <Sidebar /> */}
-
-      {/* Main content area */}
       <div className="flex flex-col flex-1">
-        {/* <Navbar /> */}
-        <main className="p-4">{children}</main>
+        <Navbar />
+        <main className="">{children}</main>
+        <Footer />
       </div>
     </div>
   );
