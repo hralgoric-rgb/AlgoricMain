@@ -59,7 +59,7 @@ export default function Navbar() {
               Home
             </Link>
             <Link
-              href="/buy"
+              href="/equity/properties"
               className={`text-sm font-medium ${
                 pathname === "/buy"
                   ? "text-orange-500"
@@ -69,36 +69,15 @@ export default function Navbar() {
               Buy
             </Link>
             <Link
-              href="/rent"
-              className={`text-sm font-medium ${
-                pathname === "/rent"
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
-              }`}
-            >
-              Rent
-            </Link>
-            <Link
-              href="/sell"
+              href="/equity/trade"
               className={`text-sm font-medium ${
                 pathname === "/sell"
                   ? "text-orange-500"
                   : "text-gray-300 hover:text-white"
               }`}
-              onClick={(e) => handleProtectedLinkClick(e)}
+              // onClick={(e) => handleProtectedLinkClick(e)}
             >
               Sell
-            </Link>
-            <Link
-              href="/commercial"
-              className={`text-sm font-medium ${
-                pathname === "/commercial" ||
-                pathname?.startsWith("/commercial/")
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
-              }`}
-            >
-              Commercial
             </Link>
             {isAuthenticated ? (
               <>
