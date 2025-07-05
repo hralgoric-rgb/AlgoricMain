@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 import { CommercialProperty as CommercialPropertyType } from "../data/commercialProperties";
 
 export interface ICommercialProperty
