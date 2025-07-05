@@ -17,35 +17,36 @@ credentials: {
   password: { label: "Password", type: "password" },
 },
 
-            async authorize(credentials: any) : Promise<any> {
-             await dbConnect()
 
-             try {
-               const foundUser = await User.findOne({
-                    $or: [
-                        {email: credentials.identifer},
-                        {username: credentials.identifer}
-                    ]
-                })
-                if (!foundUser) {
-                    console.error("User not found with this email")
-                }
-                const isPasswordCorret = await bcrypt.compare(credentials.passowrd , foundUser.password)
-                if (isPasswordCorret) {
-                    return foundUser
-                } else  {
-                    throw new Error("Passowrd is incorrect try again  ")
-                }
+      async authorize(credentials: any): Promise<any> {
+        await dbConnect()
+
+        try {
+          const foundUser = await User.findOne({
+            $or: [
+              { email: credentials.identifer },
+              { username: credentials.identifer }
+            ]
+          })
+          if (!foundUser) {
+            console.error("User not found with this email")
+          }
+          const isPasswordCorret = await bcrypt.compare(credentials.passowrd, foundUser.password)
+          if (isPasswordCorret) {
+            return foundUser
+          } else {
+            throw new Error("Passowrd is incorrect try again  ")
+          }
 
 
-             } catch (error:any) {
-                throw new Error(error)
-             }
-            }
-        })
-    ],
+        } catch (error: any) {
+          throw new Error(error)
+        }
+      }
+    })
+  ],
 
-      callbacks: {
+  callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user._id;
@@ -54,19 +55,17 @@ credentials: {
       }
       return token;
     },
-    
+
     async session({ session, token }) {
       if (token) {
-        session.user._id = token.id 
+        session.user._id = token.id
         session.user.email = token.email
         session.user.role = token.role
       }
       return session;
     },
 },
-pages: {
-  signIn: '/sign-in' // overide pages (making custom route )
-},
+
 session: {
   strategy: "jwt"
 },

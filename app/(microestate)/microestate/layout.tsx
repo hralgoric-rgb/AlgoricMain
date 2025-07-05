@@ -1,4 +1,3 @@
-// microestate layout
 import React from 'react';
 import { Metadata } from 'next';
 // import Sidebar from '@/components/microestate/AgentSidebar';
@@ -19,13 +18,8 @@ export default function MicroestateLayout({
   return (
     <AuthProvider>
     <div className="flex min-h-screen">
-      {/* Sidebar for agent/builder navigation */}
-      {/* <Sidebar /> */}
-
-      {/* Main content area */}
       <div className="flex flex-col flex-1">
-        {/* <Navbar /> */}
-        <main className="p-4">{children}</main>
+        <main className="">{children}</main>
       </div>
     </div>
     </AuthProvider>
