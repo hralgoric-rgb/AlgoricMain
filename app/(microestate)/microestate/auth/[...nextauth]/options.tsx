@@ -3,18 +3,19 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs";
 import dbConnect from "@/app/(microestate)/lib/db";
 import User from "@/app/models/User";
+import GoogleProvider from "next-auth/providers/google";
 
 
 export const authOptions: NextAuthOptions = {
 
-  providers: [
-    CredentialsProvider({
-      id: "credentials",
-      name: "Credentials",
-      credentials: {
-        identifier: { label: "Email or Username", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
+    providers: [
+        CredentialsProvider({
+          id: "credentials",
+           name: "Credentials",
+credentials: {
+  identifier: { label: "Email or Username", type: "text" },
+  password: { label: "Password", type: "password" },
+},
 
 
       async authorize(credentials: any): Promise<any> {
@@ -63,9 +64,24 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-  },
-  session: {
-    strategy: "jwt"
-  },
-  secret: process.env.NEXTAUTH_SECRET
+},
+
+session: {
+  strategy: "jwt"
+},
+
+secret: process.env.NEXTAUTH_SECRET
 }
+
+// google provider 
+const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+if (!clientId || !clientSecret) {
+  throw new Error("Google client credentials are not set in environment variables.");
+}
+
+GoogleProvider({
+  clientId,
+  clientSecret
+});
