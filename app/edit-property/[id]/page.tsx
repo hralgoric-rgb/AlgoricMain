@@ -36,7 +36,7 @@ export default function EditPropertyPage({ params }: { params: Promise<{ id: str
         setError("");
         
       } catch (err: any) {
-        console.error("Error fetching property details:", err);
+
         setError(err.response?.data?.error || "Failed to load property data");
         toast.error("Failed to load property data. Please try again.");
       } finally {
@@ -60,7 +60,7 @@ export default function EditPropertyPage({ params }: { params: Promise<{ id: str
       // Navigate back to the profile page
       router.push("/profile");
     } catch (err: any) {
-      console.error("Error updating property:", err);
+
       toast.error(err.response?.data?.error || "An error occurred while updating the property");
     }
   };

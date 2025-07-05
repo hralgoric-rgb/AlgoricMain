@@ -44,6 +44,71 @@ const config: NextConfig = {
         hostname: 'example.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.deccanchronicle.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.hindustantimes.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.thehindu.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.livemint.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.ndtv.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.moneycontrol.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.economictimes.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.business-standard.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.financialexpress.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.businesstoday.in',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.cnbctv18.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.news18.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.news18.com',
+        pathname: '/**',
+      }
     ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

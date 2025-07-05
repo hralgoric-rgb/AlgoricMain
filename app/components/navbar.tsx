@@ -131,9 +131,8 @@ export default function Navbar() {
   //             // For custom auth, just check if token exists
   //             setIsAuthenticated(true);
   //           }
-  //         } catch (error) {
-  //           console.error("Error parsing auth token:", error);
-  //           sessionStorage.removeItem("authToken");
+  //         } catch (_error) {
+  //           //           sessionStorage.removeItem("authToken");
   //           setIsAuthenticated(false);
   //         }
   //       } else {
@@ -264,15 +263,15 @@ export default function Navbar() {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch (_error) {
+
       toast.error("Logout failed");
     }
   };
 
   // Handle login
-  const handleLogin = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleLogin = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!email || !password) {
       setError("Email and password are required");
@@ -300,7 +299,7 @@ export default function Navbar() {
         email,
         password,
       });
-      console.log("Login response:", response.data.token);
+
       if (response.data.token) {
         // Store the token
         if (typeof window === "undefined") {
@@ -337,8 +336,8 @@ export default function Navbar() {
   };
 
   // Handle signup
-  const handleSignup = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleSignup = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!name || !email || !password) {
       setError("Name, email, and password are required");
@@ -388,8 +387,8 @@ export default function Navbar() {
   };
 
   // Handle email verification
-  const handleVerifyEmail = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleVerifyEmail = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!userId || !verificationCode) {
       setError("Verification code is required");
@@ -470,8 +469,8 @@ export default function Navbar() {
   };
 
   // Request password reset
-  const handleForgotPassword = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleForgotPassword = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!email) {
       setError("Email is required");
@@ -502,8 +501,8 @@ export default function Navbar() {
   };
 
   // Reset password
-  const handleResetPassword = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleResetPassword = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!userId || !verificationCode || !newPassword) {
       setError("All fields are required");
@@ -1035,7 +1034,7 @@ export default function Navbar() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 flex items-center justify-center z-50 p-2"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(_e) => _e.stopPropagation()}
             >
               <div className="bg-white rounded-2xl shadow-xl overflow-y-auto relative w-full max-w-md max-h-[90vh]">
                 {/* Close button */}
@@ -1128,7 +1127,7 @@ export default function Navbar() {
                               <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(_e) => setEmail(_e.target.value)}
                                 placeholder="Enter email"
                                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1143,7 +1142,7 @@ export default function Navbar() {
                               <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(_e) => setPassword(_e.target.value)}
                                 placeholder="Enter password"
                                 className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1191,7 +1190,7 @@ export default function Navbar() {
                             <input
                               type="text"
                               value={name}
-                              onChange={(e) => setName(e.target.value)}
+                              onChange={(_e) => setName(_e.target.value)}
                               placeholder="Enter your full name"
                               className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                             />
@@ -1208,7 +1207,7 @@ export default function Navbar() {
                               <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(_e) => setEmail(_e.target.value)}
                                 placeholder="Enter email"
                                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1223,8 +1222,8 @@ export default function Navbar() {
                               <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
-                                onChange={(e) => {
-                                  const newPassword = e.target.value;
+                                onChange={(_e) => {
+                                  const newPassword = _e.target.value;
                                   setPassword(newPassword);
                                   setPasswordStrength(calculatePasswordStrength(newPassword));
                                 }}
@@ -1294,7 +1293,7 @@ export default function Navbar() {
                               type="checkbox"
                               id="isAgent"
                               checked={isAgent}
-                              onChange={(e) => setIsAgent(e.target.checked)}
+                              onChange={(_e) => setIsAgent(_e.target.checked)}
                               className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                             />
                             <label htmlFor="isAgent" className="text-gray-700">
@@ -1410,7 +1409,7 @@ export default function Navbar() {
                             <input
                               type="email"
                               value={email}
-                              onChange={(e) => setEmail(e.target.value)}
+                              onChange={(_e) => setEmail(_e.target.value)}
                               placeholder="Enter your email"
                               className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                             />
@@ -1500,8 +1499,8 @@ export default function Navbar() {
                           <input
                             type="text"
                             value={verificationCode}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+                            onChange={(_e) => {
+                              const value = _e.target.value.replace(/\D/g, ''); // Only allow digits
                               if (value.length <= 6) {
                                 setVerificationCode(value);
                               }
@@ -1526,8 +1525,8 @@ export default function Navbar() {
                                 <input
                                   type={showPassword ? "text" : "password"}
                                   value={newPassword}
-                                  onChange={(e) =>
-                                    setNewPassword(e.target.value)
+                                  onChange={(_e) =>
+                                    setNewPassword(_e.target.value)
                                   }
                                   placeholder="Enter new password"
                                   className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
@@ -1557,8 +1556,8 @@ export default function Navbar() {
                                 <input
                                   type={showPassword ? "text" : "password"}
                                   value={confirmPassword}
-                                  onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
+                                  onChange={(_e) =>
+                                    setConfirmPassword(_e.target.value)
                                   }
                                   placeholder="Confirm new password"
                                   className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"

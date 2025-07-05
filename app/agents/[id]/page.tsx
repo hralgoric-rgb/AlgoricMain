@@ -164,8 +164,8 @@ export default function AgentDetailPage({
         } else {
           setIsFavorited(false);
         }
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
+      } catch (_error) {
+
         toast.error("Failed to fetch favorites");
       }
     }
@@ -183,8 +183,8 @@ export default function AgentDetailPage({
         const data = await response.json();
         setReviews(data.reviews);
       }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
+    } catch (_error) {
+
     }
   };
   useEffect(() => {
@@ -220,16 +220,16 @@ export default function AgentDetailPage({
       setProperties(data.properties);
       setPagination(data.pagination);
       setError(null);
-    } catch (err) {
-      console.error("Error fetching agent details:", err);
+    } catch (_err) {
+
       setError("Failed to load agent details");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitReview = async (_e: React.FormEvent) => {
+    _e.preventDefault();
     if (userRating === 0) {
       alert("Please select a rating");
       return;
@@ -407,10 +407,10 @@ export default function AgentDetailPage({
         // Refresh favorites to get the updated list
         fetchFavorite();
       }
-    } catch (error) {
+    } catch (_error) {
       // Revert UI state if operation fails
       setIsFavorited((prev) => !prev);
-      console.error("Error toggling favorite status:", error);
+
       toast.error("Failed to update favorites");
     }
   };
@@ -754,7 +754,7 @@ export default function AgentDetailPage({
                   <input
                     type="text"
                     value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
+                    onChange={(_e) => setUserName(_e.target.value)}
                     className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                     required
                   />
@@ -771,7 +771,7 @@ export default function AgentDetailPage({
                   </label>
                   <textarea
                     value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
+                    onChange={(_e) => setReviewText(_e.target.value)}
                     className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 h-32 text-white"
                     required
                   ></textarea>

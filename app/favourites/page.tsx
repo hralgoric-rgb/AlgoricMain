@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { FavoritesAPI } from "../lib/api-helpers";
 import Link from "next/link";
 import Image from "next/image";
@@ -153,10 +153,10 @@ export default function FavoritesPage() {
                     const data = await response.json();
                     return data.builder;
                   }
-                  console.warn(`Could not fetch details for builder ${builder._id}, using basic data`);
+
                   return builder; // Fall back to basic data if fetch fails
-                } catch (error) {
-                  console.error(`Error fetching details for builder ${builder._id}:`, error);
+                } catch (_error) {
+
                   return builder; // Fall back to basic data if fetch fails
                 }
               });
@@ -174,8 +174,8 @@ export default function FavoritesPage() {
             }
             break;
         }
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
+      } catch (_error) {
+
         setError("Failed to load favorites. Please try again later.");
         toast.error("Failed to load favorites. Please try again.");
       } finally {
@@ -207,8 +207,8 @@ export default function FavoritesPage() {
           toast.success(`Builder removed from favorites`);
           break;
       }
-    } catch (error) {
-      console.error(`Error removing ${type} from favorites:`, error);
+    } catch (_error) {
+
       setError(`Failed to remove ${type} from favorites. Please try again.`);
       toast.error(`Failed to remove ${type} from favorites. Please try again.`);
     }

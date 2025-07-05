@@ -51,12 +51,14 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4"
           >
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a 
               href="#properties" 
               className="px-8 py-4 bg-brown text-white rounded-md font-semibold hover:bg-brown-light transition-colors text-center"
             >
               Explore Properties
             </a>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a 
               href="#how-it-works" 
               className="px-8 py-4 bg-white/90 text-brown-dark rounded-md font-semibold hover:bg-white transition-colors text-center"

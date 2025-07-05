@@ -78,8 +78,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     });
     
   } catch (error: any) {
-    console.error('Error processing agent request:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({

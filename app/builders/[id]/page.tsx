@@ -104,8 +104,8 @@ export default function BuilderDetailPage({
         } else {
           setIsFavorited(false);
         }
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
+      } catch (_error) {
+
         toast.error("Failed to fetch favorites");
       }
     }
@@ -142,9 +142,9 @@ export default function BuilderDetailPage({
         const data = await response.json();
         setBuilder(data.builder);
         setReviews(data.builder.reviews || []);
-      } catch (err) {
-        console.error("Error fetching builder:", err);
-        setError((err as Error).message || "Failed to load builder details");
+      } catch (_err) {
+
+        setError((_err as Error).message || "Failed to load builder details");
       } finally {
         setIsLoading(false);
       }
@@ -153,8 +153,8 @@ export default function BuilderDetailPage({
     fetchBuilder();
   }, [builderId]);
 
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitReview = async (_e: React.FormEvent) => {
+    _e.preventDefault();
 
     if (userRating === 0) {
       alert("Please select a rating");
@@ -198,8 +198,8 @@ export default function BuilderDetailPage({
       setReviewText("");
       setUserName("");
       setShowReviewForm(false);
-    } catch (err) {
-      console.error("Error submitting review:", err);
+    } catch (_err) {
+
       alert("Failed to submit review. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -230,10 +230,10 @@ export default function BuilderDetailPage({
         // Refresh favorites to get the updated list
         fetchFavorite();
       }
-    } catch (error) {
+    } catch (_error) {
       // Revert UI state if operation fails
       setIsFavorited((prev) => !prev);
-      console.error("Error toggling favorite status:", error);
+
       toast.error("Failed to update favorites");
     }
   };
@@ -597,7 +597,7 @@ export default function BuilderDetailPage({
                         <input
                           type="text"
                           value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
+                          onChange={(_e) => setUserName(_e.target.value)}
                           className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-600"
                           required
                         />
@@ -614,7 +614,7 @@ export default function BuilderDetailPage({
                         </label>
                         <textarea
                           value={reviewText}
-                          onChange={(e) => setReviewText(e.target.value)}
+                          onChange={(_e) => setReviewText(_e.target.value)}
                           className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-600 h-32"
                           required
                         ></textarea>

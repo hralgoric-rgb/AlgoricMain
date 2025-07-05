@@ -39,8 +39,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching favorites' },
       { status: 500 }
@@ -117,8 +117,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error adding to favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while adding to favorites' },
       { status: 500 }

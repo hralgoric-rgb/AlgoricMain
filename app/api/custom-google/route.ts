@@ -64,8 +64,8 @@ export async function POST(request: Request) {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err) {
-    console.error("Google Auth Error:", err);
+  } catch (_err) {
+
     return new Response(JSON.stringify({ message: "Internal server error" }), { status: 500 });
   }
 }

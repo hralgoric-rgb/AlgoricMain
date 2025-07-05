@@ -89,8 +89,8 @@ export async function GET(
         pages: Math.ceil(totalProperties / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching agent details:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching agent details' },
       { status: 500 }

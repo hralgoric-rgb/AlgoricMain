@@ -14,8 +14,7 @@ const isAdmin = async (userId: string) => {
 export const GET = withAuth(async (request: NextRequest) => {
   try {
     await connectDB();
-    
-    
+
     // Get query parameters
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
@@ -85,8 +84,8 @@ export const GET = withAuth(async (request: NextRequest) => {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching subscriptions' },
       { status: 500 }
@@ -221,8 +220,8 @@ export const PATCH = withAuth(async (request: NextRequest, userId: string) => {
       message: `Successfully ${action}ed ${updateCount} subscription(s)`,
       updatedCount: updateCount
     });
-  } catch (error) {
-    console.error('Error updating subscriptions:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating subscriptions' },
       { status: 500 }

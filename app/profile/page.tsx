@@ -185,8 +185,8 @@ export default function UserProfile() {
             if (response.data.success) {
               setAssignedProperties(response.data.properties);
             }
-          } catch (agentErr) {
-            console.warn("Failed to fetch assigned properties:", agentErr);
+          } catch (_agentErr) {
+
             // Don't fail the whole page for agent properties
           }
         }
@@ -206,8 +206,7 @@ export default function UserProfile() {
 
         setError("");
       } catch (err: any) {
-        console.error("Failed to fetch user profile:", err);
-        
+
         // Handle specific error cases
         if (err.message?.includes("401") || err.message?.includes("Authentication")) {
           setError("Your session has expired. Please log in again.");
@@ -251,8 +250,8 @@ export default function UserProfile() {
         } else {
           throw new Error(response.data.error || "Failed to fetch properties");
         }
-      } catch (err) {
-        console.error("Failed to fetch user properties:", err);
+      } catch (_err) {
+
         // Keep using placeholder data in case of error
         toast.error("Failed to load properties. Please try again later.");
       } finally {
@@ -285,9 +284,9 @@ export default function UserProfile() {
   const closeEditProfileModal = () => setIsEditProfileModalOpen(false);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    _e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value } = e.target;
+    const { name, value } = _e.target;
     setFormData({
       ...formData,
       [name]: value,
@@ -324,8 +323,8 @@ export default function UserProfile() {
       } else {
         throw new Error(response.data.error || "Failed to delete property");
       }
-    } catch (err) {
-      console.error("Error deleting property:", err);
+    } catch (_err) {
+
       toast.error("Failed to delete property. Please try again.");
     } finally {
       setIsDeleteLoading(false);
@@ -380,8 +379,8 @@ export default function UserProfile() {
         // Close the modal
         closeEditProfileModal();
       }
-    } catch (error) {
-      console.error("Error updating profile:", error);
+    } catch (_error) {
+
       toast.error("Failed to update profile. Please try again.");
     }
   };
@@ -1212,7 +1211,7 @@ export default function UserProfile() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="bg-gray-900 rounded-2xl shadow-xl overflow-hidden relative w-full max-w-md p-6 border border-gray-800"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(_e) => _e.stopPropagation()}
           >
             <button
               onClick={closeDeletePropertyModal}
@@ -1294,7 +1293,7 @@ export default function UserProfile() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="bg-gray-900 rounded-2xl shadow-xl overflow-auto relative w-full max-w-md p-6 h-[80vh] border border-gray-800"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(_e) => _e.stopPropagation()}
           >
             <button
               onClick={closeEditProfileModal}

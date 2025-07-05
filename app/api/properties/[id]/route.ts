@@ -41,8 +41,8 @@ export async function GET(
     }
 
     return NextResponse.json(property, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching property:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching the property' },
       { status: 500 }
@@ -105,7 +105,6 @@ export const PUT = withAuth(async (
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Error updating property:', error);
 
     // Handle validation errors
     if (error.name === 'ValidationError') {
@@ -172,8 +171,8 @@ export const DELETE = withAuth(async (
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Error deleting property:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the property' },
       { status: 500 }

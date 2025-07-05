@@ -23,8 +23,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       favorites: user.favorites?.localities || [],
       success: true
     });
-  } catch (error) {
-    console.error('Error fetching favorite localities:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching favorite localities' },
       { status: 500 }
@@ -64,8 +64,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Locality added to favorites'
     });
-  } catch (error) {
-    console.error('Error adding locality to favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while adding locality to favorites' },
       { status: 500 }

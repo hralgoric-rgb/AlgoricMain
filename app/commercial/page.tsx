@@ -179,7 +179,7 @@ export default function CommercialListingsPage() {
                   <Input
                     placeholder="Search properties, locations..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(_e) => setSearchTerm(_e.target.value)}
                     className="pl-10 bg-gray-800 border-gray-700 text-white"
                   />
                 </div>

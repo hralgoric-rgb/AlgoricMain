@@ -32,8 +32,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching saved searches:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching saved searches' },
       { status: 500 }
@@ -85,8 +85,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error saving search:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while saving the search' },
       { status: 500 }

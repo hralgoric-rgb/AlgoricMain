@@ -83,8 +83,8 @@ function PropertySearchBar() {
         const response = await fetch("/location_mapping.json");
         const data = await response.json();
         setLocationData(data);
-      } catch (error) {
-        console.error("Error loading location data:", error);
+      } catch {
+        // Silently fail - location data will be empty
       }
     };
 
@@ -239,20 +239,20 @@ function PropertySearchBar() {
         setIsLocationLoading(false);
         toast.success("Location found! Searching nearby properties...", { id: "location-toast" });
       },
-      (error) => {
-        console.error("Error getting location:", error);
+      (_error) => {
+
         setIsLocationLoading(false);
         
         let errorMessage = "Unable to get your location. ";
         
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
+        switch (_error.code) {
+          case _error.PERMISSION_DENIED:
             errorMessage += "Please allow location access in your browser settings and try again.";
             break;
-          case error.POSITION_UNAVAILABLE:
+          case _error.POSITION_UNAVAILABLE:
             errorMessage += "Location information is unavailable. Please try again or search manually.";
             break;
-          case error.TIMEOUT:
+          case _error.TIMEOUT:
             errorMessage += "Location request timed out. Please try again or search manually.";
             break;
           default:
@@ -271,23 +271,23 @@ function PropertySearchBar() {
   }
 
   // Handle Enter key press in search input
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  const handleKeyDown = (_e: React.KeyboardEvent) => {
+    if (_e.key === "Enter") {
       handleSearch();
       setShowSuggestions(false);
-    } else if (e.key === "ArrowDown" && suggestions.length > 0) {
+    } else if (_e.key === "ArrowDown" && suggestions.length > 0) {
       // Focus the first suggestion
       const suggestionElement = document.getElementById("suggestion-0");
       if (suggestionElement) suggestionElement.focus();
-      e.preventDefault();
-    } else if (e.key === "Escape") {
+      _e.preventDefault();
+    } else if (_e.key === "Escape") {
       setShowSuggestions(false);
     }
   };
 
   // Handle input change for search query
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleInputChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = _e.target.value;
     setSearchQuery(value);
 
     // Filter suggestions based on input
@@ -317,20 +317,20 @@ function PropertySearchBar() {
 
   // Handle keyboard navigation within suggestions
   const handleSuggestionKeyDown = (
-    e: React.KeyboardEvent<HTMLDivElement>,
+    _e: React.KeyboardEvent<HTMLDivElement>,
     index: number,
     suggestion: string,
   ) => {
-    if (e.key === "Enter") {
+    if (_e.key === "Enter") {
       handleSelectSuggestion(suggestion);
-      e.preventDefault();
-    } else if (e.key === "ArrowDown") {
+      _e.preventDefault();
+    } else if (_e.key === "ArrowDown") {
       // Move to next suggestion
       const nextIndex = (index + 1) % suggestions.length;
       const nextElement = document.getElementById(`suggestion-${nextIndex}`);
       if (nextElement) nextElement.focus();
-      e.preventDefault();
-    } else if (e.key === "ArrowUp") {
+      _e.preventDefault();
+    } else if (_e.key === "ArrowUp") {
       // Move to previous suggestion or back to input
       if (index === 0) {
         if (searchInputRef.current) searchInputRef.current.focus();
@@ -338,8 +338,8 @@ function PropertySearchBar() {
         const prevElement = document.getElementById(`suggestion-${index - 1}`);
         if (prevElement) prevElement.focus();
       }
-      e.preventDefault();
-    } else if (e.key === "Escape") {
+      _e.preventDefault();
+    } else if (_e.key === "Escape") {
       setShowSuggestions(false);
       if (searchInputRef.current) searchInputRef.current.focus();
     }
@@ -502,8 +502,8 @@ function PropertySearchBar() {
                       id={`suggestion-${index}`}
                       tabIndex={0}
                       onClick={() => handleSelectSuggestion(suggestion)}
-                      onKeyDown={(e) =>
-                        handleSuggestionKeyDown(e, index, suggestion)
+                      onKeyDown={(_e) =>
+                        handleSuggestionKeyDown(_e, index, suggestion)
                       }
                       className="px-4 py-2 cursor-pointer hover:bg-orange-500/20 focus:bg-orange-500/20 focus:outline-none transition-colors duration-200"
                     >
@@ -666,20 +666,22 @@ export function BackgroundPaths() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-black">
-      <div className="absolute inset-0">
+      {/* Background animation paths - behind everything */}
+      <div className="absolute inset-0 z-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center py-20 min-h-screen flex flex-col justify-center">
+      {/* Main content - in front of background */}
+      <div className="relative z-20 container mx-auto px-4 md:px-6 text-center py-20 min-h-screen flex flex-col justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 2 }}
-          className="max-w-4xl mx-auto"
+          className="max-w-6xl mx-auto"
         >
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-8 flex flex-col leading-tight overflow-visible">
-            <span className="mb-4 min-h-[1.2em] flex flex-wrap items-center justify-center">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 flex flex-col">
+            <span className="mb-4">
               {/* First part - "Find your" - handling each word */}
               {firstPartWords.map((word, wordIndex) => (
                 <span key={`word-${wordIndex}`} className="inline-block mr-4">
@@ -711,7 +713,7 @@ export function BackgroundPaths() {
               />
             </span>
 
-            <span className="mb-4 min-h-[1.2em] flex flex-wrap items-center justify-center">
+            <span className="mb-4">
               {/* Second part - "Home with" - handling each word */}
               {secondPartWords.map((word, wordIndex) => (
                 <span
@@ -733,7 +735,7 @@ export function BackgroundPaths() {
                         stiffness: 150,
                         damping: 25,
                       }}
-                      className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80 "
+                      className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80"
                     >
                       {letter}
                     </motion.span>
@@ -742,7 +744,7 @@ export function BackgroundPaths() {
               ))}
             </span>
 
-            <span className="min-h-[1.2em] flex flex-wrap items-center justify-center">
+            <span>
               {/* Brand name - "100 Gaj" with animated gradient */}
               {brandNameWords.map((word, wordIndex) => (
                 <span

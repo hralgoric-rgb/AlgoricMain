@@ -10,7 +10,6 @@ import { Toaster } from "sonner";
 // Dynamically import the PremiumPopup component with no SSR to avoid hydration issues
 const PremiumPopup = dynamic(() => import('@/components/ui/PremiumPopup'));
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

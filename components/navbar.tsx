@@ -28,9 +28,9 @@ export default function Navbar() {
     router.push("/");
   };
 
-  const handleProtectedLinkClick = (e: React.MouseEvent) => {
+  const handleProtectedLinkClick = (_e: React.MouseEvent) => {
     if (!isAuthenticated) {
-      e.preventDefault();
+      _e.preventDefault();
       router.push(`/`);
       toast.error("Please login to proceed!!");
     }
@@ -85,7 +85,7 @@ export default function Navbar() {
                   ? "text-orange-500"
                   : "text-gray-300 hover:text-white"
               }`}
-              onClick={(e) => handleProtectedLinkClick(e)}
+              onClick={(_e) => handleProtectedLinkClick(_e)}
             >
               Sell
             </Link>
@@ -209,8 +209,8 @@ export default function Navbar() {
                   ? "text-orange-500 bg-orange-500/10"
                   : "text-gray-300 hover:text-white hover:bg-gray-800"
               }`}
-              onClick={(e) => {
-                handleProtectedLinkClick(e);
+              onClick={(_e) => {
+                handleProtectedLinkClick(_e);
                 setIsMenuOpen(false);
               }}
             >

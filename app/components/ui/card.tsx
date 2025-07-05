@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { cn } from '@/app/lib/utils'
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd'> {
   children: React.ReactNode
   className?: string
 }
@@ -13,7 +13,7 @@ export function Card({ className, children, ...props }: CardProps) {
     <motion.div
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       className={cn(
-        'rounded-xl border border-white-dark bg-white p-6 shadow-sm transition-all',
+        'rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all',
         className
       )}
       {...props}
@@ -44,7 +44,7 @@ export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLPara
 export function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn('text-sm text-black-light', className)}
+      className={cn('text-sm text-gray-600', className)}
       {...props}
     />
   )

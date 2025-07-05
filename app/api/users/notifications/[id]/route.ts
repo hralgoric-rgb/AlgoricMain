@@ -40,8 +40,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
     }
     
     return NextResponse.json(notification);
-  } catch (error) {
-    console.error('Error fetching notification:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching the notification' },
       { status: 500 }
@@ -90,8 +90,8 @@ export const PATCH = withAuth(async (request: NextRequest, userId: string) => {
       message: `Notification marked as ${read ? 'read' : 'unread'}`,
       notification,
     });
-  } catch (error) {
-    console.error('Error updating notification:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating the notification' },
       { status: 500 }
@@ -130,8 +130,8 @@ export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Notification deleted successfully',
     });
-  } catch (error) {
-    console.error('Error deleting notification:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the notification' },
       { status: 500 }

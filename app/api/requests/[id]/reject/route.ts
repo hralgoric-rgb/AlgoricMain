@@ -76,8 +76,8 @@ export async function POST(
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Error rejecting verification request:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to reject verification request' },
       { status: 500 }

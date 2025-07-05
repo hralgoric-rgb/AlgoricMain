@@ -10,13 +10,13 @@ export interface IVerificationRequest extends Document {
     experience?: number;
     specializations?: string[];
     languages?: string[];
-    image?: string; // URL to agent's profile image
+    agentImage?: string; // URL to agent's profile image
     companyName?: string;
     established?: string;
     headquarters?: string;
     specialization?: string;
     additionalInfo?: string;
-    image?: string; // URL to builder's company image
+    builderImage?: string; // URL to builder's company image
     logo?: string; // URL to builder's company logo
   };
   documents?: string[]; // URLs to uploaded verification documents
@@ -49,13 +49,13 @@ const VerificationRequestSchema = new Schema<IVerificationRequest>(
       experience: Number,
       specializations: [String],
       languages: [String],
-      image: String,
+      agentImage: String,
       companyName: String,
       established: String,
       headquarters: String,
       specialization: String,
       additionalInfo: String,
-      image: String,
+      builderImage: String,
       logo: String,
     },
     documents: [String],

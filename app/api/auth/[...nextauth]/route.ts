@@ -2,13 +2,14 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import jwt from "jsonwebtoken";
-import { setCookie } from "cookies-next";
 import connectDB from "@/app/lib/mongodb";
 import clientPromise from "@/app/lib/mongodb-adapter";
 import User from "@/app/models/User";
 
 // Call connectDB to ensure mongoose is connected
-connectDB().catch(console.error);
+connectDB().catch((_error) => {
+
+});
 
 const handler = NextAuth({
   providers: [
@@ -23,7 +24,7 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60,
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account: _account, profile }) {
       try {
         // Ensure mongoose connection is established
         await connectDB();
@@ -31,7 +32,6 @@ const handler = NextAuth({
         // Check if user exists in your custom User model
         const email = user?.email || profile?.email;
         if (!email) {
-          console.error("No email provided in signIn callback");
           return false;
         }
 
@@ -47,11 +47,10 @@ const handler = NextAuth({
               role: "user", // Default role
               isAgent: false, // Default to false
               authMethod: "google",
-              image: user?.image || profile?.picture,
+              image: user?.image || (profile as any)?.picture,
             });
-            console.log("Created new user:", existingUser._id);
-          } catch (createError) {
-            console.error("Error creating user:", createError);
+          } catch (_createError) {
+
             return false;
           }
         } else {
@@ -60,9 +59,9 @@ const handler = NextAuth({
           await existingUser.save();
         }
 
-        // Generate JWT token
+        // Generate JWT token for verification
         try {
-          const jwtToken = jwt.sign(
+          const _jwtToken = jwt.sign(
             {
               id: existingUser._id.toString(),
               email: existingUser.email,
@@ -76,17 +75,17 @@ const handler = NextAuth({
           // Store in session for client-side access
           
           return true;
-        } catch (jwtError) {
-          console.error("Error generating JWT:", jwtError);
+        } catch (_jwtError) {
+
           return false;
         }
-      } catch (error) {
-        console.error("Error in signIn callback:", error);
+      } catch (_error) {
+
         return false;
       }
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account: _account }) {
       if (user) {
         token.userId = user.id;
         
@@ -102,8 +101,8 @@ const handler = NextAuth({
             { expiresIn: "7d" }
           );
           token.customToken = customToken;
-        } catch (error) {
-          console.error("Error generating custom token:", error);
+        } catch (_error) {
+
         }
       }
       return token;

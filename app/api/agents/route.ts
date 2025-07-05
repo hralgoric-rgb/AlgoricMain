@@ -98,8 +98,8 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching agents:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching agents' },
       { status: 500 }

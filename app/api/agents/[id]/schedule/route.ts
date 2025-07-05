@@ -81,8 +81,8 @@ export async function GET(
       blockedDates: schedule.blockedDates,
       appointments,
     });
-  } catch (error) {
-    console.error('Error fetching agent schedule:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching agent schedule' },
       { status: 500 }
@@ -181,8 +181,7 @@ export const PUT = withAuth(async (
     });
     
   } catch (error: any) {
-    console.error('Error updating agent schedule:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({

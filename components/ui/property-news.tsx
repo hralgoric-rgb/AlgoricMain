@@ -23,6 +23,17 @@ type PaginationSettings = {
   totalPages: number;
 };
 
+// Add a function to get a fallback image URL
+const getFallbackImage = (index: number) => {
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80",
+    "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80",
+    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80",
+    "https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80"
+  ];
+  return fallbackImages[index % fallbackImages.length];
+};
+
 export function PropertyNewsSection() {
   const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
   const [displayedArticles, setDisplayedArticles] = useState<NewsArticle[]>([]);
@@ -62,13 +73,7 @@ export function PropertyNewsSection() {
               title: `${topics[topicIndex]}: Latest Updates ${index + 1}`,
               description: `The latest trends and insights about ${topics[topicIndex].toLowerCase()} in the real estate market. Stay informed with our comprehensive analysis.`,
               url: "#",
-              image: index % 4 === 0 
-                ? "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80"
-                : index % 4 === 1
-                ? "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80"
-                : index % 4 === 2  
-                ? "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80"
-                : "https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&auto=format&fit=crop&w=773&q=80",
+              image: getFallbackImage(index),
               publishedAt: new Date(
                 Date.now() - index * 86400000,
               ).toISOString(),
@@ -131,13 +136,12 @@ export function PropertyNewsSection() {
             updateDisplayedArticles(articles, 1, pagination.articlesPerPage);
           }
         }
-      } catch (apiError) {
+      } catch {
         // Silently fail - fallback data is already loaded
-        console.log("Using fallback news data");
       }
 
-    } catch (error) {
-      console.error("Error in news component:", error);
+    } catch {
+
       setError("Using sample property news");
       setIsLoading(false);
     }
@@ -209,10 +213,9 @@ export function PropertyNewsSection() {
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            viewport={{ once: true }}
-            className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-orange-500/30 transition-all duration-300 group"
+            className="mb-8 bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300"
           >
             <a
               href={article.url}
@@ -225,8 +228,12 @@ export function PropertyNewsSection() {
                   src={article.image}
                   alt={article.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover rounded-lg"
+                  className="object-cover"
+                  onError={(e) => {
+                    // If image fails to load, replace with fallback
+                    const imgElement = e.target as HTMLImageElement;
+                    imgElement.src = getFallbackImage(index);
+                  }}
                 />
               </div>
               <div className="p-5">

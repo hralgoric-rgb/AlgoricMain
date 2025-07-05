@@ -81,8 +81,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       message: 'Agent assigned successfully',
       property,
     });
-  } catch (error) {
-    console.error('Error assigning agent:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while assigning the agent' },
       { status: 500 }
@@ -150,8 +150,8 @@ export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
       message: 'Agent removed successfully',
       property,
     });
-  } catch (error) {
-    console.error('Error removing agent:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while removing the agent' },
       { status: 500 }

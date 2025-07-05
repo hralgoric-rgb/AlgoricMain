@@ -14,8 +14,8 @@ let SupportTicket: mongoose.Model<any>;
 
 try {
   SupportTicket = mongoose.model('SupportTicket');
-} catch (error) {
-  console.log(error);
+} catch (_error) {
+
   // This is just a fallback - in a real app, the model would be imported properly
   const supportTicketSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -88,8 +88,8 @@ async function getSupportTicket(request: NextRequest, userId: string) {
       success: true,
       ticket
     });
-  } catch (error) {
-    console.error('Error fetching support ticket:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching support ticket' },
       { status: 500 }
@@ -185,8 +185,8 @@ async function updateSupportTicket(request: NextRequest, userId: string) {
       message: 'Support ticket updated successfully',
       ticket
     });
-  } catch (error) {
-    console.error('Error updating support ticket:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating support ticket' },
       { status: 500 }
@@ -245,8 +245,8 @@ async function deleteSupportTicket(request: NextRequest, userId: string) {
       success: true,
       message: 'Support ticket deleted successfully'
     });
-  } catch (error) {
-    console.error('Error deleting support ticket:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting support ticket' },
       { status: 500 }

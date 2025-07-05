@@ -101,8 +101,8 @@ export async function POST(
       { status: 200 }
     );
     
-  } catch (error) {
-    console.error('Error accepting verification request:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to accept verification request' },
       { status: 500 }

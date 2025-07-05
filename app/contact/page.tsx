@@ -83,8 +83,8 @@ export default function ContactUs() {
         return Object.keys(errors).length === 0;
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
+    const handleChange = (_e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = _e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -104,8 +104,8 @@ export default function ContactUs() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (_e: React.FormEvent) => {
+        _e.preventDefault();
         
         // Validate form before submission
         if (!validateForm()) {
@@ -152,8 +152,8 @@ export default function ContactUs() {
                     message: data.error || 'Failed to send message. Please try again or contact us directly.'
                 });
             }
-        } catch (error) {
-            console.error('Contact form error:', error);
+        } catch (_error) {
+
             setFormStatus({
                 type: 'error',
                 message: 'Network error occurred. Please check your connection and try again.'

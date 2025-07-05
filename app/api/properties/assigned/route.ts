@@ -23,8 +23,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       count: properties.length,
       properties 
     }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching assigned properties:', error);
+  } catch (_error) {
+
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch assigned properties' 

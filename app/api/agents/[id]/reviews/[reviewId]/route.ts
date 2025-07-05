@@ -106,8 +106,7 @@ export const PUT = withAuth(async (
     });
    
   } catch (error: any) {
-    console.error('Error updating review:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({
@@ -170,8 +169,8 @@ export const DELETE = withAuth(async (
       success: true,
       message: 'Review deleted successfully',
     });
-  } catch (error) {
-    console.error('Error deleting review:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the review' },
       { status: 500 }

@@ -154,7 +154,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       setError(null);
 
       const response = await axios.get(`/api/properties/${propertyId}`);
-      console.log("Property: ", response.data);
+
       setProperty(response.data);
 
       // Fetch similar properties (same area, property type, etc.)
@@ -164,8 +164,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       if (session?.user) {
         checkFavoriteStatus();
       }
-    } catch (err) {
-      console.error("Error fetching property:", err);
+    } catch (_err) {
+
       setError("Failed to load property details. Please try again later.");
     } finally {
       setLoading(false);
@@ -194,8 +194,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
         setSimilarProperties(similar);
       }
-    } catch (err) {
-      console.error("Error fetching similar properties:", err);
+    } catch (_err) {
+
     }
   };
 
@@ -203,8 +203,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     try {
       // In a real implementation, you would check if this property is in the user's favorites
       // For now, we'll just simulate the check
-    } catch (err) {
-      console.error("Error checking favorite status:", err);
+    } catch (_err) {
+
     }
   };
 
@@ -214,12 +214,11 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   //         // In a real implementation, you would call an API to toggle the favorite status
   //         // For now, we'll just toggle the state
   //         setIsFavorite(!isFavorite);
-  //     } catch (err) {
-  //         console.error('Error toggling favorite status:', err);
-  //     }
+  //     } catch (_err) {
+  //         //     }
   // };
 
-  // const handleContactFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // const handleContactFormChange = (_e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
   //     const { name, value } = e.target;
   //     setContactForm(prev => ({
   //         ...prev,
@@ -227,8 +226,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   //     }));
   // };
 
-  const handleContactFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleContactFormSubmit = async (_e: React.FormEvent) => {
+    _e.preventDefault();
 
     if (!property) return;
 
@@ -277,8 +276,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       } else {
         throw new Error(data.message);
       }
-    } catch (err) {
-      console.error("Error submitting inquiry:", err);
+    } catch (_err) {
+
       setContactFormError("Failed to send your message. Please try again.");
       toast.error("Failed to send message. Please try again.");
     } finally {
@@ -1150,10 +1149,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         id="name"
                         name="name"
                         value={contactForm.name}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            name: e.target.value,
+                            name: _e.target.value,
                           })
                         }
                         placeholder="Enter your name"
@@ -1172,10 +1171,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         id="email"
                         name="email"
                         value={contactForm.email}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            email: e.target.value,
+                            email: _e.target.value,
                           })
                         }
                         placeholder="Enter your email"
@@ -1194,10 +1193,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         id="phone"
                         name="phone"
                         value={contactForm.phone}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            phone: e.target.value,
+                            phone: _e.target.value,
                           })
                         }
                         placeholder="Enter your phone number"
@@ -1215,10 +1214,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         id="message"
                         name="message"
                         value={contactForm.message}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            message: e.target.value,
+                            message: _e.target.value,
                           })
                         }
                         placeholder="I'm interested in this property..."

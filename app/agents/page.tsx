@@ -188,18 +188,17 @@ export default function AgentsPage() {
       setFilters(data.filters || { agencies: [], specializations: [], languages: [] });
       setPagination(data.pagination || { total: 0, page: 1, limit: 12, pages: 0 });
       setError(null);
-    } catch (err) {
-      console.error("Error fetching agents:", err);
-      
+    } catch (_err) {
+
       let errorMessage = "Failed to load agents. ";
       
-      if (err instanceof Error) {
-        if (err.name === 'TimeoutError') {
+      if (_err instanceof Error) {
+        if (_err.name === 'TimeoutError') {
           errorMessage += "Request timed out. Please check your connection and try again.";
-        } else if (err.message.includes('HTTP error')) {
+        } else if (_err.message.includes('HTTP error')) {
           errorMessage += "Server error occurred. Please try again later.";
         } else {
-          errorMessage += err.message;
+          errorMessage += _err.message;
         }
       } else {
         errorMessage += "Unknown error occurred. Please try again.";
@@ -378,7 +377,7 @@ export default function AgentsPage() {
                 <input
                   type="text"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(_e) => setSearchTerm(_e.target.value)}
                   placeholder="Search by agent name, role, or specialization..."
                   className="w-full px-5 py-4 pr-12 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white placeholder-gray-400"
                 />

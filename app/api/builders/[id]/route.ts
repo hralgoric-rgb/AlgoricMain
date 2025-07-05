@@ -32,8 +32,8 @@ export async function GET(
     }
     
     return NextResponse.json({ builder }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching builder:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to fetch builder' },
       { status: 500 }
@@ -75,8 +75,8 @@ export async function PATCH(
     }
     
     return NextResponse.json({ builder: updatedBuilder }, { status: 200 });
-  } catch (error) {
-    console.error('Error updating builder:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to update builder' },
       { status: 500 }
@@ -146,8 +146,8 @@ export async function POST(
       { message: 'Review added successfully', builder: updatedBuilder },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error adding review:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to add review' },
       { status: 500 }

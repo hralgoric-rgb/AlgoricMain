@@ -139,9 +139,10 @@ async function generateAIDescription(propertyData: any) {
     }
 
     return generatedText;
-  } catch (error) {
-    console.error("Error generating AI description:", error);
-    throw error;
+      } catch (error) {
+      // Log error for debugging but don't throw to avoid breaking the flow
+      console.error('AI description generation failed:', error);
+      throw error;
   }
 }
 
@@ -204,11 +205,11 @@ export default function PropertyForm({
   const [geocodeSearch, setGeocodeSearch] = useState("");
 
   const handleInputChange = (
-    e: React.ChangeEvent<
+    _e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
-    const { name, value } = e.target;
+    const { name, value } = _e.target;
     
     // Special handling for phone numbers - only allow digits
     if (name === "ownerDetails.phone") {
@@ -380,7 +381,6 @@ export default function PropertyForm({
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const newFiles = Array.from(e.dataTransfer.files);
-      
 
       // Generate image previews
       const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
@@ -616,7 +616,6 @@ export default function PropertyForm({
       // First, we need to upload any new images
 
       // Combine new and existing images
-      
 
       // Get latitude and longitude as numbers
       const latitude = parseFloat(formData.address.coordinates.latitude);
@@ -644,20 +643,19 @@ export default function PropertyForm({
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       // Create a copy of formData without existingImages
-      const { existingImages, ...formDataWithoutImages } = formData;
-      console.log(existingImages);
+      const { existingImages: _existingImages, ...formDataWithoutImages } = formData;
+
       // Create address object without coordinates
-      const { coordinates, ...addressWithoutCoordinates } = formData.address;
-      console.log(coordinates);
+      const { coordinates: _coordinates, ...addressWithoutCoordinates } = formData.address;
 
       let newImageUrls: string[] = [];
     if (formData.images.length > 0) {
       try {
         newImageUrls = await uploadImages(formData.images);
         toast.success(`${newImageUrls.length} images uploaded successfully!`);
-      } catch (error) {
+      } catch (_error) {
         setError("Failed to upload images. Please try again.");
-        console.log(error);
+
         toast.error("Failed to upload images. Please try again.");
         setIsSubmitting(false);
         return;
@@ -697,11 +695,6 @@ export default function PropertyForm({
       // Remove the existingImages field
       delete (propertyData as any).existingImages;
 
-      console.log(
-        `${isEditing ? "Updating" : "Submitting"} property data:`,
-        propertyData,
-      );
-
       let response;
 
       if (isEditing && initialData?._id) {
@@ -725,10 +718,6 @@ export default function PropertyForm({
 
       setShowFeedback(true);
     } catch (error: any) {
-      console.error(
-        `Error ${isEditing ? "updating" : "submitting"} property:`,
-        error,
-      );
 
       const errorMessage =
         error.response?.data?.error ||
@@ -768,7 +757,7 @@ export default function PropertyForm({
 
       return await Promise.all(uploadPromises);
     } catch (error) {
-      console.error("Error uploading images:", error);
+      console.error('Image upload failed:', error);
       throw new Error("Failed to upload images");
     }
   };
@@ -795,8 +784,8 @@ export default function PropertyForm({
           },
         }));
       }
-    } catch (error) {
-      console.error('Error fetching coordinates:', error);
+    } catch (_error) {
+
       toast.error('Failed to fetch coordinates. Please enter them manually.');
     } finally {
       setIsLoadingCoordinates(false);
@@ -829,8 +818,8 @@ export default function PropertyForm({
       } else {
         toast.error("No location found for the given search");
       }
-    } catch (error) {
-      console.error('Error fetching coordinates:', error);
+    } catch (_error) {
+
       toast.error('Failed to fetch coordinates. Please try again.');
     } finally {
       setIsLoadingCoordinates(false);
@@ -880,7 +869,7 @@ export default function PropertyForm({
       toast.error(
         error.message || "Failed to generate description. Please try again.",
       );
-      console.error("Error generating description:", error);
+
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -915,7 +904,7 @@ export default function PropertyForm({
         setIsLoadingLocation(false);
         toast.success("Location detected successfully!", { id: "location-form-toast" });
       },
-      (error) => {
+      (error: GeolocationPositionError) => {
         setIsLoadingLocation(false);
         
         let errorMessage = "Failed to get your location: ";
@@ -1539,7 +1528,7 @@ export default function PropertyForm({
                         <Input
                           placeholder="Enter location to find coordinates..."
                           value={geocodeSearch}
-                          onChange={(e) => setGeocodeSearch(e.target.value)}
+                          onChange={(_e) => setGeocodeSearch(_e.target.value)}
                         />
                         <Button
                           type="button"
@@ -1591,8 +1580,8 @@ export default function PropertyForm({
                             type="number"
                             step="any"
                             value={formData.address?.coordinates?.latitude || ''}
-                            onChange={(e) => {
-                              const value = e.target.value;
+                            onChange={(_e) => {
+                              const value = _e.target.value;
                               setFormData({
                                 ...formData,
                                 address: {
@@ -1618,8 +1607,8 @@ export default function PropertyForm({
                             type="number"
                             step="any"
                             value={formData.address?.coordinates?.longitude || ''}
-                            onChange={(e) => {
-                              const value = e.target.value;
+                            onChange={(_e) => {
+                              const value = _e.target.value;
                               setFormData({
                                 ...formData,
                                 address: {

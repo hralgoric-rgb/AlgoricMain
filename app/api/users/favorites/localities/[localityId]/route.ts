@@ -31,8 +31,8 @@ export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Locality removed from favorites'
     });
-  } catch (error) {
-    console.error('Error removing locality from favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while removing locality from favorites' },
       { status: 500 }

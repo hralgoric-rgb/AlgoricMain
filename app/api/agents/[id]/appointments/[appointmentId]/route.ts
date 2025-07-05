@@ -88,8 +88,8 @@ export const PATCH = withAuth(async (
       message: 'Appointment status updated successfully',
       appointment,
     });
-  } catch (error) {
-    console.error('Error updating appointment:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating the appointment' },
       { status: 500 }
@@ -161,8 +161,8 @@ export const DELETE = withAuth(async (
       success: true,
       message: 'Appointment deleted successfully',
     });
-  } catch (error) {
-    console.error('Error deleting appointment:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the appointment' },
       { status: 500 }
