@@ -349,7 +349,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white overflow-y-hidden">
       <Navbar />
       <SubNavbar items={navItems} />
       {/* Mobile Navigation Dots - Alternative to SubNavbar on mobile */}
