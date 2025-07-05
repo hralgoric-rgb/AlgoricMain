@@ -1,0 +1,73 @@
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import dbConnect from "@/app/(microestate)/lib/db";
+import User from "@/app/models/User";
+import GoogleProvider from "next-auth/providers/google";
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+
+      async authorize(credentials: any): Promise<any> {
+        await dbConnect();
+
+        try {
+          const foundUser = await User.findOne({ email: credentials.email });
+
+          if (!foundUser) {
+            console.error("User not found with this email");
+          }
+
+          const isPasswordCorret = await bcrypt.compare(
+            credentials.passowrd,
+            foundUser.password
+          );
+          
+          if (isPasswordCorret) {
+            return foundUser;
+          } else {
+            throw new Error("Passowrd is incorrect try again  ");
+          }
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    }),
+    GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID!,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
+  ],
+
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user._id;
+        token.email = user.email;
+        token.role = user.role;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (token) {
+        session.user._id = token.id;
+        session.user.email = token.email;
+        session.user.role = token.role;
+      }
+      return session;
+    },
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
