@@ -64,9 +64,13 @@ credentials: {
       return session;
     },
 },
+pages: {
+  signIn: '/sign-in' // overide pages (making custom route )
+},
 session: {
   strategy: "jwt"
 },
+
 secret: process.env.NEXTAUTH_SECRET
 }
 

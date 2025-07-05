@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 // import Sidebar from '@/components/microestate/AgentSidebar';
 // import Navbar from '@/components/Navbar';
 // import '@/styles/microestate.module.css';
+import AuthProvider from '../Context/AuthProvider';
 
 export const metadata: Metadata = {
   title: 'Microestate Dashboard | 100गज',
@@ -16,6 +17,7 @@ export default function MicroestateLayout({
   children: React.ReactNode;
 }) {
   return (
+    <AuthProvider>
     <div className="flex min-h-screen">
       {/* Sidebar for agent/builder navigation */}
       {/* <Sidebar /> */}
@@ -26,5 +28,6 @@ export default function MicroestateLayout({
         <main className="p-4">{children}</main>
       </div>
     </div>
+    </AuthProvider>
   );
 }
