@@ -8,7 +8,7 @@ export default function AuthProvider({
   children,
 }: {children: React.ReactNode}) {
   return (
-    <SessionProvider >
+    <SessionProvider basePath="/microestate/api/auth" >
       {children}
     </SessionProvider>
   )
