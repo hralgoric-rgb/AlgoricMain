@@ -47,9 +47,9 @@ interface Property {
 }
 
 interface PropertyDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function PropertyDetailPage({ params }: PropertyDetailPageProps) {
@@ -59,10 +59,20 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
   const [selectedShares, setSelectedShares] = useState(1);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [propertyId, setPropertyId] = useState<string>('');
+
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setPropertyId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
 
   // Mock data - replace with actual API call
   const mockProperty: Property = {
-    id: params.id,
+    id: propertyId,
     name: "Cyber Hub Office Complex",
     type: "Office Building",
     location: "Gurgaon, Haryana",
@@ -103,13 +113,19 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
 
   useEffect(() => {
     // Simulate API call
+    if (!propertyId) return;
+    
     const timer = setTimeout(() => {
-      setProperty(mockProperty);
+      const updatedMockProperty = {
+        ...mockProperty,
+        id: propertyId
+      };
+      setProperty(updatedMockProperty);
       setIsLoading(false);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [params.id]);
+  }, [propertyId, mockProperty]);
 
   const handleBuyShares = () => {
     setShowBuyModal(true);

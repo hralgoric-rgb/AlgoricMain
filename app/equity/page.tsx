@@ -393,7 +393,7 @@ export default function EquityLandingPage() {
               Start Investing in <span className="text-orange-500">4 Simple Steps</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              From signup to earning passive income, we've made commercial real estate investing accessible to everyone
+              From signup to earning passive income, we&apos;ve made commercial real estate investing accessible to everyone
             </p>
           </motion.div>
 
@@ -471,7 +471,7 @@ export default function EquityLandingPage() {
               </div>
               
               <blockquote className="text-xl text-gray-300 mb-6 italic">
-                "{testimonials[currentTestimonial].quote}"
+                &quot;{testimonials[currentTestimonial].quote}&quot;
               </blockquote>
               
               <div className="flex items-center justify-center space-x-6">
