@@ -1,13 +1,13 @@
-import { NextConfig } from 'next';
+import { NextConfig } from "next";
 
 const config: NextConfig = {
-  images:{
-    domains: ['via.placeholder.com','res.cloudinary.com'],
+  images: {
+    domains: ["via.placeholder.com", "res.cloudinary.com"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'ik.imagekit.io',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+        pathname: "/**",
       },
     ],
   },
@@ -36,15 +36,15 @@ const config: NextConfig = {
       querystring: false,
       buffer: false,
     };
-    
+
     // Ignore bcrypt and other server-only packages
     config.externals = [
       ...(config.externals || []),
-      'bcrypt',
-      'jsonwebtoken',
-      'nodemailer',
+      "bcrypt",
+      "jsonwebtoken",
+      "nodemailer",
     ];
-    
+
     return config;
   },
 };

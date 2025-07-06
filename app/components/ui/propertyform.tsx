@@ -362,14 +362,14 @@ export default function PropertyForm({
       }
     } else if (formStep === 3) {
       // Validate step 3 fields (Photos)
-      // Validate minimum 5 images
+      // Validate minimum 2 images
       const totalImages = formData.images.length + formData.existingImages.length;
-      if (totalImages < 5) {
+      if (totalImages < 2) {
         setError(
-          `Please add at least 5 images (currently have ${totalImages})`,
+          `Please add at least 2 images (currently have ${totalImages})`,
         );
         toast.error(
-          `Please add at least 5 images (currently have ${totalImages})`,
+          `Please add at least 2 images (currently have ${totalImages})`,
         );
         return;
       }
@@ -434,10 +434,10 @@ export default function PropertyForm({
         return;
       }
 
-      // Make sure we have at least five images
-      if (formData.images.length + formData.existingImages.length < 5) {
-        setError("Please add at least 5 images of your property");
-        toast.error("Please add at least 5 images");
+      // Make sure we have at least two images
+      if (formData.images.length + formData.existingImages.length < 2) {
+        setError("Please add at least 2 images of your property");
+        toast.error("Please add at least 2 images");
         setIsSubmitting(false);
         return;
       }
@@ -1202,7 +1202,7 @@ export default function PropertyForm({
                         Property Images{" "}
                         <span className="text-orange-500">*</span>
                         <span className="ml-2 text-orange-500 text-xs">
-                          (Minimum 5 images required, currently{" "}
+                          (Minimum 2 images required, currently{" "}
                           {formData.images.length +
                             formData.existingImages.length}
                           )
