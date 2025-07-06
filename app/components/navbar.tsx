@@ -769,6 +769,12 @@ export default function Navbar() {
               </Link>
               <div></div>
               <Link
+                href="/equity"
+                className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
+              >
+                <Building2 className="h-5 w-5 mr-2 hover:text-orange-500" />
+              </Link>
+              <Link
                 href="/contact"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
               >
@@ -916,6 +922,13 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sell
+              </Link>
+              <Link
+                href="/equity"
+                className="block px-4 py-3 text-white hover:bg-gray-700 rounded-md transition-all"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Equity Investment
               </Link>
               {/* Tools dropdown for mobile */}
               <div className="block px-4 py-1 text-white">
