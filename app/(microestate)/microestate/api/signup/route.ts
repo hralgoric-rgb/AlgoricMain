@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       role,
       verificationToken: verificationCode,
       verificationTokenExpiry,
+      isVerified: false
     });
 
     await newUser.save();
@@ -76,10 +77,12 @@ export async function POST(request: NextRequest) {
         message:
           "User registered successfully. Please check your email for verification code.",
         userId: newUser._id,
+        newUser
       },
       { status: 201 }
     );
   } catch (error) {
+      console.error("Registration Error:", error);
     return NextResponse.json(
       { error: "An error occurred during registration" },
       { status: 500 }

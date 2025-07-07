@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-if (!process.env.MICRO_MONGODB_URI) {
+if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MICRO_MONGODB_URI"');
 }
 
@@ -16,7 +16,7 @@ async function dbConnect(): Promise<void> {
     return;
   }
   try {
-    const db = await mongoose.connect(process.env.MICRO_MONGODB_URI || "");
+    const db = await mongoose.connect(process.env.MONGODB_URI || "");
     // extracting data
     connection.isConnected = db.connections[0].readyState;
     console.log("Db connected Sucessfully");
