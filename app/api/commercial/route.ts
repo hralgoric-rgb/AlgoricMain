@@ -1,28 +1,47 @@
-import connectDB from "@/app/lib/mongodb";
-import CommercialProperty from "@/app/models/CommercialProperty";
 import { NextRequest, NextResponse } from "next/server";
+import CommercialProperties from "@/app/models/CommercialProperty";
+import connectDB from "@/app/lib/mongodb";
+import { Types } from "mongoose";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    const properties = await CommercialProperty.find();
 
-    return NextResponse.json(
+    const rawProperties = await CommercialProperties.find(
+      {},
       {
-        success: true,
-        message: "Properties fetched successfully",
-        data: properties,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("GET /commercialProperties error:", error);
+        name: 1,
+        type: 1,
+        "location.city": 1,
+        "location.state": 1,
+        totalShares: 1,
+        availableShares: 1,
+        pricePerShare: 1,
+        currentYield: 1,
+        predictedAppreciation: 1,
+        riskLevel: 1,
+        image: 1,
+        description: 1,
+        rentalIncome: 1,
+        occupancyRate: 1,
+        totalValue: 1,
+        features: 1,
+      }
+    ).lean();
 
+    const properties = rawProperties.map((property) => ({
+      ...property,
+      id: (property._id as Types.ObjectId).toString(),
+    }));
+
+    return NextResponse.json({ success: true, data: properties });
+  } catch (error: any) {
+    console.error("Error fetching properties:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to fetch commercial properties",
-        error: (error as Error).message,
+        message: "Failed to fetch properties",
+        error: error.message,
       },
       { status: 500 }
     );
@@ -34,34 +53,37 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const body = await req.json();
 
-    if (!body.title || !body.totalPropertyValue) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Missing required fields: title or totalPropertyValue",
-        },
-        { status: 400 }
-      );
+    // Basic validation
+    const requiredFields = [
+      "name",
+      "type",
+      "location",
+      "totalShares",
+      "availableShares",
+      "pricePerShare",
+    ];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(
+          { success: false, message: `Missing required field: ${field}` },
+          { status: 400 }
+        );
+      }
     }
 
-    const created = await CommercialProperty.create(body);
+    const newProperty = await CommercialProperties.create(body);
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Commercial property created successfully",
-        data: created,
-      },
+      { success: true, data: newProperty },
       { status: 201 }
     );
-  } catch (error) {
-    console.error("POST /commercialProperties error:", error);
-
+  } catch (error: any) {
+    console.error("Error creating property:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to create commercial property",
-        error: (error as Error).message,
+        message: "Failed to create property",
+        error: error.message,
       },
       { status: 500 }
     );
