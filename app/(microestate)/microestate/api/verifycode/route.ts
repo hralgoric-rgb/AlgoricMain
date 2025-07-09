@@ -39,6 +39,7 @@ export async function POST(request:NextRequest) {
         )
        }
 
+       
             const isCodeVaild =  user.verificationToken === code
         const IsCodeExpired = new Date(user.verificationTokenExpiry) > new Date()
 
