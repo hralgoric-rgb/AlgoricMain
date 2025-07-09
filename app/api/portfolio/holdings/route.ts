@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
 		const portfolio = await Portfolio.findOne({ userId }, "holdings")
 			.populate(
-				"holdings.propertyId",
+				"holdings.commercialPropertyId",
 				"title address propertyType currentPrice totalPropertyValue"
 			)
 			.lean();
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
 		if (
 			!body.userId ||
-			!body.propertyId ||
+			!body.commercialPropertyId ||
 			!body.shares ||
 			!body.avgPurchasePrice
 		) {
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 				{
 					success: false,
 					message:
-						"Missing required fields: userId, propertyId, shares, avgPurchasePrice",
+						"Missing required fields: userId, commercialPropertyId, shares, avgPurchasePrice",
 				},
 				{ status: 400 }
 			);
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
 
 		if (
 			!Types.ObjectId.isValid(body.userId) ||
-			!Types.ObjectId.isValid(body.propertyId)
+			!Types.ObjectId.isValid(body.commercialPropertyId)
 		) {
 			return NextResponse.json(
 				{
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
 
 		// Check if holding already exists
 		const existingHoldingIndex = portfolio.holdings.findIndex(
-			(holding) => holding.propertyId.toString() === body.propertyId
+			(holding) => holding.commercialPropertyId.toString() === body.commercialPropertyId
 		);
 
 		if (existingHoldingIndex !== -1) {
@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
 		} else {
 			// Add new holding
 			const newHolding = {
-				propertyId: new Types.ObjectId(body.propertyId),
+				commercialPropertyId: new Types.ObjectId(body.commercialPropertyId),
 				shares: body.shares,
 				avgPurchasePrice: body.avgPurchasePrice,
 				totalInvested,
