@@ -9,7 +9,7 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
   try {
     await connectDB();
     // Find all properties owned by this user
-    console.log("Owner ID: ", userId);
+
     const properties = await Property.find({owner:new mongoose.Types.ObjectId(userId)})
       .sort({ createdAt: -1 })
       .select('-__v');
@@ -19,13 +19,12 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       count: properties.length,
       properties 
     }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching user properties:', error);
+  } catch (_error) {
+
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch properties' 
     }, { status: 500 });
   }
 })
-
 

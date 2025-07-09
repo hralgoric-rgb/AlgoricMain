@@ -92,8 +92,8 @@ async function manageVirtualTour(request: NextRequest, userId: string) {
       message: 'Virtual tour updated successfully',
       virtualTour: property.virtualTour
     });
-  } catch (error) {
-    console.error('Error managing virtual tour:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while managing virtual tour' },
       { status: 500 }
@@ -145,8 +145,8 @@ export async function GET(request: NextRequest) {
       },
       virtualTour: property.virtualTour
     });
-  } catch (error) {
-    console.error('Error fetching virtual tour:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching virtual tour' },
       { status: 500 }
@@ -199,8 +199,8 @@ async function removeVirtualTour(request: NextRequest, userId: string) {
       success: true,
       message: 'Virtual tour removed successfully'
     });
-  } catch (error) {
-    console.error('Error removing virtual tour:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while removing virtual tour' },
       { status: 500 }

@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
       .sort({ createdAt: -1 });
     
     return NextResponse.json({ requests }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching user verification requests:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to fetch verification requests' },
       { status: 500 }

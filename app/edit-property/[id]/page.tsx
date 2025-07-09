@@ -9,22 +9,34 @@ import Footer from "@/app/components/footer";
 import PropertyForm from "@/app/components/ui/propertyform";
 import { motion } from "framer-motion";
 
-export default function EditPropertyPage({ params }: { params: { id: string } }) {
+export default function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [propertyId, setPropertyId] = useState<string>('');
+
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setPropertyId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
 
   useEffect(() => {
     const fetchProperty = async () => {
+      if (!propertyId) return;
+      
       setLoading(true);
       try {
-        const response = await axios.get(`/api/properties/${params.id}`);
+        const response = await axios.get(`/api/properties/${propertyId}`);
         setProperty(response.data);
         setError("");
         
       } catch (err: any) {
-        console.error("Error fetching property details:", err);
+
         setError(err.response?.data?.error || "Failed to load property data");
         toast.error("Failed to load property data. Please try again.");
       } finally {
@@ -32,10 +44,8 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
       }
     };
 
-    if (params.id) {
-      fetchProperty();
-    }
-  }, [params.id]);
+    fetchProperty();
+  }, [propertyId]);
 
   const handleFormClose = () => {
     router.push("/profile");
@@ -50,7 +60,7 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
       // Navigate back to the profile page
       router.push("/profile");
     } catch (err: any) {
-      console.error("Error updating property:", err);
+
       toast.error(err.response?.data?.error || "An error occurred while updating the property");
     }
   };

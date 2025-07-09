@@ -27,8 +27,8 @@ export function withAuth(
 
       // Call the original handler with user ID
       return handler(req, decodedToken.userId);
-    } catch (error) {
-      console.error('Error in auth middleware:', error);
+    } catch (_error) {
+
       return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }

@@ -46,8 +46,8 @@ export const GET = withAuth(async (
     }
     
     return NextResponse.json(savedSearch);
-  } catch (error) {
-    console.error('Error fetching saved search:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching the saved search' },
       { status: 500 }
@@ -121,8 +121,8 @@ export const PUT = withAuth(async (
       message: 'Saved search updated successfully',
       savedSearch: updatedSavedSearch,
     });
-  } catch (error) {
-    console.error('Error updating saved search:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating the saved search' },
       { status: 500 }
@@ -175,8 +175,8 @@ export const DELETE = withAuth(async (
       success: true,
       message: 'Saved search deleted successfully',
     });
-  } catch (error) {
-    console.error('Error deleting saved search:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the saved search' },
       { status: 500 }

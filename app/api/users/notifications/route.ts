@@ -54,8 +54,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching notifications' },
       { status: 500 }
@@ -112,8 +112,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error creating notification:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while creating the notification' },
       { status: 500 }
@@ -137,8 +137,8 @@ export const PATCH = withAuth(async (request: NextRequest, userId: string) => {
       message: 'All notifications marked as read',
       count: result.modifiedCount,
     });
-  } catch (error) {
-    console.error('Error marking notifications as read:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while marking notifications as read' },
       { status: 500 }

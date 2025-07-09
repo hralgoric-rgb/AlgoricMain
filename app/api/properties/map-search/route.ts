@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
       bounds: { north, south, east, west },
       limitApplied: total > limit,
     });
-  } catch (error) {
-    console.error('Error in map search:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while searching properties' },
       { status: 500 }

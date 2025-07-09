@@ -118,7 +118,7 @@ export default function VerificationAdmin() {
         }, 1000);
       }
     }
-  }, []);
+  }, [router]);
   useEffect(() => {
       const fetchUserProfile = async () => {
         
@@ -134,8 +134,8 @@ export default function VerificationAdmin() {
             
           }
           
-        } catch (err) {
-          console.error("Failed to fetch user profile:", err);
+        } catch (_err) {
+
           toast.error("Failed to fetch user profile. Please try again later.");
           setTimeout(() => {
             router.push("/");
@@ -144,12 +144,13 @@ export default function VerificationAdmin() {
       };
   
       fetchUserProfile();
-    }, []);
+    }, [router]);
 
   useEffect(() => {
     fetchRequests();
     fetchAgents();
     fetchBuilders();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch verification requests
@@ -167,8 +168,8 @@ export default function VerificationAdmin() {
       } else {
         toast.error(data.error || "Failed to fetch verification requests");
       }
-    } catch (error) {
-      toast.error(`Failed to process request: ${error}`);
+    } catch (_error) {
+      toast.error(`Failed to process request: ${_error}`);
     } finally {
       setIsLoading(false);
     }
@@ -182,8 +183,8 @@ export default function VerificationAdmin() {
       if (response.ok) {
         setAgents(data.agents);
       }
-    } catch (error) {
-      toast.error(`Failed to process request: ${error}`);
+    } catch (_error) {
+      toast.error(`Failed to process request: ${_error}`);
     }
   };
 
@@ -195,8 +196,8 @@ export default function VerificationAdmin() {
       if (response.ok) {
         setBuilders(data.builders);
       }
-    } catch (error) {
-      toast.error(`Failed to process request: ${error}`);
+    } catch (_error) {
+      toast.error(`Failed to process request: ${_error}`);
     }
   };
 
@@ -224,8 +225,8 @@ export default function VerificationAdmin() {
       } else {
         toast.error(data.error || "Failed to accept request");
       }
-    } catch (error) {
-      toast.error(`Failed to process request: ${error}`);
+    } catch (_error) {
+      toast.error(`Failed to process request: ${_error}`);
     } finally {
       setLoadingId(null);
     }
@@ -254,8 +255,8 @@ export default function VerificationAdmin() {
       } else {
         toast.error(data.error || "Failed to reject request");
       }
-    } catch (error) {
-      toast.error(`Failed to process request: ${error}`);
+    } catch (_error) {
+      toast.error(`Failed to process request: ${_error}`);
     } finally {
       setLoadingId(null);
     }

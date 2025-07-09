@@ -30,8 +30,8 @@ export async function POST(request: Request) {
 
         await transporter.sendMail(mailOptions);
         return NextResponse.json({ success: true, message: 'Feedback sent successfully' });
-    } catch (error) {
-        console.error('Error sending feedback:', error);
+    } catch (_error) {
+
         return NextResponse.json(
             { success: false, message: 'Failed to send feedback' },
             { status: 500 }

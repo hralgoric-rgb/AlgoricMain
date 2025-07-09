@@ -54,8 +54,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching inquiries:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching inquiries' },
       { status: 500 }

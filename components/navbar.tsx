@@ -28,9 +28,9 @@ export default function Navbar() {
     router.push("/");
   };
 
-  const handleProtectedLinkClick = (e: React.MouseEvent) => {
+  const handleProtectedLinkClick = (_e: React.MouseEvent) => {
     if (!isAuthenticated) {
-      e.preventDefault();
+      _e.preventDefault();
       router.push(`/`);
       toast.error("Please login to proceed!!");
     }
@@ -59,7 +59,7 @@ export default function Navbar() {
               Home
             </Link>
             <Link
-              href="/equity/properties"
+              href="/buy"
               className={`text-sm font-medium ${
                 pathname === "/buy"
                   ? "text-orange-500"
@@ -69,15 +69,36 @@ export default function Navbar() {
               Buy
             </Link>
             <Link
-              href="/equity/trade"
+              href="/rent"
+              className={`text-sm font-medium ${
+                pathname === "/rent"
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              Rent
+            </Link>
+            <Link
+              href="/sell"
               className={`text-sm font-medium ${
                 pathname === "/sell"
                   ? "text-orange-500"
                   : "text-gray-300 hover:text-white"
               }`}
-              // onClick={(e) => handleProtectedLinkClick(e)}
+              onClick={(_e) => handleProtectedLinkClick(_e)}
             >
               Sell
+            </Link>
+            <Link
+              href="/commercial"
+              className={`text-sm font-medium ${
+                pathname === "/commercial" ||
+                pathname?.startsWith("/commercial/")
+                  ? "text-orange-500"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              Commercial
             </Link>
             {isAuthenticated ? (
               <>
@@ -147,13 +168,13 @@ export default function Navbar() {
       {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="md:hidden fixed inset-0 top-16 z-50 bg-gray-900/95 backdrop-blur-md">
-          <div className="px-2 pt-4 pb-3 space-y-2 sm:px-3 max-h-[calc(100vh-4rem)] overflow-auto">
+          <div className="px-4 pt-6 pb-4 space-y-3 sm:px-6 max-h-[calc(100vh-4rem)] overflow-auto">
             <Link
               href="/"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                 pathname === "/"
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
+                  ? "text-orange-500 bg-orange-500/10"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -161,10 +182,10 @@ export default function Navbar() {
             </Link>
             <Link
               href="/buy"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                 pathname === "/buy"
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
+                  ? "text-orange-500 bg-orange-500/10"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -172,10 +193,10 @@ export default function Navbar() {
             </Link>
             <Link
               href="/rent"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                 pathname === "/rent"
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
+                  ? "text-orange-500 bg-orange-500/10"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -183,13 +204,13 @@ export default function Navbar() {
             </Link>
             <Link
               href="/sell"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                 pathname === "/sell"
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
+                  ? "text-orange-500 bg-orange-500/10"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
               }`}
-              onClick={(e) => {
-                handleProtectedLinkClick(e);
+              onClick={(_e) => {
+                handleProtectedLinkClick(_e);
                 setIsMenuOpen(false);
               }}
             >
@@ -197,24 +218,28 @@ export default function Navbar() {
             </Link>
             <Link
               href="/commercial"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                 pathname === "/commercial" ||
                 pathname?.startsWith("/commercial/")
-                  ? "text-orange-500"
-                  : "text-gray-300 hover:text-white"
+                  ? "text-orange-500 bg-orange-500/10"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >
               Commercial
             </Link>
+            
+            {/* Divider */}
+            <div className="border-t border-gray-700 my-4"></div>
+            
             {isAuthenticated ? (
               <>
                 <Link
                   href="/dashboard"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                     pathname === "/dashboard"
-                      ? "text-orange-500"
-                      : "text-gray-300 hover:text-white"
+                      ? "text-orange-500 bg-orange-500/10"
+                      : "text-gray-300 hover:text-white hover:bg-gray-800"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -222,10 +247,10 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/profile"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                     pathname === "/profile"
-                      ? "text-orange-500"
-                      : "text-gray-300 hover:text-white"
+                      ? "text-orange-500 bg-orange-500/10"
+                      : "text-gray-300 hover:text-white hover:bg-gray-800"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -233,33 +258,37 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/favourites"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
                     pathname === "/favourites"
-                      ? "text-orange-500"
-                      : "text-gray-300 hover:text-white"
+                      ? "text-orange-500 bg-orange-500/10"
+                      : "text-gray-300 hover:text-white hover:bg-gray-800"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Favourites
                 </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white"
-                >
-                  Logout
-                </button>
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-red-600/20 border border-red-500/30 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
               </>
             ) : (
-              <Link
-                href="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Login
-              </Link>
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  className="block w-full text-center px-4 py-3 rounded-md text-base font-medium bg-orange-500 hover:bg-orange-600 text-white transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              </div>
             )}
           </div>
         </div>

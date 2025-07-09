@@ -1,4 +1,4 @@
-import mongoose, { Schema, models } from 'mongoose';
+import mongoose, { Schema, Document, Model, models } from 'mongoose';
 
 // Define subscription types and plans for the system
 export enum UserType {
@@ -15,10 +15,17 @@ export enum PlanType {
   BOSS = 'boss'
 }
 
-interface ISubscription {
+export interface PaymentHistory {
+  transactionId: string;
+  amount: number;
+  date: Date;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+}
+
+export interface ISubscription {
   user: mongoose.Types.ObjectId;
-  userType: string; // owner, dealer, buyer
-  planType: string; // free, basic, standard, premium, boss
+  userType: UserType;
+  planType: PlanType;
   price: number;
   startDate: Date;
   endDate: Date;
@@ -54,10 +61,19 @@ interface ISubscription {
   updatedAt: Date;
 }
 
-const subscriptionSchema = new Schema<ISubscription>(
+interface SubscriptionDocument extends Document, ISubscription {}
+
+// Define schema type for default functions
+interface DefaultContext {
+  userType: UserType;
+  planType: PlanType;
+  price?: number;
+}
+
+const subscriptionSchema = new Schema<SubscriptionDocument>(
   {
     user: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
       unique: true
@@ -104,10 +120,9 @@ const subscriptionSchema = new Schema<ISubscription>(
       total: {
         type: Number,
         required: true,
-        default: function() {
+        default: function(this: DefaultContext) {
           // Set default based on user type and plan
-          const userType = this.userType;
-          const planType = this.planType;
+          const { userType, planType } = this;
           
           if (userType === UserType.OWNER) {
             if (planType === PlanType.FREE) return 2;
@@ -132,7 +147,7 @@ const subscriptionSchema = new Schema<ISubscription>(
       },
       refreshDate: {
         type: Date,
-        default: function() {
+        default: function(this: DefaultContext) {
           // Free listings refresh every 3 months
           if (this.planType === PlanType.FREE) {
             const date = new Date();
@@ -168,7 +183,7 @@ const subscriptionSchema = new Schema<ISubscription>(
       },
       refreshDate: {
         type: Date,
-        default: function() {
+        default: function(this: DefaultContext) {
           // Free contacts refresh every 9 months for buyers
           if (this.userType === UserType.BUYER && this.planType === PlanType.FREE) {
             const date = new Date();
@@ -309,17 +324,16 @@ const subscriptionSchema = new Schema<ISubscription>(
 );
 
 // Create indexes for efficient querying
-subscriptionSchema.index({ user: 1 });
 subscriptionSchema.index({ isActive: 1 });
 subscriptionSchema.index({ endDate: 1 });
 subscriptionSchema.index({ 'paymentHistory.transactionId': 1 });
 
 // Pre-save middleware to ensure defaults are set correctly
-subscriptionSchema.pre('save', function(next) {
+subscriptionSchema.pre('save', function(this: SubscriptionDocument, next) {
   // Update listings.total based on userType and planType if not already set
   if (this.isNew || this.isModified('planType') || this.isModified('userType')) {
-    const userType = this.userType;
-    const planType = this.planType;
+    const userType = this.userType as UserType;
+    const planType = this.planType as PlanType;
     
     // Set listings total
     if (userType === UserType.OWNER) {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,7 +106,7 @@ export default function VerificationRequestForm() {
           setRequestStatus(newStatus);
         }
       } catch (error) {
-        console.error("Error checking verification status:", error);
+        console.error('Failed to check existing requests:', error);
       }
     };
 
@@ -115,27 +116,27 @@ export default function VerificationRequestForm() {
   }, [session, token]);
 
   // Handle image upload for agent
-  const handleAgentImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleAgentImageChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    if (_e.target.files && _e.target.files[0]) {
+      const file = _e.target.files[0];
       setAgentForm({ ...agentForm, image: file });
       setAgentImagePreview(URL.createObjectURL(file));
     }
   };
 
   // Handle image upload for builder
-  const handleBuilderImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleBuilderImageChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    if (_e.target.files && _e.target.files[0]) {
+      const file = _e.target.files[0];
       setBuilderForm({ ...builderForm, image: file });
       setBuilderImagePreview(URL.createObjectURL(file));
     }
   };
 
   // Handle logo upload for builder
-  const handleBuilderLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleBuilderLogoChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    if (_e.target.files && _e.target.files[0]) {
+      const file = _e.target.files[0];
       setBuilderForm({ ...builderForm, logo: file });
       setBuilderLogoPreview(URL.createObjectURL(file));
     }
@@ -160,8 +161,8 @@ export default function VerificationRequestForm() {
   };
 
   // Handle agent form submission
-  const handleAgentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAgentSubmit = async (_e: React.FormEvent) => {
+    _e.preventDefault();
 
     if (!token) {
       toast({
@@ -236,13 +237,13 @@ export default function VerificationRequestForm() {
         });
         setRequestStatus((prev) => ({ ...prev, agent: "error" }));
       }
-    } catch (error) {
-      console.error("Agent submission error:", error);
+    } catch (_error) {
+
       toast({
         title: "Error",
         description:
-          error instanceof Error
-            ? error.message
+         _error instanceof Error
+            ? _error.message
             : "Failed to submit verification request",
         variant: "destructive",
       });
@@ -251,8 +252,8 @@ export default function VerificationRequestForm() {
   };
 
   // Handle builder form submission
-  const handleBuilderSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleBuilderSubmit = async (_e: React.FormEvent) => {
+    _e.preventDefault();
 
     if (!token) {
       toast({
@@ -327,13 +328,13 @@ export default function VerificationRequestForm() {
         });
         setRequestStatus((prev) => ({ ...prev, builder: "error" }));
       }
-    } catch (error) {
-      console.error("Builder submission error:", error);
+    } catch (_error) {
+
       toast({
         title: "Error",
         description:
-          error instanceof Error
-            ? error.message
+          _error instanceof Error
+            ? _error.message
             : "Failed to submit verification request",
         variant: "destructive",
       });
@@ -343,21 +344,21 @@ export default function VerificationRequestForm() {
 
   // Handle agent form input changes
   const handleAgentChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    _e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setAgentForm({
       ...agentForm,
-      [e.target.name]: e.target.value,
+      [_e.target.name]: _e.target.value,
     });
   };
 
   // Handle builder form input changes
   const handleBuilderChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    _e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setBuilderForm({
       ...builderForm,
-      [e.target.name]: e.target.value,
+      [_e.target.name]: _e.target.value,
     });
   };
 
@@ -533,10 +534,12 @@ export default function VerificationRequestForm() {
                   <div className="flex items-center gap-4">
                     <div className="relative h-24 w-24 rounded-full overflow-hidden bg-gray-800">
                       {agentImagePreview ? (
-                        <img
+                        <Image
                           src={agentImagePreview}
                           alt="Agent preview"
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="96px"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -721,10 +724,12 @@ export default function VerificationRequestForm() {
                   <div className="flex items-center gap-4">
                     <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-gray-800">
                       {builderImagePreview ? (
-                        <img
+                        <Image
                           src={builderImagePreview}
                           alt="Builder preview"
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="96px"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -761,10 +766,12 @@ export default function VerificationRequestForm() {
                   <div className="flex items-center gap-4">
                     <div className="relative h-24 w-24 rounded-lg overflow-hidden bg-gray-800">
                       {builderLogoPreview ? (
-                        <img
+                        <Image
                           src={builderLogoPreview}
                           alt="Logo preview"
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="96px"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">

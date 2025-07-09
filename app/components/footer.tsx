@@ -242,13 +242,15 @@ export default function Footer() {
                   />
                 </svg>
                 <span className="group-hover:text-beige transition-all duration-300">
-                  Pune Maharashtra
+                  S.No. 123, IT Park, Hinjewadi Phase 1,
+                  <br />
+                  Pune, Maharashtra 411057
                   <br />
                   India
                 </span>
               </li>
               <li className="flex items-start group">
-                <a href="mailto:contact@100gaj.com">
+                <a href="mailto:contact@100gaj.com" className="flex items-start group w-full">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2 mt-0.5 text-beige-dark group-hover:text-beige transition-all duration-300"
@@ -270,7 +272,7 @@ export default function Footer() {
                 </a>
               </li>
               <li className="flex items-start group">
-                <a href="tel:+919876543210">
+                <a href="tel:+919876543210" className="flex items-start group w-full">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2 mt-0.5 text-beige-dark group-hover:text-beige transition-all duration-300"
@@ -286,9 +288,30 @@ export default function Footer() {
                   />
                 </svg>
                 <span className="group-hover:text-beige transition-all duration-300">
-                  +91 9876 543 210
+                  +91 98765 43210
                 </span>
                 </a>
+              </li>
+              <li className="flex items-start group">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 mt-0.5 text-beige-dark group-hover:text-beige transition-all duration-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="group-hover:text-beige transition-all duration-300">
+                  Mon - Sat: 9:00 AM - 7:00 PM
+                  <br />
+                  Sunday: 10:00 AM - 5:00 PM
+                </span>
               </li>
             </ul>
           </div>

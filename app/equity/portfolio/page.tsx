@@ -1,588 +1,589 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { DollarSign, TrendingUp, TrendingDown, Calendar, Building2, Target, Star, Eye, Download, Share2, AlertCircle, CheckCircle, ArrowUpRight, Zap, BarChart3, PieChart, Activity, Filter, Grid3X3, List, Plus } from "lucide-react";
 import Link from "next/link";
-import { 
-  FaBuilding, 
-  FaMapMarkerAlt, 
-  FaChartLine, 
-  FaArrowUp,
-  FaEye,
-  FaDownload,
-  FaExchangeAlt,
-  FaDollarSign,
-
-  
-  FaWallet,
-  FaTrophy,
-  FaUsers,
-  
-} from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import EquityNavbar from "../components/EquityNavbar";
+import { PortfolioSummary } from "../components";
 
+interface PortfolioProperty {
+  id: string;
+  name: string;
+  type: string;
+  location: string;
+  sharesOwned: number;
+  totalShares: number;
+  pricePerShare: number;
+  currentValue: number;
+  initialInvestment: number;
+  currentYield: number;
+  monthlyIncome: number;
+  totalReturns: number;
+  returnPercentage: number;
+  lastUpdated: string;
+  riskLevel: "Low" | "Medium" | "High";
+  occupancyRate: number;
+  aiScore: number;
+  performance: "positive" | "negative" | "neutral";
+}
+
+interface PortfolioMetrics {
+  totalValue: number;
+  totalInvestment: number;
+  totalReturns: number;
+  monthlyIncome: number;
+  properties: number;
+  totalShares: number;
+  averageYield: number;
+  bestPerformer: string;
+  worstPerformer: string;
+}
 
 export default function PortfolioPage() {
-  const [user] = useState({
-    name: "John Doe",
-    totalInvestment: 350000,
-    totalValue: 410000,
-    totalReturns: 60000,
-    monthlyIncome: 12400,
-    portfolioCount: 5,
-    joinDate: "2024-01-15"
-  });
-  
-  const [portfolioData] = useState([
+  const [portfolioProperties, setPortfolioProperties] = useState<PortfolioProperty[]>([]);
+  const [portfolioMetrics, setPortfolioMetrics] = useState<PortfolioMetrics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("value");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Mock data
+  const mockPortfolioProperties: PortfolioProperty[] = [
     {
-      id: 1,
-      name: "Phoenix Business Center",
+      id: "1",
+      name: "Cyber Hub Office Complex",
+      type: "Office Building",
       location: "Gurgaon, Haryana",
-      type: "Office Complex",
-      investment: 100000,
-      currentValue: 118000,
-      shares: 50,
-      totalShares: 1000,
-      sharePrice: 2360,
-      originalPrice: 2000,
-      roi: 18.0,
-      monthlyIncome: 4200,
-      totalIncome: 25200,
-      purchaseDate: "2024-01-20",
-      status: "Active",
-      riskLevel: "Low",
-      image: "/images/property1.jpg"
-    },
-    {
-      id: 2,
-      name: "Tech Hub Plaza",
-      location: "Noida, UP",
-      type: "IT Park",
-      investment: 150000,
-      currentValue: 165000,
-      shares: 75,
-      totalShares: 1200,
-      sharePrice: 2200,
-      originalPrice: 2000,
-      roi: 10.0,
-      monthlyIncome: 5800,
-      totalIncome: 34800,
-      purchaseDate: "2024-02-15",
-      status: "Active",
+      sharesOwned: 45,
+      totalShares: 10000,
+      pricePerShare: 2500,
+      currentValue: 127500,
+      initialInvestment: 112500,
+      currentYield: 8.5,
+      monthlyIncome: 9562,
+      totalReturns: 15000,
+      returnPercentage: 13.3,
+      lastUpdated: "2024-01-15",
       riskLevel: "Medium",
-      image: "/images/property2.jpg"
+      occupancyRate: 95,
+      aiScore: 92,
+      performance: "positive"
     },
     {
-      id: 3,
-      name: "Metro Mall Complex",
-      location: "New Delhi",
-      type: "Retail Mall",
-      investment: 100000,
-      currentValue: 127000,
-      shares: 40,
-      totalShares: 800,
-      sharePrice: 3175,
-      originalPrice: 2500,
-      roi: 27.0,
-      monthlyIncome: 2400,
-      totalIncome: 9600,
-      purchaseDate: "2024-03-10",
-      status: "Active",
+      id: "2",
+      name: "Data Center Facility",
+      type: "Data Center",
+      location: "Mumbai, Maharashtra",
+      sharesOwned: 25,
+      totalShares: 6000,
+      pricePerShare: 5000,
+      currentValue: 137500,
+      initialInvestment: 125000,
+      currentYield: 11.5,
+      monthlyIncome: 12000,
+      totalReturns: 12500,
+      returnPercentage: 10.0,
+      lastUpdated: "2024-01-15",
+      riskLevel: "Medium",
+      occupancyRate: 98,
+      aiScore: 95,
+      performance: "positive"
+    },
+    {
+      id: "3",
+      name: "Retail Mall Complex",
+      type: "Retail",
+      location: "Noida, UP",
+      sharesOwned: 18,
+      totalShares: 15000,
+      pricePerShare: 3200,
+      currentValue: 55800,
+      initialInvestment: 57600,
+      currentYield: 7.8,
+      monthlyIncome: 3744,
+      totalReturns: -1800,
+      returnPercentage: -3.1,
+      lastUpdated: "2024-01-15",
       riskLevel: "Low",
-      image: "/images/property3.jpg"
+      occupancyRate: 92,
+      aiScore: 89,
+      performance: "negative"
+    },
+    {
+      id: "4",
+      name: "Logistic Park Warehouse",
+      type: "Warehouse",
+      location: "Sonipat, Haryana",
+      sharesOwned: 32,
+      totalShares: 8000,
+      pricePerShare: 1800,
+      currentValue: 62400,
+      initialInvestment: 57600,
+      currentYield: 9.2,
+      monthlyIncome: 4784,
+      totalReturns: 4800,
+      returnPercentage: 8.3,
+      lastUpdated: "2024-01-15",
+      riskLevel: "High",
+      occupancyRate: 88,
+      aiScore: 88,
+      performance: "positive"
+    },
+    {
+      id: "5",
+      name: "Co-working Hub",
+      type: "Co-working",
+      location: "Bangalore, Karnataka",
+      sharesOwned: 28,
+      totalShares: 12000,
+      pricePerShare: 2800,
+      currentValue: 78400,
+      initialInvestment: 78400,
+      currentYield: 8.9,
+      monthlyIncome: 5817,
+      totalReturns: 0,
+      returnPercentage: 0.0,
+      lastUpdated: "2024-01-15",
+      riskLevel: "Medium",
+      occupancyRate: 87,
+      aiScore: 86,
+      performance: "neutral"
     }
-  ]);
-  
-  const [transactionHistory] = useState([
-    {
-      id: 1,
-      type: "purchase",
-      propertyName: "Phoenix Business Center",
-      amount: 100000,
-      shares: 50,
-      date: "2024-01-20",
-      status: "Completed"
-    },
-    {
-      id: 2,
-      type: "income",
-      propertyName: "Phoenix Business Center",
-      amount: 4200,
-      shares: 50,
-      date: "2024-12-01",
-      status: "Received"
-    },
-    {
-      id: 3,
-      type: "purchase",
-      propertyName: "Tech Hub Plaza",
-      amount: 150000,
-      shares: 75,
-      date: "2024-02-15",
-      status: "Completed"
-    },
-    {
-      id: 4,
-      type: "income",
-      propertyName: "Tech Hub Plaza",
-      amount: 5800,
-      shares: 75,
-      date: "2024-12-01",
-      status: "Received"
-    },
-    {
-      id: 5,
-      type: "purchase",
-      propertyName: "Metro Mall Complex",
-      amount: 100000,
-      shares: 40,
-      date: "2024-03-10",
-      status: "Completed"
-    }
-  ]);
-  
-  const [statements] = useState([
-    {
-      id: 1,
-      type: "Monthly Statement",
-      period: "December 2024",
-      date: "2024-12-01",
-      amount: 12400,
-      downloadUrl: "/statements/dec-2024.pdf"
-    },
-    {
-      id: 2,
-      type: "Monthly Statement",
-      period: "November 2024",
-      date: "2024-11-01",
-      amount: 11800,
-      downloadUrl: "/statements/nov-2024.pdf"
-    },
-    {
-      id: 3,
-      type: "Quarterly Report",
-      period: "Q4 2024",
-      date: "2024-10-01",
-      amount: 34200,
-      downloadUrl: "/statements/q4-2024.pdf"
-    }
-  ]);
-  
-  const [sortBy, setSortBy] = useState("roi_desc");
-  const [filterBy, setFilterBy] = useState("all");
+  ];
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0
-    }).format(amount);
+  const mockPortfolioMetrics: PortfolioMetrics = {
+    totalValue: 461600,
+    totalInvestment: 431100,
+    totalReturns: 30500,
+    monthlyIncome: 35907,
+    properties: 5,
+    totalShares: 148,
+    averageYield: 9.18,
+    bestPerformer: "Cyber Hub Office Complex",
+    worstPerformer: "Retail Mall Complex"
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+  const filterOptions = [
+    { value: "all", label: "All Properties" },
+    { value: "positive", label: "Positive Returns" },
+    { value: "negative", label: "Negative Returns" },
+    { value: "high-yield", label: "High Yield (>9%)" },
+    { value: "low-risk", label: "Low Risk" },
+    { value: "medium-risk", label: "Medium Risk" },
+    { value: "high-risk", label: "High Risk" }
+  ];
 
-  const getReturnPercentage = () => {
-    return ((user.totalReturns / user.totalInvestment) * 100).toFixed(1);
-  };
+  const sortOptions = [
+    { value: "value", label: "Current Value" },
+    { value: "returns", label: "Total Returns" },
+    { value: "percentage", label: "Return %" },
+    { value: "income", label: "Monthly Income" },
+    { value: "yield", label: "Current Yield" },
+    { value: "aiScore", label: "AI Score" }
+  ];
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case "purchase":
-        return <FaBuilding className="w-4 h-4 text-blue-500" />;
+  useEffect(() => {
+    // Simulate API call
+    const timer = setTimeout(() => {
+      setPortfolioProperties(mockPortfolioProperties);
+      setPortfolioMetrics(mockPortfolioMetrics);
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const filteredProperties = portfolioProperties.filter(property => {
+    switch (selectedFilter) {
+      case "positive":
+        return property.performance === "positive";
+      case "negative":
+        return property.performance === "negative";
+      case "high-yield":
+        return property.currentYield > 9;
+      case "low-risk":
+        return property.riskLevel === "Low";
+      case "medium-risk":
+        return property.riskLevel === "Medium";
+      case "high-risk":
+        return property.riskLevel === "High";
+      default:
+        return true;
+    }
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case "value":
+        return b.currentValue - a.currentValue;
+      case "returns":
+        return b.totalReturns - a.totalReturns;
+      case "percentage":
+        return b.returnPercentage - a.returnPercentage;
       case "income":
-        return <FaArrowUp className="w-4 h-4 text-green-500" />;
-      case "sale":
-        return <FaExchangeAlt className="w-4 h-4 text-orange-500" />;
+        return b.monthlyIncome - a.monthlyIncome;
+      case "yield":
+        return b.currentYield - a.currentYield;
+      case "aiScore":
+        return b.aiScore - a.aiScore;
       default:
-        return <FaDollarSign className="w-4 h-4 text-gray-500" />;
+        return 0;
+    }
+  });
+
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "Low": return "text-green-400 bg-green-500/10";
+      case "Medium": return "text-yellow-400 bg-yellow-500/10";
+      case "High": return "text-red-400 bg-red-500/10";
+      default: return "text-gray-400 bg-gray-500/10";
     }
   };
 
-  const getRiskBadge = (riskLevel: string) => {
-    switch (riskLevel) {
-      case "Low":
-        return <Badge className="bg-green-500/20 text-green-400">{riskLevel}</Badge>;
-      case "Medium":
-        return <Badge className="bg-yellow-500/20 text-yellow-400">{riskLevel}</Badge>;
-      case "High":
-        return <Badge className="bg-red-500/20 text-red-400">{riskLevel}</Badge>;
-      default:
-        return <Badge className="bg-gray-500/20 text-gray-400">{riskLevel}</Badge>;
+  const getPerformanceColor = (performance: string) => {
+    switch (performance) {
+      case "positive": return "text-green-400";
+      case "negative": return "text-red-400";
+      case "neutral": return "text-gray-400";
+      default: return "text-gray-400";
     }
   };
 
-  const getPerformanceColor = (roi: number) => {
-    if (roi >= 20) return "text-green-400";
-    if (roi >= 10) return "text-yellow-400";
-    return "text-red-400";
+  const getPerformanceIcon = (performance: string) => {
+    switch (performance) {
+      case "positive": return TrendingUp;
+      case "negative": return TrendingDown;
+      case "neutral": return Activity;
+      default: return Activity;
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading your portfolio...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-      <EquityNavbar />
-      
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm pt-20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between"
+          >
             <div>
-              <h1 className="text-3xl font-bold text-white">
-                My <span className="text-orange-500">Portfolio</span>
+              <h1 className="text-4xl font-bold text-white mb-2">
+                My Portfolio
+                <span className="text-orange-500 ml-2">Dashboard</span>
               </h1>
-              <p className="text-gray-400 mt-1">
-                Track your real estate investments and returns
+              <p className="text-gray-300 text-lg">
+                Track your commercial real estate investments and performance
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">
-                <FaDownload className="w-4 h-4 mr-2" />
-                Export Portfolio
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Report
               </Button>
-              <Link href="/equity/properties">
-                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
-                  <FaBuilding className="w-4 h-4 mr-2" />
-                  Browse Properties
+              <Button
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share Portfolio
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Portfolio Summary */}
+        {portfolioMetrics && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <PortfolioSummary portfolio={portfolioMetrics} />
+          </motion.div>
+        )}
+
+        {/* Filters and Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {/* Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Filter Properties</label>
+              <select
+                value={selectedFilter}
+                onChange={(e) => setSelectedFilter(e.target.value)}
+                className="w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500"
+              >
+                {filterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* View Mode */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">View Mode</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    viewMode === "grid"
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    viewMode === "list"
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                  List
+                </button>
+              </div>
+            </div>
+
+            {/* Add Investment */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Actions</label>
+              <Link href="/equity/property">
+                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Investment
                 </Button>
               </Link>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Portfolio Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Total Investment</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(user.totalInvestment)}</p>
-                    <p className="text-sm text-gray-400">Since {formatDate(user.joinDate)}</p>
-                  </div>
-                  <div className="bg-blue-500/20 p-3 rounded-full">
-                    <FaWallet className="w-6 h-6 text-blue-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Portfolio Properties */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">
+              Your Properties
+              <span className="text-orange-500 ml-2">({filteredProperties.length})</span>
+            </h2>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Current Value</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(user.totalValue)}</p>
-                    <p className="text-sm text-green-400 flex items-center">
-                      <FaArrowUp className="w-3 h-3 mr-1" />
-                      {getReturnPercentage()}%
-                    </p>
-                  </div>
-                  <div className="bg-green-500/20 p-3 rounded-full">
-                    <FaChartLine className="w-6 h-6 text-green-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Total Returns</p>
-                    <p className="text-2xl font-bold text-orange-500">{formatCurrency(user.totalReturns)}</p>
-                    <p className="text-sm text-gray-400">Capital + Income</p>
-                  </div>
-                  <div className="bg-orange-500/20 p-3 rounded-full">
-                    <FaTrophy className="w-6 h-6 text-orange-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-400 text-sm">Monthly Income</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(user.monthlyIncome)}</p>
-                    <p className="text-sm text-gray-400">{user.portfolioCount} properties</p>
-                  </div>
-                  <div className="bg-purple-500/20 p-3 rounded-full">
-                    <FaUsers className="w-6 h-6 text-purple-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Main Content */}
-        <div className="space-y-8">
-          <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <Tabs defaultValue="portfolio" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-700">
-                  <TabsTrigger value="portfolio" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-                    Portfolio Holdings
-                  </TabsTrigger>
-                  <TabsTrigger value="transactions" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-                    Transaction History
-                  </TabsTrigger>
-                  <TabsTrigger value="statements" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-                    Statements
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="portfolio" className="mt-6">
-                  <div className="space-y-6">
-                    {/* Filters */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <Select value={sortBy} onValueChange={setSortBy}>
-                          <SelectTrigger className="w-48 bg-gray-700 border-gray-600 text-white">
-                            <SelectValue placeholder="Sort by" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="roi_desc">Highest ROI</SelectItem>
-                            <SelectItem value="roi_asc">Lowest ROI</SelectItem>
-                            <SelectItem value="value_desc">Highest Value</SelectItem>
-                            <SelectItem value="value_asc">Lowest Value</SelectItem>
-                            <SelectItem value="date_desc">Recent First</SelectItem>
-                            <SelectItem value="date_asc">Oldest First</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Select value={filterBy} onValueChange={setFilterBy}>
-                          <SelectTrigger className="w-48 bg-gray-700 border-gray-600 text-white">
-                            <SelectValue placeholder="Filter by" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Properties</SelectItem>
-                            <SelectItem value="office">Office</SelectItem>
-                            <SelectItem value="retail">Retail</SelectItem>
-                            <SelectItem value="mixed">Mixed Use</SelectItem>
-                          </SelectContent>
-                        </Select>
+          {filteredProperties.length > 0 ? (
+            <div className={`grid gap-6 ${
+              viewMode === "grid" 
+                ? "md:grid-cols-2 lg:grid-cols-3" 
+                : "grid-cols-1"
+            }`}>
+              {filteredProperties.map((property, index) => {
+                const PerformanceIcon = getPerformanceIcon(property.performance);
+                
+                return (
+                  <motion.div
+                    key={property.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 hover:border-orange-500/50 transition-all duration-300 p-6"
+                  >
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-white mb-1">{property.name}</h3>
+                        <div className="text-sm text-gray-400">{property.location}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`px-2 py-1 rounded-full text-xs font-bold ${getRiskColor(property.riskLevel)}`}>
+                          {property.riskLevel}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Portfolio Items */}
-                    <div className="space-y-4">
-                      {portfolioData.map((property, index) => (
-                        <motion.div
-                          key={property.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.6, delay: index * 0.1 }}
-                        >
-                          <Card className="bg-gray-700/50 border-gray-600 hover:border-orange-500 transition-all duration-300">
-                            <CardContent className="p-6">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-4">
-                                  <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                                    <FaBuilding className="w-8 h-8 text-white" />
-                                  </div>
-                                  <div>
-                                    <h3 className="text-xl font-semibold text-white">{property.name}</h3>
-                                    <p className="text-gray-400 flex items-center">
-                                      <FaMapMarkerAlt className="w-4 h-4 mr-1" />
-                                      {property.location}
-                                    </p>
-                                    <div className="flex items-center space-x-2 mt-1">
-                                      <Badge className="bg-blue-500/20 text-blue-400">{property.type}</Badge>
-                                      {getRiskBadge(property.riskLevel)}
-                                      <Badge className="bg-green-500/20 text-green-400">{property.status}</Badge>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Link href={`/equity/properties/${property.id}`}>
-                                    <Button variant="outline" size="sm" className="border-gray-600 text-gray-400 hover:bg-gray-600">
-                                      <FaEye className="w-4 h-4 mr-1" />
-                                      View
-                                    </Button>
-                                  </Link>
-                                  <Button variant="outline" size="sm" className="border-gray-600 text-gray-400 hover:bg-gray-600">
-                                    <FaExchangeAlt className="w-4 h-4 mr-1" />
-                                    Trade
-                                  </Button>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                                <div>
-                                  <p className="text-gray-400 text-sm">Investment</p>
-                                  <p className="text-white font-semibold">{formatCurrency(property.investment)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-400 text-sm">Current Value</p>
-                                  <p className="text-white font-semibold">{formatCurrency(property.currentValue)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-400 text-sm">ROI</p>
-                                  <p className={`font-semibold ${getPerformanceColor(property.roi)}`}>
-                                    {property.roi > 0 ? '+' : ''}{property.roi}%
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-400 text-sm">Monthly Income</p>
-                                  <p className="text-orange-500 font-semibold">{formatCurrency(property.monthlyIncome)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-400 text-sm">Total Income</p>
-                                  <p className="text-green-500 font-semibold">{formatCurrency(property.totalIncome)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-400 text-sm">Shares</p>
-                                  <p className="text-white font-semibold">{property.shares}</p>
-                                  <p className="text-xs text-gray-400">of {property.totalShares}</p>
-                                </div>
-                              </div>
-
-                              <div className="mt-4 pt-4 border-t border-gray-600">
-                                <div className="flex items-center justify-between">
-                                  <div className="text-sm text-gray-400">
-                                    Purchased on {formatDate(property.purchaseDate)}
-                                  </div>
-                                  <div className="text-sm">
-                                    <span className="text-gray-400">Share Price: </span>
-                                    <span className="text-white font-semibold">{formatCurrency(property.sharePrice)}</span>
-                                    <span className={`ml-2 ${property.sharePrice > property.originalPrice ? 'text-green-400' : 'text-red-400'}`}>
-                                      ({property.sharePrice > property.originalPrice ? '+' : ''}{((property.sharePrice - property.originalPrice) / property.originalPrice * 100).toFixed(1)}%)
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                    {/* Investment Details */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-black/40 rounded-lg p-3">
+                        <div className="text-xl font-bold text-white mb-1">
+                          ₹{property.currentValue.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-400">Current Value</div>
+                      </div>
+                      <div className="bg-black/40 rounded-lg p-3">
+                        <div className={`text-xl font-bold mb-1 ${getPerformanceColor(property.performance)}`}>
+                          {property.returnPercentage > 0 ? '+' : ''}{property.returnPercentage.toFixed(1)}%
+                        </div>
+                        <div className="text-xs text-gray-400">Return</div>
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
 
-                <TabsContent value="transactions" className="mt-6">
-                  <div className="space-y-4">
-                    {transactionHistory.map((transaction, index) => (
-                      <motion.div
-                        key={transaction.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: index * 0.1 }}
-                      >
-                        <Card className="bg-gray-700/50 border-gray-600">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex-shrink-0">
-                                  {getTransactionIcon(transaction.type)}
-                                </div>
-                                <div>
-                                  <h3 className="font-semibold text-white capitalize">{transaction.type}</h3>
-                                  <p className="text-gray-400 text-sm">{transaction.propertyName}</p>
-                                  <p className="text-gray-500 text-xs">{formatDate(transaction.date)}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-white font-semibold">{formatCurrency(transaction.amount)}</p>
-                                {transaction.shares && (
-                                  <p className="text-gray-400 text-sm">{transaction.shares} shares</p>
-                                )}
-                                <Badge 
-                                  className={`mt-1 ${
-                                    transaction.status === 'Completed' 
-                                      ? 'bg-green-500/20 text-green-400' 
-                                      : 'bg-yellow-500/20 text-yellow-400'
-                                  }`}
-                                >
-                                  {transaction.status}
-                                </Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </TabsContent>
+                    {/* Shares Info */}
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-gray-400">Shares Owned</span>
+                        <span className="text-sm font-semibold text-white">
+                          {property.sharesOwned} / {property.totalShares.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-400 mb-2">
+                        Ownership: {((property.sharesOwned / property.totalShares) * 100).toFixed(3)}%
+                      </div>
+                    </div>
 
-                <TabsContent value="statements" className="mt-6">
-                  <div className="space-y-4">
-                    {statements.map((statement, index) => (
-                      <motion.div
-                        key={statement.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                    {/* Performance Metrics */}
+                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Monthly Income</span>
+                        <span className="text-green-400 font-semibold">₹{property.monthlyIncome.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Current Yield</span>
+                        <span className="text-orange-400 font-semibold">{property.currentYield}%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Total Returns</span>
+                        <span className={`font-semibold ${getPerformanceColor(property.performance)}`}>
+                          {property.totalReturns > 0 ? '+' : ''}₹{property.totalReturns.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">AI Score</span>
+                        <span className="text-purple-400 font-semibold">{property.aiScore}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Link href={`/equity/property/${property.id}`} className="flex-1">
+                        <Button
+                          size="sm"
+                          className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
                       >
-                        <Card className="bg-gray-700/50 border-gray-600">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex-shrink-0">
-                                  <FaDownload className="w-5 h-5 text-orange-500" />
-                                </div>
-                                <div>
-                                  <h3 className="font-semibold text-white">{statement.type}</h3>
-                                  <p className="text-gray-400 text-sm">{statement.period}</p>
-                                  <p className="text-gray-500 text-xs">{formatDate(statement.date)}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-white font-semibold">{formatCurrency(statement.amount)}</p>
-                                <Button 
-                                  size="sm" 
-                                  className="mt-2 bg-orange-500 hover:bg-orange-600 text-white"
-                                >
-                                  <FaDownload className="w-4 h-4 mr-1" />
-                                  Download
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
+                        <BarChart3 className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    {/* Performance Indicator */}
+                    <div className="mt-4 flex items-center gap-2 text-sm">
+                      <PerformanceIcon className={`w-4 h-4 ${getPerformanceColor(property.performance)}`} />
+                      <span className="text-gray-400">
+                        {property.performance === "positive" ? "Outperforming" : 
+                         property.performance === "negative" ? "Underperforming" : "Stable"}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Target className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">No properties match your filter</h3>
+              <p className="text-gray-400 mb-6">
+                Try adjusting your filter criteria to see more properties.
+              </p>
+              <Button
+                onClick={() => setSelectedFilter("all")}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                Show All Properties
+              </Button>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Portfolio Insights */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-6 border border-purple-500/20"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-purple-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white">Portfolio Insights</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-3">Performance Summary</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Best Performer:</span>
+                  <span className="text-green-400 font-semibold">{portfolioMetrics?.bestPerformer}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Worst Performer:</span>
+                  <span className="text-red-400 font-semibold">{portfolioMetrics?.worstPerformer}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Average Yield:</span>
+                  <span className="text-orange-400 font-semibold">{portfolioMetrics?.averageYield.toFixed(1)}%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-3">AI Recommendations</h4>
+              <div className="text-sm text-gray-300">
+                Consider rebalancing your portfolio by reducing retail exposure and increasing data center investments for better risk-adjusted returns.
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

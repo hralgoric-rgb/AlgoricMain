@@ -81,8 +81,8 @@ export default function SellProperty() {
 
       toast.success("Property listed successfully!");
       setIsFormOpen(false);
-    } catch (error) {
-      console.error("Error submitting property:", error);
+    } catch (_error) {
+
       toast.error("Failed to submit property. Please try again.");
     }
   };

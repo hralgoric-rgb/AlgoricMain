@@ -33,8 +33,8 @@ export const DELETE = withAuth(
         success: true,
         message: 'Builder removed from favorites',
       });
-    } catch (error) {
-      console.error('Error removing builder from favorites:', error);
+    } catch (_error) {
+
       return NextResponse.json(
         { error: 'An error occurred while removing builder from favorites' },
         { status: 500 }

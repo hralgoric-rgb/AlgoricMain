@@ -118,7 +118,7 @@ interface ContactFormData {
   message: string;
 }
 
-export default function PropertyPage({ params }: { params: { id: string } }) {
+export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,17 +132,29 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   const [contactFormSubmitting, setContactFormSubmitting] = useState(false);
   const [contactFormSuccess, setContactFormSuccess] = useState(false);
   const [contactFormError, setContactFormError] = useState<string | null>(null);
+  const [propertyId, setPropertyId] = useState<string>('');
 
   const { data: session } = useSession();
   const router = useRouter();
 
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setPropertyId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
+
   const fetchPropertyData = async () => {
+    if (!propertyId) return;
+    
     try {
       setLoading(true);
       setError(null);
 
-      const response = await axios.get(`/api/properties/${params.id}`);
-      console.log("Property: ", response.data);
+      const response = await axios.get(`/api/properties/${propertyId}`);
+
       setProperty(response.data);
 
       // Fetch similar properties (same area, property type, etc.)
@@ -152,8 +164,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
       if (session?.user) {
         checkFavoriteStatus();
       }
-    } catch (err) {
-      console.error("Error fetching property:", err);
+    } catch (_err) {
+
       setError("Failed to load property details. Please try again later.");
     } finally {
       setLoading(false);
@@ -161,7 +173,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   };
   useEffect(() => {
     fetchPropertyData();
-  }, [params.id]);
+  }, [propertyId]);
 
   const fetchSimilarProperties = async (currentProperty: Property) => {
     try {
@@ -182,8 +194,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
 
         setSimilarProperties(similar);
       }
-    } catch (err) {
-      console.error("Error fetching similar properties:", err);
+    } catch (_err) {
+
     }
   };
 
@@ -191,8 +203,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
     try {
       // In a real implementation, you would check if this property is in the user's favorites
       // For now, we'll just simulate the check
-    } catch (err) {
-      console.error("Error checking favorite status:", err);
+    } catch (_err) {
+
     }
   };
 
@@ -202,12 +214,11 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   //         // In a real implementation, you would call an API to toggle the favorite status
   //         // For now, we'll just toggle the state
   //         setIsFavorite(!isFavorite);
-  //     } catch (err) {
-  //         console.error('Error toggling favorite status:', err);
-  //     }
+  //     } catch (_err) {
+  //         //     }
   // };
 
-  // const handleContactFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // const handleContactFormChange = (_e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
   //     const { name, value } = e.target;
   //     setContactForm(prev => ({
   //         ...prev,
@@ -215,8 +226,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
   //     }));
   // };
 
-  const handleContactFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleContactFormSubmit = async (_e: React.FormEvent) => {
+    _e.preventDefault();
 
     if (!property) return;
 
@@ -265,8 +276,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
       } else {
         throw new Error(data.message);
       }
-    } catch (err) {
-      console.error("Error submitting inquiry:", err);
+    } catch (_err) {
+
       setContactFormError("Failed to send your message. Please try again.");
       toast.error("Failed to send message. Please try again.");
     } finally {
@@ -1138,10 +1149,10 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                         id="name"
                         name="name"
                         value={contactForm.name}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            name: e.target.value,
+                            name: _e.target.value,
                           })
                         }
                         placeholder="Enter your name"
@@ -1160,10 +1171,10 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                         id="email"
                         name="email"
                         value={contactForm.email}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            email: e.target.value,
+                            email: _e.target.value,
                           })
                         }
                         placeholder="Enter your email"
@@ -1182,10 +1193,10 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                         id="phone"
                         name="phone"
                         value={contactForm.phone}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            phone: e.target.value,
+                            phone: _e.target.value,
                           })
                         }
                         placeholder="Enter your phone number"
@@ -1203,10 +1214,10 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                         id="message"
                         name="message"
                         value={contactForm.message}
-                        onChange={(e) =>
+                        onChange={(_e) =>
                           setContactForm({
                             ...contactForm,
-                            message: e.target.value,
+                            message: _e.target.value,
                           })
                         }
                         placeholder="I'm interested in this property..."
@@ -1523,11 +1534,13 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
                 className="bg-white rounded-xl overflow-hidden border border-black/10 hover:border-orange-500/30 hover:shadow-lg transition-all duration-300 group"
               >
                 <a href={article.url} className="block">
-                  <div className="h-48 overflow-hidden">
-                    <img
+                  <div className="relative h-48 overflow-hidden">
+                    <Image
                       src={article.image}
                       alt={article.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
                   <div className="p-5">

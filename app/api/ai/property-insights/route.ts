@@ -108,8 +108,8 @@ async function generatePropertyInsights(request: NextRequest, userId: string) {
       success: true,
       insights
     });
-  } catch (error) {
-    console.error('Error generating property insights:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while generating property insights' },
       { status: 500 }

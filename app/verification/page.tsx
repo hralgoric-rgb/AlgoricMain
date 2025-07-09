@@ -17,7 +17,7 @@ export default function VerificationPage() {
       const authToken = sessionStorage.getItem("authToken");
       if (authToken) {
         setToken(authToken);
-        console.log("Token:", token);
+
       } else {
         toast.error("Please login to proceed!! Redirecting to home page!");
         setTimeout(() => {

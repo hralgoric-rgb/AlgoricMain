@@ -12,7 +12,6 @@ import { BackgroundPaths } from "@/components/ui/background-paths";
 import { PropertyNewsSection } from "@/components/ui/property-news";
 import Link from "next/link";
 
-
 // const defaultCards = [
 //   {
 //     icon: <Sparkles className="size-4 text-blue-300" />,
@@ -47,8 +46,7 @@ import Link from "next/link";
 // ];
 
 export default function Home() {
-  
-  
+
   const testimonials = [
     {
       src: "/airpirt.jpeg",
@@ -351,7 +349,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white overflow-y-hidden">
       <Navbar />
       <SubNavbar items={navItems} />
       {/* Mobile Navigation Dots - Alternative to SubNavbar on mobile */}
