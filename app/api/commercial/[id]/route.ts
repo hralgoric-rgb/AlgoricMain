@@ -1,32 +1,50 @@
+import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/app/lib/mongodb";
-import CommercialProperty from "@/app/models/CommercialProperty";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import CommercialProperties from "@/app/models/CommercialProperty";
+import { Types } from "mongoose";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
-
+export async function GET(req: NextRequest) {
   try {
+    const url = new URL(req.url);
+    const id = url.pathname.split("/").pop();
+
+    if (!id || !Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid property ID" },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
 
-    const property = await CommercialProperty.findById(id);
+    const property = (await CommercialProperties.findById(id).lean()) as {
+      _id: Types.ObjectId;
+      [key: string]: any;
+    };
 
     if (!property) {
       return NextResponse.json(
-        { error: "Property not found with the given ID" },
+        { success: false, message: "Property not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(property, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching property by ID:", error);
+    const responseData = {
+      ...property,
+      id: property._id.toString(),
+    };
 
     return NextResponse.json(
-      { error: "Invalid ID format or internal error" },
+      { success: true, data: responseData },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      },
       { status: 500 }
     );
   }
