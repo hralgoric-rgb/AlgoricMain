@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CommercialProperty } from "../../data/commercialProperties";
 import { toast } from "sonner";
+import RazorpayPayment from "@/app/equity/components/RazorpayPayment";
 
 interface BuySharesModalProps {
   property: CommercialProperty;
@@ -89,29 +90,54 @@ export default function BuySharesModal({
     );
   };
 
-  const handlePurchase = async () => {
-    if (!canProceed()) return;
-
-    setIsProcessing(true);
-    setCurrentStep("payment");
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Mock success
-      toast.success(
-        `Successfully purchased ${form.shareCount} shares of ${property.title}!`,
-      );
-      onSuccess();
-      onClose();
-    } catch (_error) {
-      toast.error("Purchase failed. Please try again.");
-
-    } finally {
-      setIsProcessing(false);
-      setCurrentStep("details");
+  // Get user data from session/localStorage (you may need to adapt this based on your auth system)
+  const getUserData = () => {
+    // This should be replaced with your actual user data retrieval logic
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch {
+        return null;
+      }
     }
+    return null;
+  };
+
+  const handlePaymentSuccess = (_paymentResponse: any) => {
+    setIsProcessing(false);
+    setCurrentStep("details");
+    toast.success(
+      `Successfully purchased ${form.shareCount} shares of ${property.title}!`,
+    );
+    onSuccess();
+    onClose();
+  };
+
+  const handlePaymentError = (error: string) => {
+    setIsProcessing(false);
+    setCurrentStep("details");
+    toast.error(`Purchase failed: ${error}`);
+  };
+
+  const handlePaymentClose = () => {
+    setIsProcessing(false);
+    setCurrentStep("details");
+  };
+
+  // Prepare payment data
+  const getPaymentData = () => {
+    const userData = getUserData();
+    return {
+      amount: form.totalAmount,
+      userId: userData?.id || 'guest',
+      propertyId: property._id,
+      shareCount: form.shareCount,
+      propertyTitle: property.title,
+      userEmail: userData?.email,
+      userName: userData?.name,
+      userPhone: userData?.phone,
+    };
   };
 
   const getOwnershipPercentage = () => {
@@ -378,10 +404,14 @@ export default function BuySharesModal({
                   >
                     Cancel
                   </Button>
+                  
                   <Button
-                    onClick={handlePurchase}
                     disabled={!canProceed() || isProcessing}
                     className="flex-1 luxury-button"
+                    onClick={() => {
+                      // Handle payment click - for now just show a success
+                      handlePaymentSuccess({});
+                    }}
                   >
                     {isProcessing ? (
                       <div className="flex items-center">

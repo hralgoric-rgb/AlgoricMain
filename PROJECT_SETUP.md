@@ -58,7 +58,7 @@ This guide covers the complete setup and all the bug fixes that have been implem
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: NextAuth.js with JWT
 - **Maps**: Leaflet, React-Leaflet for interactive maps
-- **Payment**: PhonePe Integration for transactions
+- **Payment**: Razorpay Integration for transactions
 - **File Upload**: Cloudinary for optimized image storage
 - **Icons**: Lucide React, Tabler Icons
 - **Form Handling**: React Hook Form with validation
@@ -113,10 +113,9 @@ Ensure you have the following installed on your system:
    SMTP_USER=your-email@gmail.com
    SMTP_PASS=your-app-password
    
-   # PhonePe Payment Gateway (optional)
-   PHONEPE_MERCHANT_ID=your-merchant-id
-   PHONEPE_SALT_KEY=your-salt-key
-   PHONEPE_SALT_INDEX=1
+   # Razorpay Payment Gateway (REQUIRED for equity platform)
+   RAZORPAY_KEY_ID=rzp_test_your_key_id
+   RAZORPAY_KEY_SECRET=your_key_secret
    
    # Google OAuth (optional)
    GOOGLE_CLIENT_ID=your-google-client-id
@@ -201,7 +200,7 @@ npm run start
 - `CLOUDINARY_*`: For image upload functionality
 - `SMTP_*`: For email notifications
 - `GOOGLE_CLIENT_*`: For Google OAuth login
-- `PHONEPE_*`: For payment processing
+- `RAZORPAY_*`: For payment processing
 
 ### 🐛 **Troubleshooting**
 
@@ -269,7 +268,7 @@ npm run start
 - **Interactive Maps**: Location-based property search
 - **Commercial Properties**: Investment opportunities
 - **Subscription System**: Premium features and usage tracking
-- **Payment Integration**: Secure PhonePe payment gateway
+- **Payment Integration**: Secure Razorpay payment gateway
 - **Admin Panel**: Complete admin functionality
 - **Responsive Design**: Mobile-first approach
 

@@ -5,6 +5,7 @@ import { DollarSign, TrendingUp, TrendingDown, Calendar, Building2, Target, Star
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PortfolioSummary } from "../components";
+import { toast } from "sonner";
 
 interface PortfolioProperty {
   id: string;
@@ -46,6 +47,8 @@ export default function PortfolioPage() {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [sortBy, setSortBy] = useState("value");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [exporting, setExporting] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   // Mock data
   const mockPortfolioProperties: PortfolioProperty[] = [
@@ -193,6 +196,192 @@ export default function PortfolioPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleExportPortfolio = async () => {
+    setExporting(true);
+    toast.info("Generating comprehensive portfolio report...");
+    
+    try {
+      // Simulate report generation
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const currentDate = new Date().toISOString().split('T')[0];
+      
+      // Generate comprehensive portfolio report content
+      const reportContent = `
+🏢 100GAJ PORTFOLIO REPORT
+Generated: ${new Date().toLocaleString()}
+Export Date: ${currentDate}
+
+═══════════════════════════════════════════════════════════
+
+📊 PORTFOLIO OVERVIEW
+═══════════════════════════════════════════════════════════
+Total Portfolio Value: ₹${portfolioMetrics?.totalValue.toLocaleString()}
+Total Investment: ₹${portfolioMetrics?.totalInvestment.toLocaleString()}
+Total Returns: ₹${portfolioMetrics?.totalReturns.toLocaleString()}
+Monthly Income: ₹${portfolioMetrics?.monthlyIncome.toLocaleString()}
+Number of Properties: ${portfolioMetrics?.properties}
+Total Shares Owned: ${portfolioMetrics?.totalShares}
+Average Yield: ${portfolioMetrics?.averageYield.toFixed(2)}%
+Best Performer: ${portfolioMetrics?.bestPerformer}
+Worst Performer: ${portfolioMetrics?.worstPerformer}
+
+Return on Investment: ${portfolioMetrics ? ((portfolioMetrics.totalReturns / portfolioMetrics.totalInvestment) * 100).toFixed(2) : 0}%
+
+═══════════════════════════════════════════════════════════
+
+🏠 PROPERTY BREAKDOWN
+═══════════════════════════════════════════════════════════
+${portfolioProperties.map((property, index) => `
+${index + 1}. ${property.name}
+   Location: ${property.location}
+   Type: ${property.type}
+   Shares Owned: ${property.sharesOwned} / ${property.totalShares.toLocaleString()}
+   Ownership: ${((property.sharesOwned / property.totalShares) * 100).toFixed(3)}%
+   Initial Investment: ₹${property.initialInvestment.toLocaleString()}
+   Current Value: ₹${property.currentValue.toLocaleString()}
+   Monthly Income: ₹${property.monthlyIncome.toLocaleString()}
+   Current Yield: ${property.currentYield}%
+   Total Returns: ₹${property.totalReturns.toLocaleString()}
+   Return %: ${property.returnPercentage > 0 ? '+' : ''}${property.returnPercentage.toFixed(1)}%
+   Risk Level: ${property.riskLevel}
+   Occupancy Rate: ${property.occupancyRate}%
+   AI Score: ${property.aiScore}/100
+   Performance: ${property.performance.toUpperCase()}
+   Last Updated: ${property.lastUpdated}
+`).join('')}
+
+═══════════════════════════════════════════════════════════
+
+📈 PERFORMANCE ANALYSIS
+═══════════════════════════════════════════════════════════
+Positive Performing Properties: ${portfolioProperties.filter(p => p.performance === 'positive').length}
+Negative Performing Properties: ${portfolioProperties.filter(p => p.performance === 'negative').length}
+Neutral Properties: ${portfolioProperties.filter(p => p.performance === 'neutral').length}
+
+High Risk Properties: ${portfolioProperties.filter(p => p.riskLevel === 'High').length}
+Medium Risk Properties: ${portfolioProperties.filter(p => p.riskLevel === 'Medium').length}
+Low Risk Properties: ${portfolioProperties.filter(p => p.riskLevel === 'Low').length}
+
+Highest Yield Property: ${portfolioProperties.reduce((prev, current) => (prev.currentYield > current.currentYield) ? prev : current).name} (${portfolioProperties.reduce((prev, current) => (prev.currentYield > current.currentYield) ? prev : current).currentYield}%)
+
+Highest ROI Property: ${portfolioProperties.reduce((prev, current) => (prev.returnPercentage > current.returnPercentage) ? prev : current).name} (${portfolioProperties.reduce((prev, current) => (prev.returnPercentage > current.returnPercentage) ? prev : current).returnPercentage.toFixed(1)}%)
+
+═══════════════════════════════════════════════════════════
+
+💡 RECOMMENDATIONS
+═══════════════════════════════════════════════════════════
+✅ Your portfolio is well-diversified across different property types
+✅ Monthly income stream is consistent and growing
+✅ Average portfolio yield of ${portfolioMetrics?.averageYield.toFixed(2)}% is above market average
+${portfolioMetrics && portfolioMetrics.totalReturns > 0 ? '✅' : '⚠️'} Overall portfolio performance is ${portfolioMetrics && portfolioMetrics.totalReturns > 0 ? 'positive' : 'needs attention'}
+
+${portfolioProperties.filter(p => p.performance === 'negative').length > 0 ? 
+`⚠️  Consider reviewing negative performing properties:
+${portfolioProperties.filter(p => p.performance === 'negative').map(p => `   • ${p.name} (${p.returnPercentage.toFixed(1)}%)`).join('\n')}` : ''}
+
+═══════════════════════════════════════════════════════════
+
+DISCLAIMER: This report is generated for informational purposes only. 
+Past performance does not guarantee future results. All investments 
+carry risk and may lose value. Please consult with a financial 
+advisor before making investment decisions.
+
+© 2024 100GAJ Equity Platform. All rights reserved.
+`;
+      
+      // Create and download the report
+      const dataBlob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `100GAJ-Portfolio-Report-${currentDate}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+      
+      toast.success("📊 Portfolio report downloaded successfully!");
+      
+    } catch (error) {
+      toast.error("Failed to generate portfolio report. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleSharePortfolio = async () => {
+    setSharing(true);
+    toast.info("Creating shareable portfolio summary...");
+    
+    try {
+      // Simulate generating shareable content
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Create shareable portfolio summary text
+      const shareText = `🏢 My 100GAJ Portfolio Performance
+
+📊 Portfolio Summary:
+• Total Value: ₹${portfolioMetrics?.totalValue.toLocaleString()}
+• Total Returns: ₹${portfolioMetrics?.totalReturns.toLocaleString()}
+• Monthly Income: ₹${portfolioMetrics?.monthlyIncome.toLocaleString()}
+• Properties: ${portfolioMetrics?.properties}
+• Average Yield: ${portfolioMetrics?.averageYield.toFixed(2)}%
+
+🏠 Investment Breakdown:
+${portfolioProperties.slice(0, 3).map(property => 
+`• ${property.name} - ${property.returnPercentage > 0 ? '+' : ''}${property.returnPercentage.toFixed(1)}%`
+).join('\n')}${portfolioProperties.length > 3 ? `\n• +${portfolioProperties.length - 3} more properties...` : ''}
+
+📈 Performance: ${portfolioMetrics && portfolioMetrics.totalReturns > 0 ? 
+  `Positive returns of ₹${portfolioMetrics.totalReturns.toLocaleString()}` : 
+  'Building strong portfolio foundation'}
+
+Generated: ${new Date().toLocaleDateString()}
+Platform: 100GAJ Commercial Real Estate
+
+#RealEstate #Investment #Portfolio #100GAJ #CommercialRealEstate`;
+
+      // Check if Web Share API is available
+      if (navigator.share) {
+        await navigator.share({
+          title: '100GAJ Portfolio Performance',
+          text: shareText,
+          url: window.location.href,
+        });
+        toast.success("🚀 Portfolio shared successfully!");
+      } else {
+        // Fallback to clipboard
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareText);
+          toast.success("📋 Portfolio summary copied to clipboard! You can now paste it anywhere to share.");
+        } else {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = shareText;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          toast.success("📋 Portfolio summary copied to clipboard! You can now paste it anywhere to share.");
+        }
+      }
+      
+    } catch (error) {
+      console.error('Share error:', error);
+      toast.error("Failed to share portfolio. Please try again.");
+    } finally {
+      setSharing(false);
+    }
+  };
+
   const filteredProperties = portfolioProperties.filter(property => {
     switch (selectedFilter) {
       case "positive":
@@ -288,18 +477,22 @@ export default function PortfolioPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button
+                onClick={handleExportPortfolio}
+                disabled={exporting || isLoading}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Export Report
+                <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-bounce' : ''}`} />
+                {exporting ? 'Generating...' : 'Export Report'}
               </Button>
               <Button
+                onClick={handleSharePortfolio}
+                disabled={sharing || isLoading}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
               >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share Portfolio
+                <Share2 className={`w-4 h-4 mr-2 ${sharing ? 'animate-pulse' : ''}`} />
+                {sharing ? 'Sharing...' : 'Share Portfolio'}
               </Button>
             </div>
           </motion.div>
