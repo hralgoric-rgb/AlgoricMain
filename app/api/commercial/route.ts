@@ -3,7 +3,7 @@ import CommercialProperties from "@/app/models/CommercialProperty";
 import connectDB from "@/app/lib/mongodb";
 import { Types } from "mongoose";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await connectDB();
 
