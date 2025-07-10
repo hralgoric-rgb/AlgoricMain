@@ -23,6 +23,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import axios from "axios";
 import { toast } from "sonner";
 import { FeedbackDialog } from "../FeedbackDialog";
@@ -58,6 +65,33 @@ const amenities = [
   "Balcony",
   "Pet Friendly",
 ];
+
+// Delhi areas for locality dropdown
+const delhiAreas = [
+  "ANAND PARBAT", "BARAKHAMBA ROAD", "CHANAKYAPURI", "CHANDNI MAHAL", "CONNAUGHT PLACE", "D.B.G ROAD", 
+  "DARYA GANJ", "DELHI CANTT", "FARASH BAZAR", "H. N. DIN", "HAUZQAZI", "I.P. ESTATE", "INDERPURI", 
+  "JAMA MASJID", "KAMLA MARKET", "KAROL BAGH", "KASHMERE GATE", "KIRTI NAGAR", "LAHORI GATE", 
+  "MANDIR MARG", "NABI KARIM", "NARAINA", "PAHARGANJ", "PARLIAMENT STREET", "PARSHAD NAGAR", 
+  "PATEL NAGAR", "RAJINDER NAGAR", "RANJIT NAGAR", "SADAR BAZAR", "SAROJINI NAGAR", "SUBZIMANDI", 
+  "TILAK MARG", "TUGLAK ROAD", "ANANDVIHAR", "GANDHI NAGAR", "GEETA COLONY", "GHAZIPUR", 
+  "JAFFARPUR KALAN", "JAGATPURI", "KALYANPURI", "KANJHAWLA", "KARKARDOOMA", "LAXMI NAGAR", 
+  "MAYUR VIHAR", "NAND NAGRI", "PANDAV NAGAR", "PATPARGANJ", "PREET VIHAR", "SEELAMPUR", 
+  "SHAHDARA", "SHASTRI PARK", "SUNDAR NAGRI", "TRILOKPURI", "VASUNDHARA ENCLAVE", "VIVEK VIHAR", 
+  "YAMUNA VIHAR", "ADARSH NAGAR", "ALIPUR", "AZADPUR", "BAWANA", "BHALSWA JAHANGIR PUR", "BURARI", 
+  "JAHANGIR PURI", "KESHAV PURAM", "KOTWALI", "LAWRENCE ROAD", "MAURYA ENCLAVE", "MODEL TOWN", 
+  "NARELA", "NETAJI SUBHASH PLACE", "PRASHANT VIHAR", "PULPAHLADPUR", "ROHINI", "SABZI MANDI", 
+  "SARAI ROHILLA", "SHAKURPUR", "TRI NAGAR", "WAZIRPUR", "AMBEDKAR NAGAR", "ANDREWS GANJ", 
+  "BADARPUR", "CHITTARANJAN PARK", "DEFENCE COLONY", "FRIENDS COLONY", "GOVINDPURI", 
+  "GREATER KAILASH", "HAUZ KHAS", "JANGPURA", "KALKAJI", "KOTLA MUBARAKPUR", "LAJPAT NAGAR", 
+  "LODHI ROAD", "MALVIYA NAGAR", "MEHRAULI", "NEHRU PLACE", "NEW FRIENDS COLONY", "OKHLA", 
+  "R. K. PURAM", "SAKET", "SARITA VIHAR", "SHEIKH SARAI", "SOUTH EXTENSION", "TIGRI", 
+  "TUGLAKABAD", "VASANT KUNJ", "VASANT VIHAR", "AAYA NAGAR", "BINDAPUR", "CHHAWLA", "DABRI", 
+  "DWARKA", "HASTSAL", "JANAKPURI", "KAKROLA", "KAPASHERA", "MOHAN GARDEN", "NAJAFGARH", 
+  "PALAM", "POCHANPUR", "SADH NAGAR", "SAGARPUR", "UTTAM NAGAR", "VASANT KUNJ", "VIKASPURI", 
+  "BIJWASAN", "BRAHMPURI", "HARI NAGAR", "JANAKPURI", "KANJHAWLA", "KHYALA", "MATIALA", 
+  "MAYAPURI", "MUNDKA", "NANGLOI", "NIHAL VIHAR", "PASCHIM VIHAR", "PEERAGARHI", "PUNJABI BAGH", 
+  "RAJOURI GARDEN", "RANHAULA", "SUBHASH NAGAR", "TAGORE GARDEN", "TILAK NAGAR", "VIKAS PURI"
+].sort();
 
 async function generateAIDescription(propertyData: any) {
   const API_URL = "https://api.together.xyz/v1/completions";
@@ -479,12 +513,12 @@ export default function PropertyForm({
     } else if (formStep === 3) {
       // Validate step 3 fields (Photos)
       const totalImages = formData.images.length + formData.existingImages.length;
-      if (totalImages < 5) {
+      if (totalImages < 1) {
         setError(
-          `Please add at least 5 images (currently have ${totalImages})`,
+          `Please add at least 1 images (currently have ${totalImages})`,
         );
         toast.error(
-          `Please add at least 5 images (currently have ${totalImages})`,
+          `Please add at least 1 images (currently have ${totalImages})`,
         );
         return;
       }
@@ -584,10 +618,10 @@ export default function PropertyForm({
         return;
       }
 
-      // Make sure we have at least five images
-      if (formData.images.length + formData.existingImages.length < 5) {
-        setError("Please add at least 5 images of your property");
-        toast.error("Please add at least 5 images");
+      // Make sure we have at least one image
+      if (formData.images.length + formData.existingImages.length < 1) {
+        setError("Please add at least 1 image of your property");
+        toast.error("Please add at least 1 image");
         setIsSubmitting(false);
         return;
       }
@@ -599,7 +633,6 @@ export default function PropertyForm({
         { field: 'propertyType', value: formData.propertyType },
         { field: 'price', value: formData.price },
         { field: 'area', value: formData.area },
-        { field: 'address.street', value: formData.address.street },
         { field: 'address.city', value: formData.address.city },
         { field: 'address.locality', value: formData.address.locality }
       ];
@@ -1386,7 +1419,7 @@ export default function PropertyForm({
                         Property Images{" "}
                         <span className="text-orange-500">*</span>
                         <span className="ml-2 text-orange-500 text-xs">
-                          (Minimum 5 images required, currently{" "}
+                          (Minimum 1 image required, currently{" "}
                           {formData.images.length +
                             formData.existingImages.length}
                           )
@@ -1492,15 +1525,33 @@ export default function PropertyForm({
                         >
                           Locality <span className="text-orange-500">*</span>
                         </Label>
-                        <Input
-                          id="address.locality"
-                          name="address.locality"
+                        <Select
                           value={formData.address.locality}
-                          onChange={handleInputChange}
-                          placeholder="Enter locality"
-                          required
-                          className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white placeholder-gray-500 h-12"
-                        />
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              address: {
+                                ...formData.address,
+                                locality: value,
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger className="bg-black/60 border-orange-500/30 hover:border-orange-500/50 focus:border-orange-500 text-white h-12">
+                            <SelectValue placeholder="Select locality" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-black/90 border-orange-500/30 text-white max-h-48">
+                            {delhiAreas.map((area) => (
+                              <SelectItem 
+                                key={area} 
+                                value={area}
+                                className="hover:bg-orange-500/20 focus:bg-orange-500/20 cursor-pointer"
+                              >
+                                {area}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
