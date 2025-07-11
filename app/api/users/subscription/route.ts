@@ -61,8 +61,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       subscription
     });
-  } catch (error) {
-    console.error('Error fetching subscription:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching subscription details' },
       { status: 500 }
@@ -194,8 +194,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       message: isNewSubscription ? 'Subscription created successfully' : 'Subscription updated successfully',
       subscription
     }, { status: isNewSubscription ? 201 : 200 });
-  } catch (error) {
-    console.error('Error creating/updating subscription:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while processing subscription' },
       { status: 500 }

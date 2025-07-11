@@ -8,7 +8,7 @@ import { verifyToken } from '@/app/lib/utils';
 // POST /api/requests/:id/reject - Reject a verification request
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -31,7 +31,7 @@ export async function POST(
     //   );
     // }
     
-    const {id:requestId} = context.params;
+    const {id:requestId} = await context.params;
     
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(requestId)) {
@@ -76,8 +76,8 @@ export async function POST(
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Error rejecting verification request:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to reject verification request' },
       { status: 500 }

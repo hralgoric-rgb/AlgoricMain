@@ -33,8 +33,8 @@ export const verifyToken = (token: string): any => {
   try {
     const secret = Buffer.from(process.env.JWT_SECRET, 'utf-8');
     return jwt.verify(token, secret);
-  } catch (error) {
-    console.error('Token verification error:', error);
+  } catch (_error) {
+
     return null;
   }
 };
@@ -70,8 +70,8 @@ export const sendEmail = async (to: string, subject: string, html: string): Prom
     });
 
     return true;
-  } catch (error) {
-    console.error('Error sending email:', error);
+  } catch (_error) {
+
     return false;
   }
 };

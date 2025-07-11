@@ -18,11 +18,11 @@ export function FeedbackDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
     const [loading, setLoading] = useState(false);
     const [hover, setHover] = useState(0);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSubmit = async (_e: React.FormEvent<HTMLFormElement>) => {
+        _e.preventDefault();
         setLoading(true);
 
-        const formData = new FormData(e.currentTarget);
+        const formData = new FormData(_e.currentTarget);
         const data = {
             name: formData.get('name'),
             email: formData.get('email'),
@@ -43,9 +43,9 @@ export function FeedbackDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
 
             toast.success('Thank you for your feedback!');
             onClose();
-        } catch (error) {
+        } catch (_error) {
             toast.error('Failed to send feedback. Please try again.');
-            console.log(error);
+
         } finally {
             setLoading(false);
         }

@@ -105,7 +105,7 @@ interface Review {
 export default function AgentDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -119,6 +119,7 @@ export default function AgentDetailPage({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string>('');
 
   const [userRating, setUserRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -129,6 +130,15 @@ export default function AgentDetailPage({
   const [token, setToken] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Agent[]>([]);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  // Resolve params
+  useEffect(() => {
+    async function resolveParams() {
+      const resolvedParams = await params;
+      setAgentId(resolvedParams.id);
+    }
+    resolveParams();
+  }, [params]);
 
   useEffect(() => {
     // Only run this on the client side
@@ -154,8 +164,8 @@ export default function AgentDetailPage({
         } else {
           setIsFavorited(false);
         }
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
+      } catch (_error) {
+
         toast.error("Failed to fetch favorites");
       }
     }
@@ -166,21 +176,24 @@ export default function AgentDetailPage({
     }
   }, [token]);
   const fetchReviews = async () => {
+    if (!agentId) return;
     try {
-      const response = await fetch(`/api/agents/${params.id}/reviews`);
+      const response = await fetch(`/api/agents/${agentId}/reviews`);
       if (response.ok) {
         const data = await response.json();
         setReviews(data.reviews);
       }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
+    } catch (_error) {
+
     }
   };
   useEffect(() => {
     // Fetch agent details when component mounts
-    fetchAgentDetails();
-    fetchReviews();
-  }, [params.id]);
+    if (agentId) {
+      fetchAgentDetails();
+      fetchReviews();
+    }
+  }, [agentId]);
 
   // Update isFavorited when agent or favorites change
   useEffect(() => {
@@ -190,10 +203,11 @@ export default function AgentDetailPage({
   }, [agent, favorites]);
 
   const fetchAgentDetails = async (page = 1) => {
+    if (!agentId) return;
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/agents/${params.id}?page=${page}&limit=6`,
+        `/api/agents/${agentId}?page=${page}&limit=6`,
       );
 
       if (!response.ok) {
@@ -206,16 +220,16 @@ export default function AgentDetailPage({
       setProperties(data.properties);
       setPagination(data.pagination);
       setError(null);
-    } catch (err) {
-      console.error("Error fetching agent details:", err);
+    } catch (_err) {
+
       setError("Failed to load agent details");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitReview = async (_e: React.FormEvent) => {
+    _e.preventDefault();
     if (userRating === 0) {
       alert("Please select a rating");
       return;
@@ -227,7 +241,7 @@ export default function AgentDetailPage({
     }
 
     try {
-      const response = await fetch(`/api/agents/${params.id}/reviews`, {
+      const response = await fetch(`/api/agents/${agentId}/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -393,10 +407,10 @@ export default function AgentDetailPage({
         // Refresh favorites to get the updated list
         fetchFavorite();
       }
-    } catch (error) {
+    } catch (_error) {
       // Revert UI state if operation fails
       setIsFavorited((prev) => !prev);
-      console.error("Error toggling favorite status:", error);
+
       toast.error("Failed to update favorites");
     }
   };
@@ -740,7 +754,7 @@ export default function AgentDetailPage({
                   <input
                     type="text"
                     value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
+                    onChange={(_e) => setUserName(_e.target.value)}
                     className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
                     required
                   />
@@ -757,7 +771,7 @@ export default function AgentDetailPage({
                   </label>
                   <textarea
                     value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
+                    onChange={(_e) => setReviewText(_e.target.value)}
                     className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 h-32 text-white"
                     required
                   ></textarea>

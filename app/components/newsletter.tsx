@@ -7,8 +7,8 @@ export default function Newsletter() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = (_e: React.FormEvent) => {
+    _e.preventDefault()
     // Here you would normally send the email to your API
     setSubmitted(true)
     setEmail('')
@@ -42,7 +42,7 @@ export default function Newsletter() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(_e) => setEmail(_e.target.value)}
                   placeholder="Enter your email address"
                   required
                   className="flex-grow px-4 py-3 rounded-md border border-beige focus:outline-none focus:ring-2 focus:ring-brown-light"

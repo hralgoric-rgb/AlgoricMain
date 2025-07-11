@@ -90,8 +90,8 @@ export const PATCH = withAuth(async (request: NextRequest, userId: string) => {
         }
       }
     });
-  } catch (error) {
-    console.error('Error updating subscription usage:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating subscription usage' },
       { status: 500 }

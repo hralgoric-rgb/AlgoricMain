@@ -105,20 +105,20 @@ export default function SearchDropdown({
     );
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+  const handleInputChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(_e.target.value);
     setIsOpen(true);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && suggestions.length > 0) {
-      e.preventDefault();
+  const handleKeyDown = (_e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (_e.key === "Enter" && suggestions.length > 0) {
+      _e.preventDefault();
       onChangeAction(suggestions[0]);
       setIsOpen(false);
-    } else if (e.key === "Escape") {
+    } else if (_e.key === "Escape") {
       setIsOpen(false);
-    } else if (e.key === "ArrowDown" && suggestions.length > 0) {
-      e.preventDefault();
+    } else if (_e.key === "ArrowDown" && suggestions.length > 0) {
+      _e.preventDefault();
       const firstSuggestion = document.querySelector('.dropdown-item') as HTMLElement;
       if (firstSuggestion) {
         firstSuggestion.focus();
@@ -186,8 +186,8 @@ export default function SearchDropdown({
                     className="px-4 py-2 hover:bg-neutral-700 cursor-pointer text-white text-sm dropdown-item transition-colors duration-150 flex items-center justify-between"
                     onClick={() => handleSuggestionClick(suggestion)}
                     tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                    onKeyDown={(_e) => {
+                      if (_e.key === "Enter") {
                         handleSuggestionClick(suggestion);
                       }
                     }}

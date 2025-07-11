@@ -58,9 +58,9 @@ let SupportTicket: mongoose.Model<ISupportTicket>;
 try {
   // Try to get the existing model to avoid model overwrite error
   SupportTicket = mongoose.model<ISupportTicket>('SupportTicket');
-} catch (error) {
+} catch (_error) {
   // Model doesn't exist yet, create it
-  console.error('Creating new SupportTicket model:', error);
+
   SupportTicket = mongoose.model<ISupportTicket>('SupportTicket', supportTicketSchema);
 }
 
@@ -106,8 +106,8 @@ async function getUserSupportTickets(request: NextRequest, userId: string) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error) {
-    console.error('Error fetching support tickets:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching support tickets' },
       { status: 500 }
@@ -181,8 +181,8 @@ async function createSupportTicket(request: NextRequest, userId: string) {
       message: 'Support ticket created successfully',
       ticket
     }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating support ticket:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while creating support ticket' },
       { status: 500 }

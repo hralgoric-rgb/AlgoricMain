@@ -105,9 +105,9 @@ export default function BuySharesModal({
       );
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Purchase failed. Please try again.");
-      console.error("Purchase error:", error);
+
     } finally {
       setIsProcessing(false);
       setCurrentStep("details");
@@ -207,7 +207,7 @@ export default function BuySharesModal({
                         min="1"
                         max={property.availableShares}
                         value={form.shareCount}
-                        onChange={(e) => handleShareCountChange(e.target.value)}
+                        onChange={(_e) => handleShareCountChange(_e.target.value)}
                         className="bg-gray-800 border-gray-700 text-white"
                       />
                       <p className="text-xs text-gray-400 mt-1">
@@ -226,7 +226,7 @@ export default function BuySharesModal({
                           id="total-amount"
                           type="number"
                           value={form.totalAmount}
-                          onChange={(e) => handleAmountChange(e.target.value)}
+                          onChange={(_e) => handleAmountChange(_e.target.value)}
                           className="pl-8 bg-gray-800 border-gray-700 text-white"
                         />
                       </div>

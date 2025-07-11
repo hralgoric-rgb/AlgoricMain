@@ -17,8 +17,7 @@ export const GET = withAuth(async (
     const url = new URL(request.url);
     const pathSegments = url.pathname.split('/').filter(segment => segment);
     const inquiryId = pathSegments[pathSegments.length - 1]; // Last segment is the inquiry ID
-    
-    
+
     if (!isValidObjectId(inquiryId)) {
       return NextResponse.json(
         { error: 'Invalid inquiry ID format' },
@@ -56,8 +55,8 @@ export const GET = withAuth(async (
     }
     
     return NextResponse.json(inquiry);
-  } catch (error) {
-    console.error('Error fetching inquiry:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching the inquiry' },
       { status: 500 }
@@ -123,8 +122,8 @@ export const PATCH = withAuth(async (
       message: 'Inquiry status updated successfully',
       inquiry,
     });
-  } catch (error) {
-    console.error('Error updating inquiry:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating the inquiry' },
       { status: 500 }
@@ -142,8 +141,7 @@ export const DELETE = withAuth(async (
     const url = new URL(request.url);
     const pathSegments = url.pathname.split('/').filter(segment => segment);
     const inquiryId = pathSegments[pathSegments.length - 1]; // Last segment is the inquiry ID
-    
-    
+
     if (!isValidObjectId(inquiryId)) {
       return NextResponse.json(
         { error: 'Invalid inquiry ID format' },
@@ -178,8 +176,8 @@ export const DELETE = withAuth(async (
       success: true,
       message: 'Inquiry deleted successfully',
     });
-  } catch (error) {
-    console.error('Error deleting inquiry:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the inquiry' },
       { status: 500 }

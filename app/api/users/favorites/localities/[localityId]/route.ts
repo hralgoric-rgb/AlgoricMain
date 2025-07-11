@@ -4,8 +4,11 @@ import User from '@/app/models/User';
 import { withAuth } from '@/app/lib/auth-middleware';
 
 // DELETE /api/users/favorites/localities/:localityId - Remove a locality from favorites
-export const DELETE = withAuth(async (request: NextRequest, userId: string, { params }: { params: { localityId: string } }) => {
-  const { localityId } = params;
+export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
+  // Extract localityId from URL
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/').filter(segment => segment);
+  const localityId = pathSegments[pathSegments.length - 1]; // Get the last segment
   
   try {
     await connectDB();
@@ -28,8 +31,8 @@ export const DELETE = withAuth(async (request: NextRequest, userId: string, { pa
       success: true,
       message: 'Locality removed from favorites'
     });
-  } catch (error) {
-    console.error('Error removing locality from favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while removing locality from favorites' },
       { status: 500 }

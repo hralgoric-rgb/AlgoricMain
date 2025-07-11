@@ -5,11 +5,20 @@ import type React from "react";
 import { motion } from "framer-motion";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ClientOnly from "../components/ClientOnly";
+import dynamic from "next/dynamic";
+
+// Dynamically import problematic components to avoid SSR issues
+const Tabs = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.Tabs })), { ssr: false });
+const TabsContent = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.TabsContent })), { ssr: false });
+const TabsList = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.TabsList })), { ssr: false });
+const TabsTrigger = dynamic(() => import("@/components/ui/tabs").then(mod => ({ default: mod.TabsTrigger })), { ssr: false });
+const Avatar = dynamic(() => import("@/components/ui/avatar").then(mod => ({ default: mod.Avatar })), { ssr: false });
+const AvatarFallback = dynamic(() => import("@/components/ui/avatar").then(mod => ({ default: mod.AvatarFallback })), { ssr: false });
+const AvatarImage = dynamic(() => import("@/components/ui/avatar").then(mod => ({ default: mod.AvatarImage })), { ssr: false });
 import {
   Edit,
   LogOut,
@@ -78,6 +87,21 @@ interface UserProfileData {
     listings?: number;
     sales?: number;
   };
+  isBuilder?: boolean;
+  builderInfo?: {
+    companyName?: string;
+    licenseNumber?: string;
+    reraId?: string;
+    established?: Date;
+    experience?: number;
+    specializations?: string[];
+    completedProjects?: number;
+    ongoingProjects?: number;
+    rating?: number;
+    reviewCount?: number;
+    verified?: boolean;
+    projects?: string[];
+  };
   properties?: Property[];
   lastActive?: string;
 }
@@ -89,6 +113,8 @@ export default function UserProfile() {
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [projects, setProjects] = useState<any[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
 
   // State for properties
   const [properties, setProperties] = useState<Property[]>([]);
@@ -133,34 +159,73 @@ export default function UserProfile() {
     const fetchUserProfile = async () => {
       setLoading(true);
       try {
-        const token = sessionStorage.getItem("authToken") || 
-                   document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1];
+        // Check for authentication token in multiple locations
+        const token = 
+          sessionStorage.getItem("authToken") || 
+          document.cookie.split('; ').find(row => row.startsWith('authToken='))?.split('=')[1] ||
+          localStorage.getItem("authToken");
       
-      if (!token) {
-        setError("Authentication token not found. Please log in again.");
-        toast.error("Please log in to access your profile.");
+        if (!token) {
+          setError("Please log in to access your profile.");
+          toast.error("Please log in to access your profile.");
+          
+          // Redirect to home page with auth modal
+          setTimeout(() => {
+            router.push("/?modal=auth");
+          }, 2000);
+          
+          setLoading(false);
+          return;
+        }
 
-        setTimeout(() => {
-          router.push("/?modal=auth");
-        }, 1000);
+        // Store token for other API calls
+        setToken(token);
 
-        return;
-      }
-
+        // Attempt to fetch user profile
         const data = await UserAPI.getProfile();
+        
+        if (!data || !data._id) {
+          throw new Error("Invalid user data received");
+        }
+        
         setUser(data);
+        
         if (data.isAgent) {
           // Fetch assigned properties if user is an agent
-          const response = await axios.get("/api/properties/assigned", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          try {
+            const response = await axios.get("/api/properties/assigned", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
-          if (response.data.success) {
-            setAssignedProperties(response.data.properties);
+            if (response.data.success) {
+              setAssignedProperties(response.data.properties);
+            }
+          } catch (_agentErr) {
+
+            // Don't fail the whole page for agent properties
           }
         }
+        
+        if (data.isBuilder) {
+          // Fetch builder projects
+          try {
+            const response = await axios.get("/api/users/projects", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (response.data.success) {
+              setProjects(response.data.projects);
+            }
+          } catch (_builderErr) {
+            console.error("Failed to fetch builder projects:", _builderErr);
+            // Don't fail the whole page for builder projects
+          }
+        }
+        
         // Initialize form data with user values
         setFormData({
           name: data.name || "",
@@ -175,9 +240,25 @@ export default function UserProfile() {
         });
 
         setError("");
-      } catch (err) {
-        console.error("Failed to fetch user profile:", err);
-        setError("Failed to load user profile. Please try again later.");
+      } catch (err: any) {
+
+        // Handle specific error cases
+        if (err.message?.includes("401") || err.message?.includes("Authentication")) {
+          setError("Your session has expired. Please log in again.");
+          toast.error("Session expired. Redirecting to login...");
+          
+          // Clear invalid token
+          sessionStorage.removeItem("authToken");
+          localStorage.removeItem("authToken");
+          document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          
+          setTimeout(() => {
+            router.push("/?modal=auth");
+          }, 2000);
+        } else {
+          setError("Failed to load user profile. Please try again later.");
+          toast.error("Failed to load profile. Please try again.");
+        }
       } finally {
         setLoading(false);
         setIsAssignedPropertiesLoading(false);
@@ -185,7 +266,7 @@ export default function UserProfile() {
     };
 
     fetchUserProfile();
-  }, []);
+  }, [router]);
 
   // Fetch user properties
   useEffect(() => {
@@ -204,8 +285,8 @@ export default function UserProfile() {
         } else {
           throw new Error(response.data.error || "Failed to fetch properties");
         }
-      } catch (err) {
-        console.error("Failed to fetch user properties:", err);
+      } catch (_err) {
+
         // Keep using placeholder data in case of error
         toast.error("Failed to load properties. Please try again later.");
       } finally {
@@ -238,9 +319,9 @@ export default function UserProfile() {
   const closeEditProfileModal = () => setIsEditProfileModalOpen(false);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    _e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value } = e.target;
+    const { name, value } = _e.target;
     setFormData({
       ...formData,
       [name]: value,
@@ -277,8 +358,8 @@ export default function UserProfile() {
       } else {
         throw new Error(response.data.error || "Failed to delete property");
       }
-    } catch (err) {
-      console.error("Error deleting property:", err);
+    } catch (_err) {
+
       toast.error("Failed to delete property. Please try again.");
     } finally {
       setIsDeleteLoading(false);
@@ -333,8 +414,8 @@ export default function UserProfile() {
         // Close the modal
         closeEditProfileModal();
       }
-    } catch (error) {
-      console.error("Error updating profile:", error);
+    } catch (_error) {
+
       toast.error("Failed to update profile. Please try again.");
     }
   };
@@ -383,18 +464,60 @@ export default function UserProfile() {
     return (
       <main className="min-h-screen bg-black text-white">
         <Navbar />
-        <div className="flex flex-col justify-center items-center h-[80vh]">
-          <div className="bg-red-500/10 p-8 rounded-xl border border-red-500/20 mb-6">
-            <p className="text-xl text-red-500 font-medium">
+        <div className="flex flex-col justify-center items-center h-[80vh] px-4">
+          <div className="bg-red-500/10 p-8 rounded-xl border border-red-500/20 mb-6 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-red-500" />
+            </div>
+            <p className="text-xl text-red-500 font-medium mb-2">
               {error || "Failed to load user profile"}
             </p>
+            <p className="text-gray-400 text-sm">
+              Please log in to access your profile and manage your properties.
+            </p>
           </div>
-          <Button
-            onClick={() => window.location.reload()}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            Try Again
-          </Button>
+          
+          <div className="flex gap-4">
+            <Button
+              onClick={() => router.push("/?modal=auth")}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2"
+            >
+              Login / Sign Up
+            </Button>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6 py-2"
+            >
+              Try Again
+            </Button>
+          </div>
+          
+          {/* Quick demo access for testing */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm mb-3">
+              For testing purposes, you can create a demo account:
+            </p>
+            <Button
+              onClick={() => {
+                // Create demo account credentials
+                const demoEmail = "demo@100gaj.com";
+                const demoPassword = "demo123";
+                
+                // Show instructions
+                toast.info(`Demo credentials: Email: ${demoEmail}, Password: ${demoPassword}`, {
+                  duration: 5000,
+                });
+                
+                // Redirect to auth modal
+                router.push("/?modal=auth");
+              }}
+              variant="outline"
+              className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 text-sm px-4 py-1"
+            >
+              Get Demo Credentials
+            </Button>
+          </div>
         </div>
         <Footer />
       </main>
@@ -620,7 +743,12 @@ export default function UserProfile() {
             </motion.div>
 
             <motion.div variants={fadeIn}>
-              <Tabs defaultValue="details" className="w-full">
+              <ClientOnly fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                </div>
+              }>
+                <Tabs defaultValue="details" className="w-full">
                 <div className="relative mb-8">
                   <div className="absolute h-0.5 bottom-0 left-0 right-0 bg-gray-800"></div>
                   <TabsList className="relative z-10 bg-transparent border-b border-transparent h-auto p-0 gap-2">
@@ -645,6 +773,15 @@ export default function UserProfile() {
                       >
                         <Briefcase className="w-4 h-4 mr-2" />
                         Assigned Properties
+                      </TabsTrigger>
+                    )}
+                    {user?.isBuilder && (
+                      <TabsTrigger
+                        value="projects"
+                        className="text-gray-400 data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 bg-transparent py-3 px-4 rounded-none transition-all"
+                      >
+                        <Building className="w-4 h-4 mr-2" />
+                        My Projects
                       </TabsTrigger>
                     )}
                   </TabsList>
@@ -1097,7 +1234,121 @@ export default function UserProfile() {
                     </Card>
                   </TabsContent>
                 )}
+
+                {/* Builder Projects Tab */}
+                {user?.isBuilder && (
+                  <TabsContent value="projects" className="mt-0">
+                    <Card className="border-0 bg-gradient-to-br from-gray-900 to-gray-950 shadow-xl shadow-orange-500/5">
+                      <CardContent className="p-8">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-bold text-white">My Projects</h3>
+                          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+                            {projects.length} Projects
+                          </Badge>
+                        </div>
+
+                        {projectsLoading ? (
+                          <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                            <p className="text-gray-400 mt-2">Loading projects...</p>
+                          </div>
+                        ) : projects.length === 0 ? (
+                          <div className="text-center py-12">
+                            <Building className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                            <h4 className="text-xl font-semibold text-gray-400 mb-2">No Projects Yet</h4>
+                            <p className="text-gray-500 mb-6">Start by posting your first project</p>
+                            <Button 
+                              onClick={() => router.push('/sell')}
+                              className="bg-orange-500 hover:bg-orange-600 text-black font-medium"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Post New Project
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {projects.map((project) => (
+                              <motion.div
+                                key={project._id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden hover:border-orange-500/30 transition-all duration-300"
+                              >
+                                {project.projectImages && project.projectImages.length > 0 && (
+                                  <div className="relative h-48 w-full">
+                                    <Image
+                                      src={project.projectImages[0]}
+                                      alt={project.projectName}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                    <div className="absolute top-2 right-2">
+                                      <Badge 
+                                        className={`${
+                                          project.status === 'approved' 
+                                            ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                                            : project.status === 'pending'
+                                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                            : 'bg-red-500/20 text-red-400 border-red-500/30'
+                                        }`}
+                                      >
+                                        {project.status}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                <div className="p-4">
+                                  <h4 className="text-lg font-semibold text-white mb-2 line-clamp-1">
+                                    {project.projectName}
+                                  </h4>
+                                  <p className="text-sm text-gray-400 mb-2">
+                                    <MapPin className="w-3 h-3 inline mr-1" />
+                                    {project.locality}, {project.city}
+                                  </p>
+                                  <p className="text-sm text-gray-400 mb-2">
+                                    <Calendar className="w-3 h-3 inline mr-1" />
+                                    {project.projectType} • {project.projectStage}
+                                  </p>
+                                  <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+                                    {project.developerDescription}
+                                  </p>
+                                  
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2 text-xs text-gray-400">
+                                      <span>{project.views || 0} views</span>
+                                      <span>•</span>
+                                      <span>{project.inquiries || 0} inquiries</span>
+                                    </div>
+                                    
+                                    <div className="flex space-x-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                                      >
+                                        View
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-gray-600 text-gray-400 hover:bg-gray-700"
+                                      >
+                                        Edit
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                )}
               </Tabs>
+              </ClientOnly>
             </motion.div>
           </motion.div>
         </div>
@@ -1117,7 +1368,7 @@ export default function UserProfile() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="bg-gray-900 rounded-2xl shadow-xl overflow-hidden relative w-full max-w-md p-6 border border-gray-800"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(_e) => _e.stopPropagation()}
           >
             <button
               onClick={closeDeletePropertyModal}
@@ -1199,7 +1450,7 @@ export default function UserProfile() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="bg-gray-900 rounded-2xl shadow-xl overflow-auto relative w-full max-w-md p-6 h-[80vh] border border-gray-800"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(_e) => _e.stopPropagation()}
           >
             <button
               onClick={closeEditProfileModal}

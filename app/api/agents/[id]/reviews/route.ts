@@ -45,10 +45,10 @@ async function updateAgentRating(agentId: string) {
 // GET /api/agents/[id]/reviews - Get reviews for an agent
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!isValidObjectId(id)) {
       return NextResponse.json(
@@ -128,8 +128,8 @@ export async function GET(
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error("Error fetching agent reviews:", error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: "An error occurred while fetching agent reviews" },
       { status: 500 },
@@ -226,7 +226,6 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     );
 
   } catch (error: any) {
-    console.error("Error creating review:", error);
 
     // Handle validation errors
     if (error.name === "ValidationError") {

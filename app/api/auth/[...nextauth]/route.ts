@@ -2,13 +2,14 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import jwt from "jsonwebtoken";
-import { setCookie } from "cookies-next";
 import connectDB from "@/app/lib/mongodb";
 import clientPromise from "@/app/lib/mongodb-adapter";
 import User from "@/app/models/User";
 
 // Call connectDB to ensure mongoose is connected
-connectDB().catch(console.error);
+connectDB().catch((_error) => {
+
+});
 
 const handler = NextAuth({
   providers: [
@@ -23,61 +24,86 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60,
   },
   callbacks: {
-    async signIn({profile }) {
+    async signIn({ user, account: _account, profile }) {
       try {
         // Ensure mongoose connection is established
         await connectDB();
 
         // Check if user exists in your custom User model
-        const email = profile?.email;
-        if (!email) return false;
+        const email = user?.email || profile?.email;
+        if (!email) {
+          return false;
+        }
 
         let existingUser = await User.findOne({ email }).exec();
 
         if (!existingUser) {
           // Create a new user in your custom model
-          existingUser = await User.create({
-            name: profile?.name,
-            email: email,
-            emailVerified: new Date(),
-            role: "agent",
-            isAgent: true,
-            authMethod: "google",
-            image: profile?.image,
-          });
+          try {
+            existingUser = await User.create({
+              name: user?.name || profile?.name,
+              email: email,
+              emailVerified: new Date(),
+              role: "user", // Default role
+              isAgent: false, // Default to false
+              authMethod: "google",
+              image: user?.image || (profile as any)?.picture,
+            });
+          } catch (_createError) {
+
+            return false;
+          }
+        } else {
+          // Update last active time
+          existingUser.lastActive = new Date();
+          await existingUser.save();
         }
 
-        // Generate JWT token
-        const jwtToken = jwt.sign(
-          {
-            id: existingUser._id.toString(),
-            email: existingUser.email,
-            role: existingUser.role,
-          },
-          process.env.JWT_SECRET!,
-          { expiresIn: "7d" },
-        );
+        // Generate JWT token for verification
+        try {
+          const _jwtToken = jwt.sign(
+            {
+              id: existingUser._id.toString(),
+              email: existingUser.email,
+              role: existingUser.role,
+            },
+            process.env.JWT_SECRET!,
+            { expiresIn: "7d" },
+          );
 
-        // Set cookie
-        setCookie("authToken", jwtToken, {
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-          httpOnly: false,
-        });
+          // Set cookie (will be handled by NextAuth)
+          // Store in session for client-side access
+          
+          return true;
+        } catch (_jwtError) {
 
-        // Store token in session storage (will be done client-side)
-        // We'll handle this in the navbar component
+          return false;
+        }
+      } catch (_error) {
 
-        return true;
-      } catch (error) {
-        console.error("Error in signIn callback:", error);
         return false;
       }
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, account: _account }) {
       if (user) {
         token.userId = user.id;
+        
+        // Generate custom JWT token
+        try {
+          const customToken = jwt.sign(
+            {
+              id: user.id,
+              email: user.email,
+              role: "user",
+            },
+            process.env.JWT_SECRET!,
+            { expiresIn: "7d" }
+          );
+          token.customToken = customToken;
+        } catch (_error) {
+
+        }
       }
       return token;
     },
@@ -85,6 +111,7 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.userId;
+        (session.user as any).customToken = token.customToken;
       }
       return session;
     },
@@ -95,6 +122,7 @@ const handler = NextAuth({
     error: "/",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 });
 
 export { handler as GET, handler as POST };

@@ -39,17 +39,83 @@ export default function ContactUs() {
         type: null,
         message: ''
     });
+    const [fieldErrors, setFieldErrors] = useState<{
+        fullName?: string;
+        email?: string;
+        phone?: string;
+        message?: string;
+    }>({});
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
+    const validateForm = () => {
+        const errors: any = {};
+        
+        // Full Name validation
+        if (!formData.fullName.trim()) {
+            errors.fullName = 'Full name is required';
+        } else if (formData.fullName.trim().length < 2) {
+            errors.fullName = 'Full name must be at least 2 characters';
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!formData.email.trim()) {
+            errors.email = 'Email address is required';
+        } else if (!emailRegex.test(formData.email)) {
+            errors.email = 'Please enter a valid email address';
+        }
+        
+        // Phone validation (optional but if provided, should be valid)
+        if (formData.phone.trim()) {
+            const phoneRegex = /^[\+]?[1-9][\d]{3,14}$/;
+            if (!phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+                errors.phone = 'Please enter a valid phone number';
+            }
+        }
+        
+        // Message validation
+        if (!formData.message.trim()) {
+            errors.message = 'Message is required';
+        } else if (formData.message.trim().length < 10) {
+            errors.message = 'Message must be at least 10 characters';
+        }
+        
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleChange = (_e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = _e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
+        
+        // Clear field error when user starts typing
+        if (fieldErrors[name as keyof typeof fieldErrors]) {
+            setFieldErrors(prev => ({
+                ...prev,
+                [name]: undefined
+            }));
+        }
+        
+        // Clear form status when user modifies form
+        if (formStatus.type) {
+            setFormStatus({ type: null, message: '' });
+        }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (_e: React.FormEvent) => {
+        _e.preventDefault();
+        
+        // Validate form before submission
+        if (!validateForm()) {
+            setFormStatus({
+                type: 'error',
+                message: 'Please correct the errors above and try again.'
+            });
+            return;
+        }
+        
         setIsLoading(true);
         setFormStatus({ type: null, message: '' });
 
@@ -59,7 +125,11 @@ export default function ContactUs() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    ...formData,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                }),
             });
 
             const data = await response.json();
@@ -67,7 +137,7 @@ export default function ContactUs() {
             if (response.ok) {
                 setFormStatus({
                     type: 'success',
-                    message: 'Your message has been sent successfully! We will get back to you soon.'
+                    message: 'Thank you for your message! We will get back to you within 24 hours.'
                 });
                 setFormData({
                     fullName: '',
@@ -75,16 +145,18 @@ export default function ContactUs() {
                     phone: '',
                     message: ''
                 });
+                setFieldErrors({});
             } else {
                 setFormStatus({
                     type: 'error',
-                    message: data.error || 'Failed to send message. Please try again.'
+                    message: data.error || 'Failed to send message. Please try again or contact us directly.'
                 });
             }
-        } catch (error) {
+        } catch (_error) {
+
             setFormStatus({
                 type: 'error',
-                message: `An error occurred. Please try again later.${error}`
+                message: 'Network error occurred. Please check your connection and try again.'
             });
         } finally {
             setIsLoading(false);
@@ -188,50 +260,87 @@ export default function ContactUs() {
                                 
                                 <form className="space-y-6" onSubmit={handleSubmit}>
                                     <div>
-                                        <label className="text-gray-300 text-sm mb-1 block">Full Name</label>
+                                        <label className="text-gray-300 text-sm mb-1 block">
+                                            Full Name <span className="text-red-400">*</span>
+                                        </label>
                                         <input
                                             type="text"
                                             name="fullName"
                                             value={formData.fullName}
                                             onChange={handleChange}
                                             placeholder="Enter your full name"
-                                            required
-                                            className="w-full px-4 py-3 rounded-md bg-black/60 border border-orange-500/20 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 text-white"
+                                            className={`w-full px-4 py-3 rounded-md bg-black/60 border focus:outline-none focus:ring-2 text-white ${
+                                                fieldErrors.fullName 
+                                                    ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
+                                                    : 'border-orange-500/20 focus:ring-orange-500/50 focus:border-orange-500/50'
+                                            }`}
                                         />
+                                        {fieldErrors.fullName && (
+                                            <p className="text-red-400 text-xs mt-1">{fieldErrors.fullName}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="text-gray-300 text-sm mb-1 block">Email Address</label>
+                                        <label className="text-gray-300 text-sm mb-1 block">
+                                            Email Address <span className="text-red-400">*</span>
+                                        </label>
                                         <input
                                             type="email"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
                                             placeholder="Enter your email address"
-                                            required
-                                            className="w-full px-4 py-3 rounded-md bg-black/60 border border-orange-500/20 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 text-white"
+                                            className={`w-full px-4 py-3 rounded-md bg-black/60 border focus:outline-none focus:ring-2 text-white ${
+                                                fieldErrors.email 
+                                                    ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
+                                                    : 'border-orange-500/20 focus:ring-orange-500/50 focus:border-orange-500/50'
+                                            }`}
                                         />
+                                        {fieldErrors.email && (
+                                            <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="text-gray-300 text-sm mb-1 block">Phone Number</label>
+                                        <label className="text-gray-300 text-sm mb-1 block">
+                                            Phone Number <span className="text-gray-500">(optional)</span>
+                                        </label>
                                         <input
                                             type="tel"
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleChange}
                                             placeholder="Enter your phone number"
-                                            className="w-full px-4 py-3 rounded-md bg-black/60 border border-orange-500/20 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 text-white"
+                                            className={`w-full px-4 py-3 rounded-md bg-black/60 border focus:outline-none focus:ring-2 text-white ${
+                                                fieldErrors.phone 
+                                                    ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
+                                                    : 'border-orange-500/20 focus:ring-orange-500/50 focus:border-orange-500/50'
+                                            }`}
                                         />
+                                        {fieldErrors.phone && (
+                                            <p className="text-red-400 text-xs mt-1">{fieldErrors.phone}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="text-gray-300 text-sm mb-1 block">Message</label>
+                                        <label className="text-gray-300 text-sm mb-1 block">
+                                            Message <span className="text-red-400">*</span>
+                                        </label>
                                         <textarea
                                             name="message"
                                             value={formData.message}
                                             onChange={handleChange}
-                                            placeholder="Enter your message"
-                                            required
-                                            className="w-full px-4 py-3 rounded-md bg-black/60 border border-orange-500/20 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 h-32 text-white"
+                                            placeholder="Tell us about your inquiry, requirements, or how we can help you..."
+                                            rows={4}
+                                            className={`w-full px-4 py-3 rounded-md bg-black/60 border focus:outline-none focus:ring-2 text-white resize-vertical ${
+                                                fieldErrors.message 
+                                                    ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
+                                                    : 'border-orange-500/20 focus:ring-orange-500/50 focus:border-orange-500/50'
+                                            }`}
                                         ></textarea>
+                                        {fieldErrors.message && (
+                                            <p className="text-red-400 text-xs mt-1">{fieldErrors.message}</p>
+                                        )}
+                                        <p className="text-gray-500 text-xs mt-1">
+                                            {formData.message.length}/500 characters
+                                        </p>
                                     </div>
                                     <div className="text-center">
                                         <button

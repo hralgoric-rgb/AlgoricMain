@@ -125,7 +125,7 @@ export default function PremiumPopup() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(_e) => _e.stopPropagation()}
             >
               {/* Floating particles */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">

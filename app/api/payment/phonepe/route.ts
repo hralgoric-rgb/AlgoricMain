@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       transactionId: merchantTransactionId
     });
   } catch (error: any) {
-    console.error('PhonePe payment error:', error);
+
     return NextResponse.json(
       { error: 'Failed to initiate payment', details: error.message },
       { status: 500 }
@@ -163,7 +163,7 @@ export async function GET(req: NextRequest) {
       transactionId: merchantTransactionId
     });
   } catch (error: any) {
-    console.error('PhonePe callback error:', error);
+
     return NextResponse.json(
       { error: 'Failed to process payment callback', details: error.message },
       { status: 500 }

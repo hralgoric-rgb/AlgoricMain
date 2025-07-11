@@ -18,6 +18,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -90,6 +91,7 @@ export default function Navbar() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isAgent, setIsAgent] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: [] as string[] });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
@@ -129,9 +131,8 @@ export default function Navbar() {
   //             // For custom auth, just check if token exists
   //             setIsAuthenticated(true);
   //           }
-  //         } catch (error) {
-  //           console.error("Error parsing auth token:", error);
-  //           sessionStorage.removeItem("authToken");
+  //         } catch (_error) {
+  //           //           sessionStorage.removeItem("authToken");
   //           setIsAuthenticated(false);
   //         }
   //       } else {
@@ -198,7 +199,38 @@ export default function Navbar() {
   };
 
   const router = useRouter();
-  // Handle login with NextAuth Google
+  
+  // Password strength calculation
+  const calculatePasswordStrength = (password: string) => {
+    const feedback = [];
+    let score = 0;
+    
+    if (password.length >= 8) {
+      score += 1;
+    } else {
+      feedback.push("At least 8 characters");
+    }
+    
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("Both uppercase and lowercase letters");
+    }
+    
+    if (/\d/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("At least one number");
+    }
+    
+    if (/[@$!%*?&]/.test(password)) {
+      score += 1;
+    } else {
+      feedback.push("At least one special character (@$!%*?&)");
+    }
+    
+    return { score, feedback };
+  };
 
   // Show the auth modal
   const openAuthModal = () => {
@@ -231,18 +263,31 @@ export default function Navbar() {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch (_error) {
+
       toast.error("Logout failed");
     }
   };
 
   // Handle login
-  const handleLogin = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleLogin = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!email || !password) {
       setError("Email and password are required");
+      return;
+    }
+
+    // Client-side email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Basic password validation for login
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
       return;
     }
 
@@ -254,7 +299,7 @@ export default function Navbar() {
         email,
         password,
       });
-      console.log("Login response:", response.data.token);
+
       if (response.data.token) {
         // Store the token
         if (typeof window === "undefined") {
@@ -291,8 +336,8 @@ export default function Navbar() {
   };
 
   // Handle signup
-  const handleSignup = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleSignup = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!name || !email || !password) {
       setError("Name, email, and password are required");
@@ -342,11 +387,21 @@ export default function Navbar() {
   };
 
   // Handle email verification
-  const handleVerifyEmail = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleVerifyEmail = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!userId || !verificationCode) {
       setError("Verification code is required");
+      return;
+    }
+
+    if (verificationCode.length !== 6) {
+      setError("Verification code must be exactly 6 digits");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setError("Verification code must contain only numbers");
       return;
     }
 
@@ -414,8 +469,8 @@ export default function Navbar() {
   };
 
   // Request password reset
-  const handleForgotPassword = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleForgotPassword = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!email) {
       setError("Email is required");
@@ -446,8 +501,8 @@ export default function Navbar() {
   };
 
   // Reset password
-  const handleResetPassword = async (e?: FormEvent) => {
-    e?.preventDefault();
+  const handleResetPassword = async (_e?: FormEvent) => {
+    _e?.preventDefault();
 
     if (!userId || !verificationCode || !newPassword) {
       setError("All fields are required");
@@ -688,10 +743,14 @@ export default function Navbar() {
             <div className="flex items-center pl-52">
               <Link href="/" className="flex items-center group mr-16">
                 <div className="h-16 w-18 flex items-center justify-center text-white font-bold text-xs transition-all duration-300">
-                  <img
+                  <Image
                     src={`/logo.png`}
                     alt="100Gaj"
-                    className="w-full h-full object-cover"
+                    className="object-contain"
+                    width={72}
+                    height={36}
+                    style={{ width: "auto", height: "100%" }}
+                    priority
                   />
                 </div>
               </Link>
@@ -709,6 +768,12 @@ export default function Navbar() {
                 </span>
               </Link>
               <div></div>
+              <Link
+                href="/equity"
+                className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
+              >
+                <Building2 className="h-5 w-5 mr-2 hover:text-orange-500" />
+              </Link>
               <Link
                 href="/contact"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
@@ -772,10 +837,13 @@ export default function Navbar() {
           <div className="custom:hidden flex items-center justify-between py-2">
             <Link href="/" className="flex items-center">
               <div className="h-10 w-12 flex items-center justify-center text-white">
-                <img
+                <Image
                   src={`/logo.png`}
                   alt="100Gaj"
-                  className="w-full h-full object-cover"
+                  className="object-contain"
+                  width={48}
+                  height={24}
+                  style={{ width: "auto", height: "100%" }}
                 />
               </div>
             </Link>
@@ -854,6 +922,13 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sell
+              </Link>
+              <Link
+                href="/equity"
+                className="block px-4 py-3 text-white hover:bg-gray-700 rounded-md transition-all"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Equity Investment
               </Link>
               {/* Tools dropdown for mobile */}
               <div className="block px-4 py-1 text-white">
@@ -972,12 +1047,13 @@ export default function Navbar() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 flex items-center justify-center z-50 p-2"
+              onClick={(_e) => _e.stopPropagation()}
             >
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden relative w-full max-w-md">
+              <div className="bg-white rounded-2xl shadow-xl overflow-y-auto relative w-full max-w-md max-h-[90vh]">
                 {/* Close button */}
                 <button
                   onClick={() => closeAuthModal()}
-                  className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 z-10"
+                  className="absolute right-4 top-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full p-1 transition-all duration-200 z-10"
                 >
                   <svg
                     width="24"
@@ -1064,7 +1140,7 @@ export default function Navbar() {
                               <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(_e) => setEmail(_e.target.value)}
                                 placeholder="Enter email"
                                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1079,7 +1155,7 @@ export default function Navbar() {
                               <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(_e) => setPassword(_e.target.value)}
                                 placeholder="Enter password"
                                 className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1127,7 +1203,7 @@ export default function Navbar() {
                             <input
                               type="text"
                               value={name}
-                              onChange={(e) => setName(e.target.value)}
+                              onChange={(_e) => setName(_e.target.value)}
                               placeholder="Enter your full name"
                               className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                             />
@@ -1144,7 +1220,7 @@ export default function Navbar() {
                               <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(_e) => setEmail(_e.target.value)}
                                 placeholder="Enter email"
                                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1159,7 +1235,11 @@ export default function Navbar() {
                               <input
                                 type={showPassword ? "text" : "password"}
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(_e) => {
+                                  const newPassword = _e.target.value;
+                                  setPassword(newPassword);
+                                  setPasswordStrength(calculatePasswordStrength(newPassword));
+                                }}
                                 placeholder="Create password"
                                 className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                               />
@@ -1175,15 +1255,50 @@ export default function Navbar() {
                                 )}
                               </button>
                             </div>
-                            <div className="mt-2 space-y-1 text-sm text-gray-600">
-                              <p>At least 8 characters</p>
-                              <p>Mix of letters and numbers</p>
-                              <p>At least 1 special character</p>
-                              <p>
-                                At least 1 lowercase letter and 1 uppercase
-                                letter
-                              </p>
-                            </div>
+                            {password && (
+                              <div className="mt-2">
+                                {/* Password Strength Bar */}
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="text-xs text-gray-600">Strength:</span>
+                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div 
+                                      className={`h-2 rounded-full transition-all duration-300 ${
+                                        passwordStrength.score === 0 ? 'bg-red-500 w-1/4' :
+                                        passwordStrength.score === 1 ? 'bg-orange-500 w-2/4' :
+                                        passwordStrength.score === 2 ? 'bg-yellow-500 w-3/4' :
+                                        passwordStrength.score === 3 ? 'bg-green-400 w-full' :
+                                        'bg-green-600 w-full'
+                                      }`}
+                                    ></div>
+                                  </div>
+                                  <span className={`text-xs font-medium ${
+                                    passwordStrength.score === 0 ? 'text-red-500' :
+                                    passwordStrength.score === 1 ? 'text-orange-500' :
+                                    passwordStrength.score === 2 ? 'text-yellow-500' :
+                                    passwordStrength.score === 3 ? 'text-green-400' :
+                                    'text-green-600'
+                                  }`}>
+                                    {passwordStrength.score === 0 ? 'Weak' :
+                                     passwordStrength.score === 1 ? 'Fair' :
+                                     passwordStrength.score === 2 ? 'Good' :
+                                     passwordStrength.score === 3 ? 'Strong' :
+                                     'Very Strong'}
+                                  </span>
+                                </div>
+                                {/* Password Requirements */}
+                                {passwordStrength.feedback.length > 0 && (
+                                  <div className="space-y-1 text-xs text-gray-500">
+                                    <p className="font-medium">Still needed:</p>
+                                    {passwordStrength.feedback.map((requirement, index) => (
+                                      <p key={index} className="flex items-center">
+                                        <span className="w-1 h-1 bg-gray-400 rounded-full mr-2"></span>
+                                        {requirement}
+                                      </p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-center space-x-2">
@@ -1191,7 +1306,7 @@ export default function Navbar() {
                               type="checkbox"
                               id="isAgent"
                               checked={isAgent}
-                              onChange={(e) => setIsAgent(e.target.checked)}
+                              onChange={(_e) => setIsAgent(_e.target.checked)}
                               className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                             />
                             <label htmlFor="isAgent" className="text-gray-700">
@@ -1231,7 +1346,7 @@ export default function Navbar() {
                         </div>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="flex justify-center">
                         <GoogleLoginButton />
                       </div>
                     </>
@@ -1307,7 +1422,7 @@ export default function Navbar() {
                             <input
                               type="email"
                               value={email}
-                              onChange={(e) => setEmail(e.target.value)}
+                              onChange={(_e) => setEmail(_e.target.value)}
                               placeholder="Enter your email"
                               className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
                             />
@@ -1397,12 +1512,19 @@ export default function Navbar() {
                           <input
                             type="text"
                             value={verificationCode}
-                            onChange={(e) =>
-                              setVerificationCode(e.target.value)
-                            }
-                            placeholder="Enter code"
-                            className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
+                            onChange={(_e) => {
+                              const value = _e.target.value.replace(/\D/g, ''); // Only allow digits
+                              if (value.length <= 6) {
+                                setVerificationCode(value);
+                              }
+                            }}
+                            placeholder="Enter 6-digit code"
+                            maxLength={6}
+                            className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent text-center text-lg tracking-widest font-mono"
                           />
+                          <div className="mt-1 text-xs text-gray-500 text-center">
+                            {verificationCode.length}/6 digits
+                          </div>
                         </div>
 
                         {/* Additional fields for password reset */}
@@ -1416,8 +1538,8 @@ export default function Navbar() {
                                 <input
                                   type={showPassword ? "text" : "password"}
                                   value={newPassword}
-                                  onChange={(e) =>
-                                    setNewPassword(e.target.value)
+                                  onChange={(_e) =>
+                                    setNewPassword(_e.target.value)
                                   }
                                   placeholder="Enter new password"
                                   className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"
@@ -1447,8 +1569,8 @@ export default function Navbar() {
                                 <input
                                   type={showPassword ? "text" : "password"}
                                   value={confirmPassword}
-                                  onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
+                                  onChange={(_e) =>
+                                    setConfirmPassword(_e.target.value)
                                   }
                                   placeholder="Confirm new password"
                                   className="w-full pl-4 pr-10 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-transparent"

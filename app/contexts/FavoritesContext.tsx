@@ -79,8 +79,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         builders: buildersRes.favorites.map((fav: any) => fav._id),
         localities: localitiesRes.favorites
       });
-    } catch (error) {
-      console.error("Error fetching favorites:", error);
+    } catch (_error) {
+
     } finally {
       setIsLoading(false);
     }
@@ -152,10 +152,10 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
             }
             break;
         }
-      } catch (error) {
-        console.error(`Error toggling ${type} favorite:`, error);
+      } catch (_error) {
+
         toast.error(`Failed to update favorites`);
-        throw error;
+        throw _error;
       }
     },
     [isFavorite]

@@ -40,8 +40,8 @@ export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Property removed from favorites',
     });
-  } catch (error) {
-    console.error('Error removing from favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while removing from favorites' },
       { status: 500 }

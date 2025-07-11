@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-
 export const EMICalculator = () => {
   const [loanAmount, setLoanAmount] = useState(3000000);
   const [interestRate, setInterestRate] = useState(8.5);
@@ -14,8 +13,6 @@ export const EMICalculator = () => {
   // Distribution of payment
   const [principalPercentage, setPrincipalPercentage] = useState(0);
   const [interestPercentage, setInterestPercentage] = useState(0);
-
-  
 
   const calculateEMI = React.useCallback(() => {
     // Convert annual interest rate to monthly and decimal
@@ -72,7 +69,7 @@ export const EMICalculator = () => {
                 max="10000000"
                 step="100000"
                 value={loanAmount}
-                onChange={(e) => setLoanAmount(Number(e.target.value))}
+                onChange={(_e) => setLoanAmount(Number(_e.target.value))}
                 className="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer accent-orange-400"
               />
               <div className="flex justify-between mt-1">
@@ -93,7 +90,7 @@ export const EMICalculator = () => {
                 max="20"
                 step="0.1"
                 value={interestRate}
-                onChange={(e) => setInterestRate(Number(e.target.value))}
+                onChange={(_e) => setInterestRate(Number(_e.target.value))}
                 className="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer accent-orange-400"
               />
               <div className="flex justify-between mt-1">
@@ -114,7 +111,7 @@ export const EMICalculator = () => {
                 max="30"
                 step="1"
                 value={loanTenure}
-                onChange={(e) => setLoanTenure(Number(e.target.value))}
+                onChange={(_e) => setLoanTenure(Number(_e.target.value))}
                 className="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer accent-orange-400"
               />
               <div className="flex justify-between mt-1">

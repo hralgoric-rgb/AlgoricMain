@@ -25,13 +25,13 @@ import {
   Building2,
   Loader2,
 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import SearchDropdown from "@/components/ui/search-dropdown";
 
 export default function HousePricePrediction() {
-  const { toast } = useToast();
+  // Remove the useToast hook call since we're using sonner now
   const [loading, setLoading] = useState(false);
   const [predictedPrice, setPredictedPrice] = useState<number | null>(null);
   const [locations, setLocations] = useState<string[]>([]);
@@ -58,7 +58,7 @@ export default function HousePricePrediction() {
         setLocations(data);
       })
       .catch(error => {
-        console.error("Error loading location data:", error);
+
         setLocations([]);
       });
       
@@ -69,13 +69,13 @@ export default function HousePricePrediction() {
         setCities(Object.keys(data));
       })
       .catch(error => {
-        console.error("Error loading city data:", error);
+
         setCities(["Banglore", "Chennai", "Delhi", "Hyderabad", "Kolkata", "Mumbai"]);
       });
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = _e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -89,8 +89,8 @@ export default function HousePricePrediction() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (_e: React.FormEvent) => {
+    _e.preventDefault();
     setLoading(true);
     setPredictedPrice(null);
 
@@ -109,8 +109,6 @@ export default function HousePricePrediction() {
         city: formData.city,
       };
 
-      console.log("Sending payload:", payload);
-
       const response = await fetch(
         "https://indian-house-price-predection.onrender.com/predict_api",
         {
@@ -124,19 +122,18 @@ export default function HousePricePrediction() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("API Error:", errorText);
+
         throw new Error(`Failed to predict price: ${errorText}`);
       }
 
       const responseText = await response.text();
-      console.log("API Response Text:", responseText);
 
       // Try to parse the response as JSON
       let data;
       try {
         data = JSON.parse(responseText);
-      } catch (e) {
-        console.error("Failed to parse response as JSON:", e);
+      } catch (_e) {
+
         throw new Error("Invalid response format from server");
       }
 
@@ -154,16 +151,12 @@ export default function HousePricePrediction() {
 
         setPredictedPrice(price);
       } else {
-        console.error("Unexpected response format:", data);
+
         throw new Error("Could not find predicted price in response");
       }
-    } catch (error) {
-      console.error("Error during prediction:", error);
-      toast({
-        title: "Error",
-        description: `Failed to predict house price. Please try again.${error}`,
-        variant: "destructive",
-      });
+    } catch (_error) {
+
+      toast.error(`Failed to predict house price. Please try again.${_error}`);
     } finally {
       setLoading(false);
     }

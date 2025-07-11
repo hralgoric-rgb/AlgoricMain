@@ -23,20 +23,63 @@ import Footer from "../components/footer";
 import { toast } from "sonner";
 
 import PropertyForm from "../components/ui/propertyform";
+import EnhancedPropertyForm from "../components/ui/EnhancedPropertyForm";
+import BuilderProjectForm from "../components/ui/BuilderProjectForm";
+import UserTypeModal from "../components/ui/UserTypeModal";
 import { useRouter } from "next/navigation";
 export default function SellProperty() {
   const router = useRouter();
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isUserTypeModalOpen, setIsUserTypeModalOpen] = useState(false);
+  const [isPropertyFormOpen, setIsPropertyFormOpen] = useState(false);
+  const [isProjectFormOpen, setIsProjectFormOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isLoadingUserProfile, setIsLoadingUserProfile] = useState(false);
+  const [profileLoadError, setProfileLoadError] = useState(false);
+
+  // Fetch user profile when component mounts
+  const fetchUserProfile = async () => {
+    if (typeof window === "undefined") return;
+    const token = sessionStorage.getItem("authToken");
+    if (!token) return;
+
+    setIsLoadingUserProfile(true);
+    setProfileLoadError(false);
+    try {
+      const response = await fetch('/api/users/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const profile = await response.json();
+        setUserProfile(profile);
+      } else {
+        console.error("Failed to fetch user profile");
+        setProfileLoadError(true);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      setProfileLoadError(true);
+    } finally {
+      setIsLoadingUserProfile(false);
+    }
+  };
 
   useEffect(() => {
     // Check if user is authenticated
     if (typeof window === "undefined") return;
     const token = sessionStorage.getItem("authToken");
+    
     setIsAuthenticated(!!token);
+    
+    if (token) {
+      fetchUserProfile();
+    }
   }, []);
 
-  const handleOpenForm = () => {
+  const handleOpenForm = async () => {
     if (!isAuthenticated) {
       // Redirect to login page with callback URL
       toast.message(
@@ -47,11 +90,58 @@ export default function SellProperty() {
       }, 1000);
       return;
     }
-    setIsFormOpen(true);
+
+    // If userProfile is not loaded yet, fetch it first
+    if (!userProfile && !isLoadingUserProfile) {
+      toast.message("Loading your profile...");
+      await fetchUserProfile();
+      // After fetching, if successful, automatically open the modal
+      if (!profileLoadError) {
+        setTimeout(() => {
+          setIsUserTypeModalOpen(true);
+        }, 100);
+      }
+      return;
+    }
+
+    if (isLoadingUserProfile) {
+      toast.message("Loading your profile...");
+      return;
+    }
+
+    if (profileLoadError) {
+      toast.error("Failed to load profile. Please try again.");
+      await fetchUserProfile();
+      return;
+    }
+
+    setIsUserTypeModalOpen(true);
   };
 
-  const handleFormClose = () => {
-    setIsFormOpen(false);
+  const handleUserTypeSelect = (type: 'individual' | 'builder') => {
+    setIsUserTypeModalOpen(false);
+    
+    if (type === 'builder') {
+      // Check if user is a verified builder
+      if (!userProfile || !userProfile.isBuilder || !userProfile.builderInfo?.verified) {
+        toast.error("You need to be a verified builder to post projects. Please complete your builder verification first!");
+        setTimeout(() => {
+          router.push("/verification");
+        }, 1000);
+        return;
+      }
+      setIsProjectFormOpen(true);
+    } else {
+      setIsPropertyFormOpen(true);
+    }
+  };
+
+  const handlePropertyFormClose = () => {
+    setIsPropertyFormOpen(false);
+  };
+
+  const handleProjectFormClose = () => {
+    setIsProjectFormOpen(false);
   };
 
   interface PropertyData {
@@ -62,28 +152,66 @@ export default function SellProperty() {
     [key: string]: any; // Add additional fields as needed
   }
 
-  const handleFormSubmit = async (data: PropertyData) => {
-    try {
-      // Store the new property in sessionStorage
-      const existingProperties = JSON.parse(
-        sessionStorage.getItem("properties") || "[]",
-      );
-      const newProperty = {
-        ...data,
-        id: Date.now().toString(), // Generate a unique ID
-        status: "pending",
-        createdAt: new Date().toISOString(),
-      };
-      sessionStorage.setItem(
-        "properties",
-        JSON.stringify([...existingProperties, newProperty]),
-      );
+  interface ProjectData {
+    projectName: string;
+    projectType: string;
+    description: string;
+    [key: string]: any;
+  }
 
-      toast.success("Property listed successfully!");
-      setIsFormOpen(false);
+  const handlePropertyFormSubmit = async (data: PropertyData) => {
+    try {
+      // API call to submit property
+      const response = await fetch('/api/properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        toast.success("Property listed successfully!");
+        setIsPropertyFormOpen(false);
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to list property");
+      }
     } catch (error) {
       console.error("Error submitting property:", error);
       toast.error("Failed to submit property. Please try again.");
+    }
+  };
+
+  const handleProjectFormSubmit = async (data: ProjectData) => {
+    try {
+      // Debug: Log the data being sent
+      console.log("About to submit project data:", data);
+      console.log("unitTypes being sent:", data.unitTypes);
+      console.log("unitTypes type:", typeof data.unitTypes);
+      console.log("unitTypes is array:", Array.isArray(data.unitTypes));
+      
+      // API call to submit project
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        toast.success("Project submitted successfully and is pending approval!");
+        setIsProjectFormOpen(false);
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to submit project");
+      }
+    } catch (error) {
+      console.error("Error submitting project:", error);
+      toast.error("Failed to submit project. Please try again.");
     }
   };
 
@@ -161,11 +289,28 @@ export default function SellProperty() {
     <main className="min-h-screen bg-black">
       <Navbar />
 
-      {/* Add the Toaster component for showing notifications */}
+      {/* User Type Selection Modal */}
+      <UserTypeModal
+        isOpen={isUserTypeModalOpen}
+        onClose={() => setIsUserTypeModalOpen(false)}
+        onSelectUserType={handleUserTypeSelect}
+        userProfile={userProfile}
+      />
 
-      {/* Show the property form when isFormOpen is true */}
-      {isFormOpen && (
-        <PropertyForm onClose={handleFormClose} onSubmit={handleFormSubmit} />
+      {/* Individual Property Form */}
+      {isPropertyFormOpen && (
+        <EnhancedPropertyForm 
+          onClose={handlePropertyFormClose} 
+          onSubmit={handlePropertyFormSubmit} 
+        />
+      )}
+
+      {/* Builder Project Form */}
+      {isProjectFormOpen && (
+        <BuilderProjectForm 
+          onClose={handleProjectFormClose} 
+          onSubmit={handleProjectFormSubmit} 
+        />
       )}
 
       {/* Hero Section */}
@@ -350,7 +495,8 @@ export default function SellProperty() {
       </section>
 
       {/* Sticky Button */}
-      {!isFormOpen && <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+      {!isPropertyFormOpen && !isProjectFormOpen && !isUserTypeModalOpen && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -364,7 +510,8 @@ export default function SellProperty() {
             Post Now!
           </Button>
         </motion.div>
-      </div>}
+      </div>
+      )}
 
       <Footer />
     </main>

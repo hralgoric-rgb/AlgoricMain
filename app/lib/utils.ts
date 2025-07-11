@@ -9,8 +9,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 } 
 
-
-
 /**
  * Hashes a password using bcrypt
  * @param password Plain text password to hash
@@ -248,7 +246,7 @@ export function verifyToken(token: string): { userId: string; email: string } {
   try {
     const decoded = jwt.verify(token, secret) as { sub: string; email: string };
     return { userId: decoded.sub, email: decoded.email };
-  } catch (error) {
-    throw new Error(`Invalid or expired token: ${error}`);
+  } catch (_error) {
+    throw new Error(`Invalid or expired token: ${_error}`);
   }
 }

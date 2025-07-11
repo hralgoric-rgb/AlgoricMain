@@ -30,6 +30,18 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Performance optimizations */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-display: swap;
+}
+
+/* Preload critical fonts */
+@supports (font-display: swap) {
+  * {
+    font-display: swap;
+  }
 }
 
 @layer base {
@@ -131,6 +143,27 @@ body {
   .search-tabs-container {
     @apply flex w-full overflow-x-auto no-scrollbar pb-2 whitespace-nowrap;
   }
+  
+  /* Performance-focused animations */
+  .animate-float-slow {
+    animation: float-slow 6s ease-in-out infinite;
+    will-change: transform;
+  }
+  
+  .animate-float-slow-reverse {
+    animation: float-slow-reverse 8s ease-in-out infinite;
+    will-change: transform;
+  }
+  
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+  
+  @keyframes float-slow-reverse {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(10px) rotate(-2deg); }
+  }
 }
 
 @layer base {
@@ -161,6 +194,57 @@ body {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
+  
+  /* Performance utilities */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+  }
+  
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .will-change-opacity {
+    will-change: opacity;
+  }
 }
 
-/* Add these to your existing utility classes */
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-float-slow,
+  .animate-float-slow-reverse {
+    animation: none;
+  }
+}
+
+/* Focus styles for accessibility */
+@layer base {
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-orange-500;
+  }
+}
+
+/* Critical loading optimization */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-800;
+}
+
+/* Form improvements */
+.form-input-error {
+  @apply border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50;
+}
+
+.form-input-success {
+  @apply border-green-500/50 focus:ring-green-500/50 focus:border-green-500/50;
+}

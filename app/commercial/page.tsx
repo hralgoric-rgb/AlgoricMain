@@ -19,9 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Navbar from "@/app/components/navbar";
+import Navbar from "@/components/navbar";
 import { mockCommercialProperties, CommercialProperty } from "../data/commercialProperties";
-import Footer from "../components/footer";
 
 const propertyTypeOptions = [
   { value: "all", label: "All Types" },
@@ -180,7 +179,7 @@ export default function CommercialListingsPage() {
                   <Input
                     placeholder="Search properties, locations..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(_e) => setSearchTerm(_e.target.value)}
                     className="pl-10 bg-gray-800 border-gray-700 text-white"
                   />
                 </div>
@@ -366,7 +365,6 @@ export default function CommercialListingsPage() {
           </Card>
         </div>
       </section>
-      <Footer />
     </div>
   );
 }

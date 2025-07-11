@@ -5,7 +5,6 @@ import Property from '@/app/models/Property';
 import { withAuth } from '@/app/lib/auth-middleware';
 import { connectToDB } from '@/app/lib/mongoose';
 
-
 // GET /api/properties - Get all properties (with pagination and filtering)
 export async function GET(request: NextRequest) {
   try {
@@ -15,6 +14,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const propertyType = searchParams.get('propertyType');
     const city = searchParams.get('city');
+    const locality = searchParams.get('locality');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     
     if (propertyType) query.propertyType = propertyType;
     if (city) query['address.city'] = { $regex: city, $options: 'i' };
+    if (locality) query['address.locality'] = { $regex: locality, $options: 'i' };
     if (minPrice) query.price = { ...query.price, $gte: parseInt(minPrice) };
     if (maxPrice) query.price = { ...query.price, $lte: parseInt(maxPrice) };
     
@@ -38,8 +39,8 @@ export async function GET(request: NextRequest) {
       count: properties.length,
       properties
     }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching properties:', error);
+  } catch (_error) {
+
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch properties' 
@@ -53,8 +54,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     await connectDB();
     
     const data = await request.json();
-    console.log("Received property data:", data);
-    
+
     // Validate required fields
     const requiredFields = ['title', 'description', 'price', 'propertyType', 'listingType', 'area', 'address', 'images'];
     const missingFields = requiredFields.filter(field => !data[field]);
@@ -69,7 +69,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     // Handle address required fields
     if (!data.address) {
       return NextResponse.json(
-        { error: 'Address must include street, city, and state' },
+        { error: 'Address must include street, city, locality, and state' },
         { status: 400 }
       );
     }
@@ -122,8 +122,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     );
     
   } catch (error: any) {
-    console.error('Error creating property:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({
@@ -200,8 +199,7 @@ async function createProperty(request: NextRequest, userId: string) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('Error creating property:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({

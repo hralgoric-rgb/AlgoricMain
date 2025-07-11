@@ -96,7 +96,7 @@ export default function InvestmentCalculator({ property }: InvestmentCalculatorP
         setCalculation(null);
       }
     }
-  }, [investmentAmount, shareCount, inputMode, property]);
+  }, [investmentAmount, shareCount, inputMode, property, calculateReturns]);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 10000000) {

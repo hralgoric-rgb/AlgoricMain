@@ -23,6 +23,7 @@ import {
 interface Builder {
   _id: string;
   title: string;
+  name: string;
   image: string;
   logo: string;
   projects: number;
@@ -33,6 +34,19 @@ interface Builder {
   rating: number;
   completed: number;
   ongoing: number;
+  email: string;
+  projectsList?: Array<{
+    _id: string;
+    projectName: string;
+    projectType: string;
+    locality: string;
+    city: string;
+    projectImages: string[];
+    createdAt: string;
+    status: string;
+  }>;
+  experience: number;
+  verified: boolean;
 }
 
 export default function BuildersPage() {
@@ -57,9 +71,9 @@ export default function BuildersPage() {
         const data = await response.json();
         setBuilders(data.builders);
         setFilteredBuilders(data.builders);
-      } catch (err) {
+      } catch (_err) {
         setError("Error loading builders. Please try again later.");
-        console.error("Error fetching builders:", err);
+
       } finally {
         setIsLoading(false);
       }
@@ -281,7 +295,7 @@ export default function BuildersPage() {
                   type="text"
                   placeholder="Search builders..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(_e) => setSearchTerm(_e.target.value)}
                   className="w-full px-5 py-3 pr-12 rounded-full border-2 border-orange-500/30 bg-black/80 focus:outline-none focus:border-orange-500 text-white placeholder-gray-500 transition-all duration-300"
                 />
                 <div className="absolute right-4 top-3 text-orange-500">
@@ -360,10 +374,14 @@ export default function BuildersPage() {
                       {/* Card Header */}
                       <div className="relative h-52 overflow-hidden">
                         <Image
-                          src={`${builder.image}`}
+                          src={builder.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'}
                           alt={builder.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face';
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
 
@@ -373,10 +391,14 @@ export default function BuildersPage() {
                             <div className="w-12 h-12 bg-white rounded-full p-1 shadow-md">
                               <div className="relative w-full h-full overflow-hidden rounded-full">
                                 <Image
-                                  src={builder.logo}
+                                  src={builder.logo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'}
                                   alt={`${builder.title} logo`}
                                   fill
                                   className="object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face';
+                                  }}
                                 />
                               </div>
                             </div>
