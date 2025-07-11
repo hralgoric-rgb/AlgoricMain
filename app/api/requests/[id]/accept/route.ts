@@ -70,7 +70,26 @@ export async function POST(
       }
       await user.save();
     } else if (verificationRequest.type === 'builder') {
+      // Update user profile to mark as builder
+      user.isBuilder = true;
       if (verificationRequest.requestDetails) {
+        // Update user's builderInfo
+        user.builderInfo = {
+          ...user.builderInfo,
+          verified: true,
+          companyName: verificationRequest.requestDetails.companyName,
+          licenseNumber: verificationRequest.requestDetails.licenseNumber,
+          established: verificationRequest.requestDetails.established ? new Date(verificationRequest.requestDetails.established) : undefined,
+          experience: verificationRequest.requestDetails.experience,
+          specializations: verificationRequest.requestDetails.specialization ? [verificationRequest.requestDetails.specialization] : [],
+        };
+        
+        // Add image to user profile if provided in verification request
+        if (verificationRequest.requestDetails.image) {
+          user.image = verificationRequest.requestDetails.image;
+        }
+        
+        // Create Builder document
         const builderData = {
           title: verificationRequest.requestDetails.companyName || user.name,
           image: verificationRequest.requestDetails.image || user.image || 'https://via.placeholder.com/300x200',
@@ -93,7 +112,16 @@ export async function POST(
           builderData,
           { upsert: true, new: true }
         );
+      } else {
+        // Minimal builderInfo if no details provided
+        if (!user.builderInfo) {
+          user.builderInfo = { verified: true };
+        } else {
+          user.builderInfo.verified = true;
+        }
       }
+      
+      await user.save();
     }
     
     return NextResponse.json(
