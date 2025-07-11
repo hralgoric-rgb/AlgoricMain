@@ -410,23 +410,16 @@ export default function BuilderProjectForm({ onClose, onSubmit }: BuilderProject
     
     setIsLoadingCoordinates(true);
     try {
-      const address = `${formData.locality}, ${formData.city}, India`;
-      const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-        {
-          headers: {
-            'User-Agent': '100Gaj-Property-Platform/1.0'
-          }
-        }
-      );
+      const query = `${formData.locality}, ${formData.city}, India`;
+      const response = await axios.get(`/api/geocode?q=${encodeURIComponent(query)}`);
       
       if (response.data && response.data.length > 0) {
         const { lat, lon } = response.data[0];
         setFormData(prev => ({
           ...prev,
           coordinates: {
-            latitude: lat,
-            longitude: lon,
+            latitude: String(lat),
+            longitude: String(lon),
           }
         }));
         toast.success("Coordinates fetched successfully!");
@@ -495,29 +488,40 @@ export default function BuilderProjectForm({ onClose, onSubmit }: BuilderProject
         : [];
 
       // Prepare submission data
-      const submissionData = {
-        ...formData,
-        projectImages: projectImageUrls,
-        floorPlans: floorPlanUrls,
-        coordinates: {
-          latitude: parseFloat(formData.coordinates.latitude),
-          longitude: parseFloat(formData.coordinates.longitude),
-        },
-        unitTypes: formData.unitTypes.map(unit => ({
-          ...unit,
+      const validUnitTypes = formData.unitTypes
+        .filter(unit => unit.type && unit.type.trim() !== "")
+        .map(unit => ({
+          type: unit.type.trim(),
           sizeRange: {
-            min: parseFloat(unit.sizeRange.min),
-            max: parseFloat(unit.sizeRange.max),
-            unit: unit.sizeRange.unit,
+            min: parseFloat(unit.sizeRange.min) || 0,
+            max: parseFloat(unit.sizeRange.max) || 0,
+            unit: unit.sizeRange.unit || "sqft",
           },
           priceRange: {
-            min: parseFloat(unit.priceRange.min),
-            max: parseFloat(unit.priceRange.max),
-            perSqft: parseFloat(unit.priceRange.perSqft),
+            min: parseFloat(unit.priceRange.min) || 0,
+            max: parseFloat(unit.priceRange.max) || 0,
+            ...(unit.priceRange.perSqft && unit.priceRange.perSqft !== "" && {
+              perSqft: parseFloat(unit.priceRange.perSqft)
+            })
           },
-        })),
-        possessionDate: new Date(formData.possessionDate),
-        bookingAmount: formData.bookingAmount ? parseFloat(formData.bookingAmount) : undefined,
+        }));
+
+      const submissionData = {
+        projectName: formData.projectName,
+        projectType: formData.projectType,
+        propertyTypesOffered: formData.propertyTypesOffered,
+        projectStage: formData.projectStage,
+        reraRegistrationNo: formData.reraRegistrationNo,
+        projectTagline: formData.projectTagline,
+        developerDescription: formData.developerDescription,
+        city: formData.city,
+        locality: formData.locality,
+        projectAddress: formData.projectAddress,
+        landmark: formData.landmark,
+        coordinates: {
+          latitude: parseFloat(formData.coordinates.latitude) || 0,
+          longitude: parseFloat(formData.coordinates.longitude) || 0,
+        },
         distances: {
           airport: formData.distances.airport ? parseFloat(formData.distances.airport) : undefined,
           metro: formData.distances.metro ? parseFloat(formData.distances.metro) : undefined,
@@ -525,7 +529,31 @@ export default function BuilderProjectForm({ onClose, onSubmit }: BuilderProject
           hospital: formData.distances.hospital ? parseFloat(formData.distances.hospital) : undefined,
           mall: formData.distances.mall ? parseFloat(formData.distances.mall) : undefined,
         },
+        unitTypes: validUnitTypes,
+        paymentPlans: formData.paymentPlans,
+        bookingAmount: formData.bookingAmount ? parseFloat(formData.bookingAmount) : undefined,
+        allInclusivePricing: formData.allInclusivePricing,
+        possessionDate: formData.possessionDate ? new Date(formData.possessionDate).toISOString() : null,
+        constructionStatus: formData.constructionStatus,
+        projectAmenities: formData.projectAmenities,
+        unitSpecifications: formData.unitSpecifications,
+        greenCertifications: formData.greenCertifications,
+        projectUSPs: formData.projectUSPs,
+        projectImages: projectImageUrls,
+        floorPlans: floorPlanUrls,
+        videoWalkthrough: formData.videoWalkthrough,
+        developerContact: {
+          name: formData.developerContact.name,
+          phone: formData.developerContact.phone,
+          email: formData.developerContact.email,
+          affiliation: formData.developerContact.affiliation,
+        },
       };
+
+      console.log("Submitting project data:", submissionData);
+      console.log("unitTypes structure:", JSON.stringify(submissionData.unitTypes, null, 2));
+      console.log("unitTypes type:", typeof submissionData.unitTypes);
+      console.log("unitTypes is array:", Array.isArray(submissionData.unitTypes));
 
       await onSubmit(submissionData);
       toast.success("Project submitted successfully!");
@@ -538,7 +566,81 @@ export default function BuilderProjectForm({ onClose, onSubmit }: BuilderProject
     }
   };
 
+  // Validation function for each step
+  const validateStep = (step: number): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    switch (step) {
+      case 1: // Project Overview
+        if (!formData.projectName.trim()) errors.push("Project name is required");
+        if (!formData.projectType.trim()) errors.push("Project type is required");
+        if (formData.propertyTypesOffered.length === 0) errors.push("At least one property type is required");
+        if (!formData.projectStage.trim()) errors.push("Project stage is required");
+        if (!formData.reraRegistrationNo.trim()) errors.push("RERA registration number is required");
+        if (!formData.projectTagline.trim()) errors.push("Project tagline is required");
+        if (!formData.developerDescription.trim()) errors.push("Developer description is required");
+        break;
+        
+      case 2: // Location & Connectivity
+        if (!formData.city.trim()) errors.push("City is required");
+        if (!formData.locality.trim()) errors.push("Locality is required");
+        if (!formData.projectAddress.trim()) errors.push("Project address is required");
+        if (!formData.coordinates.latitude || !formData.coordinates.longitude) {
+          errors.push("Coordinates are required - please fetch coordinates");
+        }
+        break;
+        
+      case 3: // Configuration & Pricing
+        if (formData.unitTypes.length === 0 || !formData.unitTypes[0].type.trim()) {
+          errors.push("At least one unit type is required");
+        }
+        // Validate each unit type
+        formData.unitTypes.forEach((unit, index) => {
+          if (!unit.type.trim()) errors.push(`Unit type ${index + 1} name is required`);
+          if (!unit.sizeRange.min || !unit.sizeRange.max) {
+            errors.push(`Unit type ${index + 1} size range is required`);
+          }
+          if (!unit.priceRange.min || !unit.priceRange.max) {
+            errors.push(`Unit type ${index + 1} price range is required`);
+          }
+        });
+        if (!formData.possessionDate) errors.push("Possession date is required");
+        if (!formData.constructionStatus.trim()) errors.push("Construction status is required");
+        break;
+        
+      case 4: // Amenities & Features - Optional step, no required fields
+        break;
+        
+      case 5: // Media Uploads
+        if (formData.projectImages.length === 0) {
+          errors.push("At least one project image is required");
+        }
+        break;
+        
+      case 6: // Contact Information
+        if (!formData.developerContact.name.trim()) errors.push("Contact name is required");
+        if (!formData.developerContact.phone.trim()) errors.push("Contact phone is required");
+        if (!formData.developerContact.email.trim()) errors.push("Contact email is required");
+        break;
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  };
+
+  // Helper function to check if current step is valid
+  const isCurrentStepValid = (): boolean => {
+    const validation = validateStep(formStep);
+    return validation.isValid;
+  };
+
   const handleNextStep = () => {
+    const validation = validateStep(formStep);
+    
+    if (!validation.isValid) {
+      toast.error(`Please fill required fields: ${validation.errors.join(", ")}`);
+      return;
+    }
+    
     if (formStep < 6) {
       setFormStep(formStep + 1);
     }
@@ -619,6 +721,13 @@ export default function BuilderProjectForm({ onClose, onSubmit }: BuilderProject
             {formStep === 5 && "Media Uploads"}
             {formStep === 6 && "Contact Information"}
           </div>
+          
+          {/* Validation Status */}
+          {!isCurrentStepValid() && (
+            <div className="text-xs text-red-400 mt-1">
+              ⚠️ Please fill all required fields to proceed
+            </div>
+          )}
         </div>
 
         {/* Form Content */}
@@ -1417,7 +1526,11 @@ export default function BuilderProjectForm({ onClose, onSubmit }: BuilderProject
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-black font-medium"
+                className={`flex items-center gap-2 font-medium ${
+                  isCurrentStepValid() 
+                    ? "bg-orange-500 hover:bg-orange-600 text-black" 
+                    : "bg-gray-600 hover:bg-gray-500 text-gray-300"
+                }`}
               >
                 Next
                 <ArrowRight className="w-4 h-4" />

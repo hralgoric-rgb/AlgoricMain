@@ -432,7 +432,66 @@ export default function EnhancedPropertyForm({
     }
   };
 
+  // Validation function for each step
+  const validateStep = (step: number): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    switch (step) {
+      case 1: // Basic Property Details
+        if (!formData.title.trim()) errors.push("Property title is required");
+        if (!formData.listingType) errors.push("Listing type is required");
+        if (!formData.propertyType) errors.push("Property type is required");
+        if (!formData.furnishing) errors.push("Furnishing status is required");
+        if (!formData.possessionStatus) errors.push("Possession status is required");
+        break;
+        
+      case 2: // Location & Address
+        if (!formData.address.city.trim()) errors.push("City is required");
+        if (!formData.address.locality.trim()) errors.push("Locality is required");
+        if (!formData.address.street.trim()) errors.push("Street address is required");
+        if (!formData.address.coordinates.latitude || !formData.address.coordinates.longitude) {
+          errors.push("Coordinates are required - please fetch coordinates");
+        }
+        break;
+        
+      case 3: // Property Features & Area
+        if (!formData.area || parseFloat(formData.area) <= 0) errors.push("Valid area is required");
+        if (!formData.description.trim()) errors.push("Property description is required");
+        break;
+        
+      case 4: // Pricing & Media
+        if (!formData.price || parseFloat(formData.price) <= 0) errors.push("Valid price is required");
+        // Check if images exist (either new uploads or existing images)
+        const totalImages = (formData.existingImages?.length || 0) + (formData.images?.length || 0);
+        if (totalImages === 0) {
+          errors.push("At least one image is required");
+        }
+        break;
+        
+      case 5: // Contact Information
+        if (!formData.ownerDetails.name.trim()) errors.push("Owner name is required");
+        if (!formData.ownerDetails.phone.trim()) errors.push("Owner phone is required");
+        if (!formData.ownerDetails.email.trim()) errors.push("Owner email is required");
+        break;
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  };
+
+  // Helper function to check if current step is valid
+  const isCurrentStepValid = (): boolean => {
+    const validation = validateStep(formStep);
+    return validation.isValid;
+  };
+
   const handleNextStep = () => {
+    const validation = validateStep(formStep);
+    
+    if (!validation.isValid) {
+      toast.error(`Please fill required fields: ${validation.errors.join(", ")}`);
+      return;
+    }
+    
     if (formStep < 5) {
       setFormStep(formStep + 1);
     }
@@ -680,6 +739,13 @@ export default function EnhancedPropertyForm({
             {formStep === 4 && "Pricing & Media"}
             {formStep === 5 && "Contact Information"}
           </div>
+          
+          {/* Validation Status */}
+          {!isCurrentStepValid() && (
+            <div className="text-xs text-red-400 mt-1">
+              ⚠️ Please fill all required fields to proceed
+            </div>
+          )}
         </div>
 
         {/* Form Content */}
@@ -1416,7 +1482,11 @@ export default function EnhancedPropertyForm({
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-black font-medium"
+                className={`flex items-center gap-2 font-medium ${
+                  isCurrentStepValid() 
+                    ? "bg-orange-500 hover:bg-orange-600 text-black" 
+                    : "bg-gray-600 hover:bg-gray-500 text-gray-300"
+                }`}
               >
                 Next
                 <ArrowRight className="w-4 h-4" />

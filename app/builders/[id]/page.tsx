@@ -12,10 +12,16 @@ import { FavoritesAPI } from "@/app/lib/api-helpers";
 
 // Types
 interface Project {
+  _id: string;
   name: string;
   location: string;
   status: "Completed" | "Ongoing";
   type: string;
+  images: string[];
+  tagline?: string;
+  amenities?: string[];
+  unitTypes?: any[];
+  possessionDate?: string;
 }
 
 interface Review {
@@ -29,6 +35,7 @@ interface Review {
 interface Builder {
   _id: string;
   title: string;
+  name: string;
   image: string;
   logo: string;
   projects: number;
@@ -48,6 +55,8 @@ interface Builder {
     website?: string;
     address?: string;
   };
+  experience: number;
+  verified: boolean;
 }
 
 export default function BuilderDetailPage({

@@ -25,13 +25,13 @@ import {
   Building2,
   Loader2,
 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import SearchDropdown from "@/components/ui/search-dropdown";
 
 export default function HousePricePrediction() {
-  const { toast } = useToast();
+  // Remove the useToast hook call since we're using sonner now
   const [loading, setLoading] = useState(false);
   const [predictedPrice, setPredictedPrice] = useState<number | null>(null);
   const [locations, setLocations] = useState<string[]>([]);
@@ -156,11 +156,7 @@ export default function HousePricePrediction() {
       }
     } catch (_error) {
 
-      toast({
-        title: "Error",
-        description: `Failed to predict house price. Please try again.${_error}`,
-        variant: "destructive",
-      });
+      toast.error(`Failed to predict house price. Please try again.${_error}`);
     } finally {
       setLoading(false);
     }

@@ -154,15 +154,34 @@ const projectSchema = new Schema<IProject>(
     
     // Configuration
     unitTypes: [{
-      type: String,
+      type: {
+        type: String,
+        required: true,
+      },
       sizeRange: {
-        min: Number,
-        max: Number,
-        unit: String,
+        min: {
+          type: Number,
+          required: true,
+        },
+        max: {
+          type: Number,
+          required: true,
+        },
+        unit: {
+          type: String,
+          required: true,
+          default: 'sqft',
+        },
       },
       priceRange: {
-        min: Number,
-        max: Number,
+        min: {
+          type: Number,
+          required: true,
+        },
+        max: {
+          type: Number,
+          required: true,
+        },
         perSqft: Number,
       },
     }],

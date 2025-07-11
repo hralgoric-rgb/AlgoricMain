@@ -87,6 +87,21 @@ interface UserProfileData {
     listings?: number;
     sales?: number;
   };
+  isBuilder?: boolean;
+  builderInfo?: {
+    companyName?: string;
+    licenseNumber?: string;
+    reraId?: string;
+    established?: Date;
+    experience?: number;
+    specializations?: string[];
+    completedProjects?: number;
+    ongoingProjects?: number;
+    rating?: number;
+    reviewCount?: number;
+    verified?: boolean;
+    projects?: string[];
+  };
   properties?: Property[];
   lastActive?: string;
 }
@@ -98,6 +113,8 @@ export default function UserProfile() {
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [projects, setProjects] = useState<any[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
 
   // State for properties
   const [properties, setProperties] = useState<Property[]>([]);
@@ -188,6 +205,24 @@ export default function UserProfile() {
           } catch (_agentErr) {
 
             // Don't fail the whole page for agent properties
+          }
+        }
+        
+        if (data.isBuilder) {
+          // Fetch builder projects
+          try {
+            const response = await axios.get("/api/users/projects", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (response.data.success) {
+              setProjects(response.data.projects);
+            }
+          } catch (_builderErr) {
+            console.error("Failed to fetch builder projects:", _builderErr);
+            // Don't fail the whole page for builder projects
           }
         }
         
@@ -740,6 +775,15 @@ export default function UserProfile() {
                         Assigned Properties
                       </TabsTrigger>
                     )}
+                    {user?.isBuilder && (
+                      <TabsTrigger
+                        value="projects"
+                        className="text-gray-400 data-[state=active]:text-orange-500 data-[state=active]:border-b-2 data-[state=active]:border-orange-500 bg-transparent py-3 px-4 rounded-none transition-all"
+                      >
+                        <Building className="w-4 h-4 mr-2" />
+                        My Projects
+                      </TabsTrigger>
+                    )}
                   </TabsList>
                 </div>
 
@@ -1182,6 +1226,119 @@ export default function UserProfile() {
                                     </div>
                                   </CardContent>
                                 </Card>
+                              </motion.div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                )}
+
+                {/* Builder Projects Tab */}
+                {user?.isBuilder && (
+                  <TabsContent value="projects" className="mt-0">
+                    <Card className="border-0 bg-gradient-to-br from-gray-900 to-gray-950 shadow-xl shadow-orange-500/5">
+                      <CardContent className="p-8">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-bold text-white">My Projects</h3>
+                          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+                            {projects.length} Projects
+                          </Badge>
+                        </div>
+
+                        {projectsLoading ? (
+                          <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                            <p className="text-gray-400 mt-2">Loading projects...</p>
+                          </div>
+                        ) : projects.length === 0 ? (
+                          <div className="text-center py-12">
+                            <Building className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                            <h4 className="text-xl font-semibold text-gray-400 mb-2">No Projects Yet</h4>
+                            <p className="text-gray-500 mb-6">Start by posting your first project</p>
+                            <Button 
+                              onClick={() => router.push('/sell')}
+                              className="bg-orange-500 hover:bg-orange-600 text-black font-medium"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Post New Project
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {projects.map((project) => (
+                              <motion.div
+                                key={project._id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden hover:border-orange-500/30 transition-all duration-300"
+                              >
+                                {project.projectImages && project.projectImages.length > 0 && (
+                                  <div className="relative h-48 w-full">
+                                    <Image
+                                      src={project.projectImages[0]}
+                                      alt={project.projectName}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                    <div className="absolute top-2 right-2">
+                                      <Badge 
+                                        className={`${
+                                          project.status === 'approved' 
+                                            ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                                            : project.status === 'pending'
+                                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                            : 'bg-red-500/20 text-red-400 border-red-500/30'
+                                        }`}
+                                      >
+                                        {project.status}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                <div className="p-4">
+                                  <h4 className="text-lg font-semibold text-white mb-2 line-clamp-1">
+                                    {project.projectName}
+                                  </h4>
+                                  <p className="text-sm text-gray-400 mb-2">
+                                    <MapPin className="w-3 h-3 inline mr-1" />
+                                    {project.locality}, {project.city}
+                                  </p>
+                                  <p className="text-sm text-gray-400 mb-2">
+                                    <Calendar className="w-3 h-3 inline mr-1" />
+                                    {project.projectType} • {project.projectStage}
+                                  </p>
+                                  <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+                                    {project.developerDescription}
+                                  </p>
+                                  
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2 text-xs text-gray-400">
+                                      <span>{project.views || 0} views</span>
+                                      <span>•</span>
+                                      <span>{project.inquiries || 0} inquiries</span>
+                                    </div>
+                                    
+                                    <div className="flex space-x-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                                      >
+                                        View
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-gray-600 text-gray-400 hover:bg-gray-700"
+                                      >
+                                        Edit
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
                               </motion.div>
                             ))}
                           </div>

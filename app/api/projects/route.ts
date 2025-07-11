@@ -46,6 +46,26 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     await connectDB();
     
     const data = await request.json();
+    
+    // Debug: Log the received data structure
+    console.log("Received project data:", JSON.stringify(data, null, 2));
+    console.log("unitTypes type:", typeof data.unitTypes);
+    console.log("unitTypes is array:", Array.isArray(data.unitTypes));
+    console.log("unitTypes value:", data.unitTypes);
+
+    // Parse unitTypes if it's a string (shouldn't happen, but as a safeguard)
+    if (typeof data.unitTypes === 'string') {
+      console.log("WARNING: unitTypes received as string, attempting to parse");
+      try {
+        data.unitTypes = JSON.parse(data.unitTypes);
+      } catch (parseError) {
+        console.error("Failed to parse unitTypes string:", parseError);
+        return NextResponse.json(
+          { error: 'Invalid unitTypes format' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Validate required fields
     const requiredFields = [
@@ -77,6 +97,23 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     
     const project = new Project(projectData);
     await project.save();
+    
+    // Also add this project to the user's builderInfo.projects array
+    try {
+      const User = (await import('@/app/models/User')).default;
+      await User.findByIdAndUpdate(
+        userId,
+        { 
+          $push: { 'builderInfo.projects': project._id },
+          $inc: { 'builderInfo.ongoingProjects': 1 } // Increment ongoing projects count
+        },
+        { new: true }
+      );
+      console.log(`Added project ${project._id} to user ${userId}'s builderInfo.projects`);
+    } catch (userUpdateError) {
+      console.error('Error updating user projects array:', userUpdateError);
+      // Don't fail the request if user update fails, just log it
+    }
     
     return NextResponse.json(
       {

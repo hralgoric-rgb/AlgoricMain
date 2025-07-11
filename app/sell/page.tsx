@@ -20,7 +20,7 @@ import {
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 import PropertyForm from "../components/ui/propertyform";
 import EnhancedPropertyForm from "../components/ui/EnhancedPropertyForm";
@@ -35,6 +35,7 @@ export default function SellProperty() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isLoadingUserProfile, setIsLoadingUserProfile] = useState(false);
+  const [profileLoadError, setProfileLoadError] = useState(false);
 
   // Fetch user profile when component mounts
   const fetchUserProfile = async () => {
@@ -43,6 +44,7 @@ export default function SellProperty() {
     if (!token) return;
 
     setIsLoadingUserProfile(true);
+    setProfileLoadError(false);
     try {
       const response = await fetch('/api/users/profile', {
         headers: {
@@ -55,9 +57,11 @@ export default function SellProperty() {
         setUserProfile(profile);
       } else {
         console.error("Failed to fetch user profile");
+        setProfileLoadError(true);
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      setProfileLoadError(true);
     } finally {
       setIsLoadingUserProfile(false);
     }
@@ -75,7 +79,7 @@ export default function SellProperty() {
     }
   }, []);
 
-  const handleOpenForm = () => {
+  const handleOpenForm = async () => {
     if (!isAuthenticated) {
       // Redirect to login page with callback URL
       toast.message(
@@ -87,8 +91,27 @@ export default function SellProperty() {
       return;
     }
 
+    // If userProfile is not loaded yet, fetch it first
+    if (!userProfile && !isLoadingUserProfile) {
+      toast.message("Loading your profile...");
+      await fetchUserProfile();
+      // After fetching, if successful, automatically open the modal
+      if (!profileLoadError) {
+        setTimeout(() => {
+          setIsUserTypeModalOpen(true);
+        }, 100);
+      }
+      return;
+    }
+
     if (isLoadingUserProfile) {
       toast.message("Loading your profile...");
+      return;
+    }
+
+    if (profileLoadError) {
+      toast.error("Failed to load profile. Please try again.");
+      await fetchUserProfile();
       return;
     }
 
@@ -163,6 +186,12 @@ export default function SellProperty() {
 
   const handleProjectFormSubmit = async (data: ProjectData) => {
     try {
+      // Debug: Log the data being sent
+      console.log("About to submit project data:", data);
+      console.log("unitTypes being sent:", data.unitTypes);
+      console.log("unitTypes type:", typeof data.unitTypes);
+      console.log("unitTypes is array:", Array.isArray(data.unitTypes));
+      
       // API call to submit project
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -259,9 +288,6 @@ export default function SellProperty() {
   return (
     <main className="min-h-screen bg-black">
       <Navbar />
-
-      {/* Add the Toaster component for showing notifications */}
-      <Toaster richColors position="top-right" />
 
       {/* User Type Selection Modal */}
       <UserTypeModal
