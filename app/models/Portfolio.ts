@@ -1,7 +1,7 @@
 import mongoose, { Schema, model, Document } from "mongoose";
 
 export interface IHolding {
-    propertyId: mongoose.Types.ObjectId;
+    commercialPropertyId: mongoose.Types.ObjectId;
     shares: number;
     avgPurchasePrice: number;
     totalInvested: number;
@@ -63,9 +63,9 @@ const portfolioSchema = new Schema<IPortfolio>(
 		},
 		holdings: [
 			{
-				propertyId: {
+				commercialPropertyId: {
 					type: Schema.Types.ObjectId,
-					ref: "Property",
+					ref: "commercialProperty",
 					required: true,
 				},
 				shares: {

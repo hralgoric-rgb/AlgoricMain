@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 		}
 
 		const portfolio = await Portfolio.findOne({ userId })
-			.populate("holdings.propertyId", "title address")
+			.populate("holdings.commercialPropertyId", "title address")
 			.lean();
 
 		if (!portfolio) {
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
 		// Calculate income breakdown by property
 		const incomeBreakdown = portfolio.holdings.map((holding) => ({
-			propertyId: holding.propertyId,
+			commercialPropertyId: holding.commercialPropertyId,
 			shares: holding.shares,
 			dividendsReceived: holding.dividendsReceived,
 			realizedGainLoss: holding.realizedGainLoss,
