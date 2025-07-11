@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowUpRight, Building2, TrendingUp, DollarSign, Target, BarChart3, Users, Shield, Clock, Zap, Star, Eye, ChevronRight, CheckCircle, UserPlus, CreditCard, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -9,26 +9,27 @@ import PortfolioSummary from "./components/PortfolioSummary";
 import PerformanceChart from "./components/PerformanceChart";
 
 export default function EquityDashboard() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { scrollY } = useScroll();
+  // Mouse tracking for animated background
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   
-  // Subtle parallax effects
-  const heroParallax = useTransform(scrollY, [0, 400], [0, -100]);
-  const cardsParallax = useTransform(scrollY, [100, 600], [0, -50]);
-  const statsParallax = useTransform(scrollY, [200, 800], [0, -30]);
-
-  // Mouse tracking for subtle gradient effects
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ 
+      setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
+        y: (e.clientY / window.innerHeight) * 100,
       });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  // For parallax effects
+  const { scrollY } = useScroll();
+  // Subtle parallax effects
+  const heroParallax = useTransform(scrollY, [0, 400], [0, -100]);
+  const cardsParallax = useTransform(scrollY, [100, 600], [0, -50]);
+  const statsParallax = useTransform(scrollY, [200, 800], [0, -30]);
 
   // Mock data
   const mockPortfolio = {
@@ -107,38 +108,130 @@ export default function EquityDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white relative overflow-hidden">
-      {/* Subtle animated background */}
-      <div className="fixed inset-0 pointer-events-none">
+    <div className="min-h-screen bg-gradient-to-br from-[#18122B] via-[#1E1A36] to-black text-white relative overflow-hidden">
+      {/* Layered Animated Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {/* Real-time Cursor Following Glow */}
         <motion.div
-          className="absolute inset-0 opacity-20"
+          className="absolute w-48 h-48 rounded-full pointer-events-none"
           style={{
-            background: `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(251, 146, 60, 0.08), transparent 70%)`,
+            left: `${mousePosition.x}%`,
+            top: `${mousePosition.y}%`,
+            transform: 'translate(-50%, -50%)',
+            background: "radial-gradient(circle, rgba(255,140,0,0.6) 0%, rgba(255,115,22,0.3) 40%, rgba(255,69,0,0.1) 70%, transparent 100%)",
+            filter: "blur(15px)",
+            mixBlendMode: "screen"
+          }}
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.7, 1, 0.7]
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut"
           }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] bg-[length:24px_24px] opacity-30" />
         
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-orange-400/20 rounded-full"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -100, 0],
-              opacity: [0.2, 0.8, 0.2]
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            style={{
-              left: `${20 + i * 15}%`,
-              top: `${30 + i * 10}%`
-            }}
-          />
-        ))}
+        {/* Glowing Circle 1 - Orange (#ff6a00) */}
+        <motion.div
+          className="absolute w-96 h-96 rounded-full pointer-events-none"
+          style={{
+            left: "20%",
+            top: "30%",
+            background: "radial-gradient(circle, rgba(255,106,0,0.4) 0%, rgba(255,106,0,0.2) 50%, rgba(255,106,0,0.1) 80%, transparent 100%)",
+            filter: "blur(40px)",
+            mixBlendMode: "screen"
+          }}
+          animate={{
+            x: [0, 30, 0],
+            y: [0, -40, 0],
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          whileHover={{
+            scale: 1.2,
+            filter: "blur(50px)"
+          }}
+        />
+        
+        {/* Glowing Circle 2 - White to Purple Gradient */}
+        <motion.div
+          className="absolute w-80 h-80 rounded-full pointer-events-none"
+          style={{
+            right: "25%",
+            bottom: "20%",
+            background: "radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(180,0,255,0.4) 40%, rgba(180,0,255,0.2) 70%, transparent 100%)",
+            filter: "blur(35px)",
+            mixBlendMode: "screen"
+          }}
+          animate={{
+            x: [0, -25, 0],
+            y: [0, 35, 0],
+            scale: [1, 1.15, 1],
+            opacity: [0.4, 0.6, 0.4]
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          whileHover={{
+            scale: 1.3,
+            filter: "blur(45px)"
+          }}
+        />
+        
+        {/* Orange Glow: slow pulse/float, parallax with mouse */}
+        <motion.div
+          className="absolute w-[120vw] h-[120vw] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            x: `calc(${mousePosition.x - 50}vw * 0.12)`,
+            y: `calc(${mousePosition.y - 50}vh * 0.12)`,
+            background: "radial-gradient(circle, rgba(255,140,0,0.22) 0%, rgba(255,115,22,0.18) 40%, transparent 80%)",
+            filter: "blur(80px)",
+            mixBlendMode: "screen"
+          }}
+          animate={{
+            scale: [1, 1.08, 1],
+            opacity: [0.55, 0.7, 0.55]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut"
+          }}
+        />
+        {/* White-to-Purple Glow: parallax with mouse, soft and immersive */}
+        <motion.div
+          className="absolute w-[140vw] h-[140vw] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            x: `calc(${mousePosition.x - 50}vw * 0.08)`,
+            y: `calc(${mousePosition.y - 50}vh * 0.08)`,
+            background: "radial-gradient(circle, rgba(255,255,255,0.13) 0%, rgba(168,85,247,0.18) 60%, transparent 90%)",
+            filter: "blur(120px)",
+            mixBlendMode: "screen"
+          }}
+          animate={{
+            scale: [1, 1.04, 1],
+            opacity: [0.18, 0.28, 0.18]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut"
+          }}
+        />
+        {/* Subtle grid overlay for extra polish */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.07)_1px,transparent_0)] bg-[length:24px_24px] opacity-20" />
       </div>
 
       {/* Hero Section */}

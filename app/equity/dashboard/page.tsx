@@ -44,6 +44,19 @@ export default function DashboardPage() {
   const [exporting, setExporting] = useState(false);
   const [sharing, setSharing] = useState(false);
 
+  // Mouse tracking for animated background
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   const mockMetrics: DashboardMetrics = {
     totalPortfolioValue: 1275000,
     totalInvestment: 950000,
@@ -388,7 +401,19 @@ Platform: 100GAJ Equity Investment
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(251, 146, 60, 0.10), transparent 70%)`,
+            opacity: 0.25,
+          }}
+        />
+        {/* Optional: Subtle grid overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] bg-[length:24px_24px] opacity-20" />
+      </div>
       {/* Header */}
       <div className="bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -411,7 +436,7 @@ Platform: 100GAJ Equity Investment
                 onClick={handleRefresh}
                 disabled={refreshing}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 {refreshing ? 'Refreshing...' : 'Refresh Data'}
@@ -420,7 +445,7 @@ Platform: 100GAJ Equity Investment
                 onClick={handleExportReport}
                 disabled={exporting}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
               >
                 <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-bounce' : ''}`} />
                 {exporting ? 'Generating...' : 'Export Report'}
@@ -429,7 +454,7 @@ Platform: 100GAJ Equity Investment
                 onClick={handleShareAnalysis}
                 disabled={sharing}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
               >
                 <Share2 className={`w-4 h-4 mr-2 ${sharing ? 'animate-pulse' : ''}`} />
                 {sharing ? 'Generating...' : 'Share Analysis'}
@@ -718,29 +743,9 @@ Platform: 100GAJ Equity Investment
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8 relative overflow-hidden"
+          className="bg-gray-900 rounded-xl p-6 border border-gray-700 mb-8"
           whileHover={{ scale: 1.01 }}
-          style={{
-            boxShadow: "0 0 20px rgba(107, 114, 128, 0.3)"
-          }}
         >
-          {/* Subtle glowing border */}
-          <motion.div
-            className="absolute inset-0 rounded-xl border border-gray-400/0"
-            animate={{
-              borderColor: [
-                "rgba(107, 114, 128, 0)",
-                "rgba(107, 114, 128, 0.4)",
-                "rgba(107, 114, 128, 0)"
-              ]
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          
           <div className="relative z-10">
             <div className="flex flex-wrap gap-4 items-center justify-between">
               <div className="flex flex-wrap gap-2">
@@ -751,7 +756,7 @@ Platform: 100GAJ Equity Investment
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                       selectedTimeframe === timeframe.value
                         ? "bg-orange-500 text-white"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -768,7 +773,7 @@ Platform: 100GAJ Equity Investment
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                       selectedAnalysis === type.value
                         ? "bg-purple-500 text-white"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -800,40 +805,9 @@ Platform: 100GAJ Equity Investment
         >
           {/* Market Intelligence */}
           <motion.div 
-            className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 relative overflow-hidden"
+            className="bg-gray-900 rounded-xl p-6 border border-gray-700"
             whileHover={{ scale: 1.01, y: -3 }}
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(59, 130, 246, 0.2)",
-                "0 0 35px rgba(59, 130, 246, 0.4)",
-                "0 0 20px rgba(59, 130, 246, 0.2)"
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }
-            }}
           >
-            {/* Glowing border animation */}
-            <motion.div
-              className="absolute inset-0 rounded-xl border border-blue-400/0"
-              animate={{
-                borderColor: [
-                  "rgba(59, 130, 246, 0)",
-                  "rgba(59, 130, 246, 0.5)",
-                  "rgba(59, 130, 246, 0)"
-                ]
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
                 <motion.div 
@@ -858,30 +832,16 @@ Platform: 100GAJ Equity Investment
                     className={`p-4 rounded-lg border ${getImpactColor(insight.impact)} relative overflow-hidden group/insight`}
                     whileHover={{ scale: 1.02, x: 5 }}
                   >
-                    {/* Individual insight card glow */}
-                    <motion.div
-                      className="absolute inset-0 rounded-lg border border-transparent"
-                      whileHover={{
-                        borderColor: insight.impact === 'positive' ? 'rgba(34, 197, 94, 0.6)' : 
-                                   insight.impact === 'negative' ? 'rgba(239, 68, 68, 0.6)' : 
-                                   'rgba(245, 158, 11, 0.6)',
-                        boxShadow: insight.impact === 'positive' ? '0 0 15px rgba(34, 197, 94, 0.3)' : 
-                                  insight.impact === 'negative' ? '0 0 15px rgba(239, 68, 68, 0.3)' : 
-                                  '0 0 15px rgba(245, 158, 11, 0.3)'
-                      }}
-                      transition={{ duration: 0.3 }}
-                    />
-                    
                     <div className="relative z-10">
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-white">{insight.title}</h4>
-                        <div className="text-xs px-2 py-1 bg-black/20 rounded-full text-gray-400">
+                        <div className="text-xs px-2 py-1 bg-gray-800 rounded-full text-gray-400">
                           {insight.confidence}% confidence
                         </div>
                       </div>
                       <p className="text-sm text-gray-300 mb-2">{insight.description}</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 bg-gray-800 text-gray-300 rounded-full">
+                        <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded-full">
                           {insight.category}
                         </span>
                         <span className={`text-xs capitalize ${insight.impact === 'positive' ? 'text-green-400' : insight.impact === 'negative' ? 'text-red-400' : 'text-yellow-400'}`}>
@@ -897,42 +857,9 @@ Platform: 100GAJ Equity Investment
 
           {/* Predictive Analysis */}
           <motion.div 
-            className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 relative overflow-hidden"
+            className="bg-gray-900 rounded-xl p-6 border border-gray-700"
             whileHover={{ scale: 1.01, y: -3 }}
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(147, 51, 234, 0.2)",
-                "0 0 35px rgba(147, 51, 234, 0.4)",
-                "0 0 20px rgba(147, 51, 234, 0.2)"
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              }
-            }}
           >
-            {/* Glowing border animation */}
-            <motion.div
-              className="absolute inset-0 rounded-xl border border-purple-400/0"
-              animate={{
-                borderColor: [
-                  "rgba(147, 51, 234, 0)",
-                  "rgba(147, 51, 234, 0.5)",
-                  "rgba(147, 51, 234, 0)"
-                ]
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              }}
-            />
-            
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
                 <motion.div 
@@ -954,23 +881,9 @@ Platform: 100GAJ Equity Investment
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 + index * 0.1 }}
-                    className="p-4 bg-black/20 rounded-lg border border-gray-700 relative overflow-hidden group/analysis"
+                    className="p-4 bg-gray-800 rounded-lg border border-gray-600 relative overflow-hidden group/analysis"
                     whileHover={{ scale: 1.02, x: -5 }}
                   >
-                    {/* Individual analysis card glow */}
-                    <motion.div
-                      className="absolute inset-0 rounded-lg border border-transparent"
-                      whileHover={{
-                        borderColor: analysis.riskLevel === 'low' ? 'rgba(34, 197, 94, 0.6)' : 
-                                   analysis.riskLevel === 'high' ? 'rgba(239, 68, 68, 0.6)' : 
-                                   'rgba(245, 158, 11, 0.6)',
-                        boxShadow: analysis.riskLevel === 'low' ? '0 0 15px rgba(34, 197, 94, 0.3)' : 
-                                  analysis.riskLevel === 'high' ? '0 0 15px rgba(239, 68, 68, 0.3)' : 
-                                  '0 0 15px rgba(245, 158, 11, 0.3)'
-                      }}
-                      transition={{ duration: 0.3 }}
-                    />
-                    
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-semibold text-white">{analysis.period}</h4>
@@ -1014,29 +927,9 @@ Platform: 100GAJ Equity Investment
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-gradient-to-r from-gray-900 to-black rounded-xl p-6 border border-gray-800 relative overflow-hidden"
+          className="bg-gray-900 rounded-xl p-6 border border-gray-700"
           whileHover={{ scale: 1.01 }}
-          style={{
-            boxShadow: "0 0 25px rgba(156, 163, 175, 0.3)"
-          }}
         >
-          {/* Glowing border animation */}
-          <motion.div
-            className="absolute inset-0 rounded-xl border border-gray-400/0"
-            animate={{
-              borderColor: [
-                "rgba(156, 163, 175, 0)",
-                "rgba(156, 163, 175, 0.5)",
-                "rgba(156, 163, 175, 0)"
-              ]
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div>

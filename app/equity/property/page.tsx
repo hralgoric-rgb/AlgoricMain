@@ -300,7 +300,7 @@ export default function PropertyListingPage() {
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       {/* Animated Background with Parallax */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
+      <div className="absolute inset-0 bg-black">
         <motion.div
           className="absolute inset-0 opacity-30"
           animate={{
