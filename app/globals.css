@@ -45,9 +45,16 @@ body {
 }
 
 @layer base {
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
+
   :root {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
@@ -75,6 +82,7 @@ body {
     --chart-5: 24 100% 55%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
@@ -107,27 +115,27 @@ body {
   .gradient-text {
     @apply bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent;
   }
-  
+
   .gradient-bg {
     @apply bg-gradient-to-r from-black via-orange-900 to-black;
   }
-  
+
   .luxury-card {
     @apply bg-black border border-orange-500/30 rounded-lg shadow-sm hover:shadow-orange-500/20 transition-all overflow-hidden;
   }
-  
+
   .luxury-button {
     @apply px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-medium rounded-md hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 transform hover:-translate-y-0.5;
   }
-  
+
   .luxury-button-outline {
     @apply px-6 py-3 border border-orange-500 text-orange-500 font-medium rounded-md hover:bg-orange-500 hover:text-white transition-all duration-300;
   }
-  
+
   .elite-hover {
     @apply transition-all duration-300 hover:opacity-85;
   }
-  
+
   .feature-icon-container {
     @apply bg-gradient-to-br from-orange-500 to-orange-600 w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20;
   }
@@ -135,11 +143,11 @@ body {
   .search-tab-active {
     @apply text-orange-500 font-semibold border-b-2 border-orange-500;
   }
-  
+
   .search-tab-inactive {
     @apply text-orange-500/60 font-medium hover:text-orange-500 transition-colors;
   }
-  
+
   .search-tabs-container {
     @apply flex w-full overflow-x-auto no-scrollbar pb-2 whitespace-nowrap;
   }
@@ -170,6 +178,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -189,10 +198,12 @@ body {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  
+
   .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
   
   /* Performance utilities */
@@ -247,4 +258,135 @@ body {
 
 .form-input-success {
   @apply border-green-500/50 focus:ring-green-500/50 focus:border-green-500/50;
+}
+
+/*  MicroEstate Styles */
+@layer components {
+  .microestate-card {
+    @apply relative overflow-hidden backdrop-blur-sm;
+  }
+
+  .microestate-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-orange-500/5 to-orange-400/5 opacity-0 transition-opacity duration-500;
+  }
+
+  .microestate-card:hover::before {
+    @apply opacity-100;
+  }
+
+  .microestate-glow {
+    @apply shadow-lg shadow-orange-500/20 hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-300;
+  }
+
+  .microestate-input {
+    @apply bg-gradient-to-r from-gray-900/80 to-gray-800/80 border-orange-500/30 backdrop-blur-sm text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300;
+  }
+
+  .microestate-button-primary {
+    @apply bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-semibold shadow-lg hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-0.5 hover:scale-105 border border-orange-500/20;
+  }
+
+  .microestate-button-outline {
+    @apply border-2 border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:border-orange-500 font-semibold transition-all duration-300 backdrop-blur-sm hover:shadow-lg hover:shadow-orange-500/20 transform hover:-translate-y-1;
+  }
+
+  .microestate-hero-bg {
+    background:
+      radial-gradient(circle at 25% 25%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(249, 115, 22, 0.08) 0%, transparent 50%),
+      linear-gradient(135deg, #000000 0%, #111827 50%, #000000 100%);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Additional glow effects */
+.hero-glow {
+  position: relative;
+}
+
+.hero-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent, rgba(249, 115, 22, 0.1), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hero-glow:hover::after {
+  opacity: 1;
+}
+
+/* Pulse animation for decorative elements */
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease-out;
 }
