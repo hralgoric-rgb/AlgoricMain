@@ -91,11 +91,11 @@ function Page() {
     ];
 
     return (
-        <div className="min-h-screen bg-background relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-[#181c24] to-[#101014] relative overflow-hidden">
             <FloatingCircles />
 
             {/* Hero Section */}
-            <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 bg-gradient-to-b from-background to-muted/10">
+            <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 bg-transparent">
                 <ParticleBackground />
 
                 <div className="absolute inset-0 overflow-hidden">
@@ -108,10 +108,10 @@ function Page() {
                             <h1 className="hero-title text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
                                 Elevate Your{" "}
                                 <span className="relative">
-                                    <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 bg-clip-text text-transparent">
+                                    <span className="bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">
                                         Real Estate
                                     </span>
-                                    <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 to-orange-400 rounded-full opacity-60"></div>
+                                    <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 to-red-500 rounded-full opacity-60"></div>
                                 </span>{" "}
                                 Experience
                             </h1>
@@ -121,7 +121,7 @@ function Page() {
                             <div className="absolute -bottom-6 left-1/4 w-2 h-2 bg-orange-300 rounded-full opacity-70 animate-bounce delay-700"></div>
                         </div>
 
-                        <p className="hero-subtitle text-lg md:text-xl text-gray-300 mb-4 max-w-3xl mx-auto leading-relaxed">
+                        <p className="hero-subtitle text-lg md:text-xl text-white mb-4 max-w-3xl mx-auto leading-relaxed">
                             Streamline property management with our all-in-one platform. Manage properties, leases, and payments with ease while providing exceptional experiences for both{" "}
                             <span className="text-orange-400 font-semibold">landlords</span> and{" "}
                             <span className="text-orange-400 font-semibold">tenants</span>.
@@ -139,7 +139,7 @@ function Page() {
                             </div>
 
                             <Button
-                                className="relative h-14 bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 hover:from-orange-500 hover:via-orange-400 hover:to-orange-300 text-white font-bold px-8 rounded-2xl shadow-xl hover:shadow-orange-500/40 transition-all duration-500 transform hover:-translate-y-1 hover:scale-105 border border-orange-500/30 overflow-hidden group"
+                                className="relative h-14 bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white font-bold px-8 rounded-2xl shadow-xl hover:shadow-orange-500/40 transition-all duration-500 transform hover:-translate-y-1 hover:scale-105 border border-orange-500/30 overflow-hidden group"
                                 onClick={()=>{}}
                             >
                                 <span className="relative z-10 flex items-center gap-2 text-lg">
@@ -201,44 +201,20 @@ function Page() {
             </section>
 
             {/* Features Section */}
-            <section ref={featuresRef} className="py-24 relative z-10 bg-gradient-to-b from-muted/5 to-background">
+            <section ref={featuresRef} className="py-20">
                 <div className="container mx-auto px-6">
-                    <div className="text-center mb-20">
-                        <div className="relative inline-block">
-                            <h2 className="text-4xl md:text-6xl font-bold mb-6">
-                                <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 bg-clip-text text-transparent">
-                                    Powerful Features
-                                </span>
-                            </h2>
-                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-orange-600 to-orange-400 rounded-full"></div>
-                        </div>
-                        <p className="text-xl text-gray-300 max-w-3xl mx-auto mt-8 leading-relaxed">
-                            Everything you need to manage your real estate operations efficiently with cutting-edge technology and intuitive design
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {features.map((feature, index) => (
-                            <Card
-                                key={index}
-                                className="feature-card group p-8 bg-gradient-to-br from-gray-900/50 to-gray-800/30 border border-orange-500/20 hover:border-orange-500/50 transition-all duration-500 rounded-2xl backdrop-blur-sm hover:shadow-2xl hover:shadow-orange-500/10 transform hover:-translate-y-2 relative overflow-hidden"
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        {features.map((feature, idx) => (
+                            <div
+                                key={feature.title}
+                                className="feature-card min-h-[260px] min-w-[320px] flex-1 bg-[#23232a] bg-opacity-80 rounded-2xl shadow-lg border border-orange-500/10 p-8 flex flex-col items-center text-center backdrop-blur-md transition-all duration-300 overflow-hidden hover:scale-105 hover:-translate-y-2 hover:border-orange-400 hover:shadow-orange-400/30"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-orange-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                <div className="relative z-10">
-                                    <div className="mb-6">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-500/20">
+                                <div className="w-14 h-14 flex items-center justify-center rounded-full mb-6 bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg">
                                             <feature.icon className="w-8 h-8 text-white" />
-                                        </div>
-                                        <h3 className="text-xl font-bold mb-4 text-white group-hover:text-orange-400 transition-colors duration-300">
-                                            {feature.title}
-                                        </h3>
-                                        <p className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
-                                            {feature.description}
-                                        </p>
-                                    </div>
                                 </div>
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-500"></div>
-                            </Card>
+                                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                                <p className="text-gray-300">{feature.description}</p>
+                            </div>
                         ))}
                     </div>
                 </div>
