@@ -5,13 +5,28 @@ import PropertyCard from './PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Background from '../../_components/Background';
+import { FaHome, FaBuilding, FaWarehouse, FaHotel, FaCouch, FaWifi, FaCar, FaDog, FaCheckSquare, FaSortAmountDown, FaSortAmountUp, FaRupeeSign } from 'react-icons/fa';
 
-const propertyTypes = ['Apartment', 'Villa', 'Studio', 'House', 'Loft'];
-const amenitiesList = ['Wi-Fi', 'Furnished', 'Parking', 'Balcony', 'Pet Friendly'];
+const propertyTypes = [
+  { label: 'Apartment', icon: <FaBuilding className="inline-block mr-1" /> },
+  { label: 'Villa', icon: <FaHome className="inline-block mr-1" /> },
+  { label: 'Studio', icon: <FaHotel className="inline-block mr-1" /> },
+  { label: 'House', icon: <FaCouch className="inline-block mr-1" /> },
+  { label: 'Loft', icon: <FaWarehouse className="inline-block mr-1" /> },
+];
+const amenitiesList = [
+  { label: 'Wi-Fi', icon: <FaWifi className="inline-block mr-1" /> },
+  { label: 'Furnished', icon: <FaCouch className="inline-block mr-1" /> },
+  { label: 'Parking', icon: <FaCar className="inline-block mr-1" /> },
+  { label: 'Balcony', icon: <FaBuilding className="inline-block mr-1" /> },
+  { label: 'Pet Friendly', icon: <FaDog className="inline-block mr-1" /> },
+];
 const sortOptions = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'priceHigh', label: 'Price High → Low' },
-  { value: 'size', label: 'Size' },
+  { value: 'newest', label: 'Newest', icon: <FaSortAmountDown className="inline-block mr-1" /> },
+  { value: 'oldest', label: 'Oldest', icon: <FaSortAmountUp className="inline-block mr-1" /> },
+  { value: 'priceLow', label: 'Price (Low to High)', icon: <FaRupeeSign className="inline-block mr-1" /> },
+  { value: 'priceHigh', label: 'Price (High to Low)', icon: <FaRupeeSign className="inline-block mr-1" /> },
+  { value: 'size', label: 'Size', icon: <FaCheckSquare className="inline-block mr-1" /> },
 ];
 
 // Mock data for demonstration
@@ -192,6 +207,16 @@ export default function PropertyListingPage() {
     setSelectedAmenities(prev => prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]);
   };
 
+  const clearAllFilters = () => {
+    setLocation('');
+    setMinPrice('');
+    setMaxPrice('');
+    setMinSize('');
+    setSelectedTypes([]);
+    setSelectedAmenities([]);
+    setSortBy('newest');
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden">
       <Background />
@@ -200,77 +225,86 @@ export default function PropertyListingPage() {
           Available Properties
         </h1>
         {/* Filter Bar */}
-        <div className="bg-[#181c24] rounded-xl p-6 mb-8 flex flex-wrap gap-4 items-end shadow-lg">
-          {/* Location Dropdown */}
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Location</label>
-            <select
-              className="w-40 rounded px-3 py-2 bg-[#23232a] text-white border border-orange-500/20 focus:border-orange-500"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
-            >
-              <option value="">All</option>
-              {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-            </select>
+        <div className="filter-card bg-[#1e1e2f] bg-opacity-90 rounded-2xl p-6 mb-8 shadow-2xl relative backdrop-blur-md border border-orange-500/10">
+          <button className="absolute top-4 right-4 text-orange-400 hover:underline text-sm font-semibold z-10" onClick={clearAllFilters}>
+            Clear All
+          </button>
+          {/* Row 1: Main Inputs */}
+          <div className="flex flex-wrap gap-6 mb-4">
+            {/* Location */}
+            <div className="flex flex-col gap-2 min-w-[150px] flex-1">
+              <label className="text-orange-400 font-semibold">Location</label>
+              <select
+                className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+              >
+                <option value="">All</option>
+                {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              </select>
+            </div>
+            {/* Min Size */}
+            <div className="flex flex-col gap-2 min-w-[120px] flex-1">
+              <label className="text-orange-400 font-semibold">Min Size (sqft)</label>
+              <Input type="number" min={0} value={minSize} onChange={e => setMinSize(e.target.value)} placeholder="Min sqft" className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition" />
+            </div>
+            {/* Min Price */}
+            <div className="flex flex-col gap-2 min-w-[120px] flex-1">
+              <label className="text-orange-400 font-semibold">Min Price</label>
+              <Input type="number" min={0} value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="Min" className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition" />
+            </div>
+            {/* Max Price */}
+            <div className="flex flex-col gap-2 min-w-[120px] flex-1">
+              <label className="text-orange-400 font-semibold">Max Price</label>
+              <Input type="number" min={0} value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Max" className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition" />
+            </div>
+            {/* Sort By */}
+            <div className="flex flex-col gap-2 min-w-[170px] flex-1">
+              <label className="text-orange-400 font-semibold">Sort By</label>
+              <select
+                className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition"
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+              >
+                {sortOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          {/* Price Range */}
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Min Price</label>
-            <Input type="number" min={0} value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="Min" className="w-28" />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Max Price</label>
-            <Input type="number" min={0} value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Max" className="w-28" />
-          </div>
-          {/* Size */}
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Min Size (sqft)</label>
-            <Input type="number" min={0} value={minSize} onChange={e => setMinSize(e.target.value)} placeholder="Min sqft" className="w-32" />
-          </div>
-          {/* Property Type */}
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Property Type</label>
+          {/* Row 2: Property Type */}
+          <div className="flex flex-col gap-2 mb-4 w-full">
+            <label className="text-orange-400 font-semibold">Property Type</label>
             <div className="flex flex-wrap gap-2">
               {propertyTypes.map(type => (
-                <label key={type} className={`px-3 py-1 rounded-full cursor-pointer border text-xs ${selectedTypes.includes(type) ? 'bg-orange-500 text-white border-orange-500' : 'bg-[#23232a] text-gray-300 border-orange-500/20'}`}>
-                  <input
-                    type="checkbox"
-                    checked={selectedTypes.includes(type)}
-                    onChange={() => handleTypeChange(type)}
-                    className="mr-1 accent-orange-500"
-                  />
-                  {type}
-                </label>
+                <button
+                  key={type.label}
+                  className={`pill flex items-center gap-1 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selectedTypes.includes(type.label) ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-[#2c2c3e] text-white border-[#444] hover:bg-orange-400/30'}`}
+                  onClick={() => handleTypeChange(type.label)}
+                  type="button"
+                >
+                  {type.icon} {type.label}
+                </button>
               ))}
             </div>
           </div>
-          {/* Amenities */}
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Amenities</label>
+          {/* Row 3: Amenities */}
+          <div className="flex flex-col gap-2 w-full">
+            <label className="text-orange-400 font-semibold">Amenities</label>
             <div className="flex flex-wrap gap-2">
               {amenitiesList.map(am => (
-                <label key={am} className={`px-3 py-1 rounded-full cursor-pointer border text-xs ${selectedAmenities.includes(am) ? 'bg-orange-500 text-white border-orange-500' : 'bg-[#23232a] text-gray-300 border-orange-500/20'}`}>
-                  <input
-                    type="checkbox"
-                    checked={selectedAmenities.includes(am)}
-                    onChange={() => handleAmenityChange(am)}
-                    className="mr-1 accent-orange-500"
-                  />
-                  {am}
-                </label>
+                <button
+                  key={am.label}
+                  className={`pill flex items-center gap-1 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selectedAmenities.includes(am.label) ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-[#2c2c3e] text-white border-[#444] hover:bg-orange-400/30'}`}
+                  onClick={() => handleAmenityChange(am.label)}
+                  type="button"
+                >
+                  {am.icon} {am.label}
+                </button>
               ))}
             </div>
-          </div>
-          {/* Sort By */}
-          <div>
-            <label className="block text-sm text-gray-300 mb-1">Sort By</label>
-            <select
-              className="w-40 rounded px-3 py-2 bg-[#23232a] text-white border border-orange-500/20 focus:border-orange-500"
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-            >
-              {sortOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
           </div>
         </div>
         {/* Property Listings Grid */}
