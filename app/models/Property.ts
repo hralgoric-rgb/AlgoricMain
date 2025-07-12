@@ -20,6 +20,7 @@ interface IProperty {
   address: {
     street: string;
     city: string;
+    locality: string;
     state: string;
     zipCode: string;
     country: string;
@@ -125,6 +126,10 @@ const propertySchema = new Schema<IProperty>(
         required: true,
       },
       city: {
+        type: String,
+        required: true,
+      },
+      locality: {
         type: String,
         required: true,
       },

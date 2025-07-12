@@ -273,4 +273,4 @@ export async function POST(request: NextRequest) {
       message: error.message || 'An unexpected error occurred'
     }, { status: 500 });
   }
-} 
+}

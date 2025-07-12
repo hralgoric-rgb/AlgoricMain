@@ -292,4 +292,4 @@ CommercialPropertySchema.index({ 'address.city': 1 });
 // Ensure the model is not redefined during hot reloads in development
 const CommercialProperty = mongoose.models.CommercialProperty || mongoose.model<ICommercialProperty>('CommercialProperty', CommercialPropertySchema);
 
-export default CommercialProperty; 
+export default CommercialProperty;
