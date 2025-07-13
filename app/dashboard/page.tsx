@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/navbar";
-import { mockUserInvestments, UserInvestment } from "../data/commercialProperties";
+import { UserInvestment } from "../data/commercialProperties";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -41,6 +41,19 @@ export default function InvestorDashboard() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Mouse tracking for animated background
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   useEffect(() => {
     // Check authentication
     if (typeof window !== "undefined") {
@@ -53,10 +66,10 @@ export default function InvestorDashboard() {
       setIsAuthenticated(true);
     }
 
-    // Load user investments (mock data)
+    // Load user investments (replace with real API call if available)
     setTimeout(() => {
-      setInvestments(mockUserInvestments);
-      calculatePortfolioSummary(mockUserInvestments);
+      setInvestments([]); // TODO: Replace with real data
+      calculatePortfolioSummary([]); // TODO: Replace with real data
       setLoading(false);
     }, 1000);
   }, [router]);
@@ -138,7 +151,20 @@ export default function InvestorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(700px circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(251, 146, 60, 0.10), transparent 70%)`,
+            opacity: 0.25,
+            filter: 'blur(0.5px)'
+          }}
+        />
+        {/* Subtle grid overlay for extra polish */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] bg-[length:24px_24px] opacity-20" />
+      </div>
       <Navbar />
 
       {/* Header */}

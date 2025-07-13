@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/navbar";
-import { mockCommercialProperties, CommercialProperty } from "../../data/commercialProperties";
+import { CommercialProperty } from "../../data/commercialProperties";
 import InvestmentCalculator from "../components/InvestmentCalculator";
 import BuySharesModal from "../components/BuySharesModal";
 import { toast } from "sonner";
@@ -45,9 +45,21 @@ export default function PropertyDetailPage() {
       setIsAuthenticated(!!token);
     }
 
-    // Find property by ID
-    const foundProperty = mockCommercialProperties.find(p => p._id === params.id);
-    setProperty(foundProperty || null);
+    // Fetch property by ID from API
+    const fetchProperty = async () => {
+      try {
+        const response = await fetch(`/api/commercial/${params.id}`);
+        const data = await response.json();
+        if (response.ok && data.success && data.data) {
+          setProperty(data.data);
+        } else {
+          setProperty(null);
+        }
+      } catch (error) {
+        setProperty(null);
+      }
+    };
+    fetchProperty();
   }, [params.id]);
 
   const formatCurrency = (amount: number) => {
