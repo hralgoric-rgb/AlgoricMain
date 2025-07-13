@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Building, Users, FileText, Shield, TrendingUp, Clock, Mail } from "lucide-react";
-import gsap from "gsap";
 import { FloatingCircles, ParticleBackground } from "../_components/Background";
 
 
@@ -13,48 +12,51 @@ function Page() {
     const featuresRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const tl = gsap.timeline();
+        // Dynamically import GSAP to avoid SSR issues
+        import("gsap").then((gsap) => {
+            const tl = gsap.default.timeline();
 
-        tl.fromTo(
-            ".hero-title",
-            { opacity: 0, y: 50 },
-            { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
-        )
-            .fromTo(
-                ".hero-subtitle",
-                { opacity: 0, y: 30 },
-                { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" },
-                "-=0.5"
+            tl.fromTo(
+                ".hero-title",
+                { opacity: 0, y: 50 },
+                { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
             )
-            .fromTo(
-                ".hero-form",
-                { opacity: 0, y: 20 },
-                { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
-                "-=0.3"
-            );
+                .fromTo(
+                    ".hero-subtitle",
+                    { opacity: 0, y: 30 },
+                    { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" },
+                    "-=0.5"
+                )
+                .fromTo(
+                    ".hero-form",
+                    { opacity: 0, y: 20 },
+                    { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+                    "-=0.3"
+                );
 
-        gsap.set(".feature-card", { opacity: 0, y: 30 });
+            gsap.default.set(".feature-card", { opacity: 0, y: 30 });
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    gsap.to(entry.target, {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.6,
-                        ease: "power3.out",
-                        delay: parseFloat(entry.target.getAttribute("data-delay") || "0")
-                    });
-                }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        gsap.default.to(entry.target, {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.6,
+                            ease: "power3.out",
+                            delay: parseFloat(entry.target.getAttribute("data-delay") || "0")
+                        });
+                    }
+                });
             });
-        });
 
-        document.querySelectorAll(".feature-card").forEach((card, index) => {
-            card.setAttribute("data-delay", (index * 0.1).toString());
-            observer.observe(card);
-        });
+            document.querySelectorAll(".feature-card").forEach((card, index) => {
+                card.setAttribute("data-delay", (index * 0.1).toString());
+                observer.observe(card);
+            });
 
-        return () => observer.disconnect();
+            return () => observer.disconnect();
+        });
     }, []);
 
     const features = [
