@@ -27,8 +27,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       favorites: user.favorites?.agents || [],
       success: true
     });
-  } catch (error) {
-    console.error('Error fetching favorite agents:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching favorite agents' },
       { status: 500 }
@@ -84,8 +84,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Agent added to favorites'
     });
-  } catch (error) {
-    console.error('Error adding agent to favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while adding agent to favorites' },
       { status: 500 }

@@ -57,9 +57,9 @@ export default function BuildersPage() {
         const data = await response.json();
         setBuilders(data.builders);
         setFilteredBuilders(data.builders);
-      } catch (err) {
+      } catch (_err) {
         setError("Error loading builders. Please try again later.");
-        console.error("Error fetching builders:", err);
+
       } finally {
         setIsLoading(false);
       }
@@ -281,7 +281,7 @@ export default function BuildersPage() {
                   type="text"
                   placeholder="Search builders..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(_e) => setSearchTerm(_e.target.value)}
                   className="w-full px-5 py-3 pr-12 rounded-full border-2 border-orange-500/30 bg-black/80 focus:outline-none focus:border-orange-500 text-white placeholder-gray-500 transition-all duration-300"
                 />
                 <div className="absolute right-4 top-3 text-orange-500">

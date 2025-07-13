@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
       success: true,
       properties
     }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching favorite properties:', error);
+  } catch (_error) {
+
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch favorite properties' 

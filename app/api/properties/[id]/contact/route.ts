@@ -90,8 +90,8 @@ async function getContactInfo(request: NextRequest, userId: string) {
       success: true,
       contactInfo
     });
-  } catch (error) {
-    console.error('Error fetching contact information:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching contact information' },
       { status: 500 }

@@ -5,7 +5,6 @@ import Property from '@/app/models/Property';
 import { withAuth } from '@/app/lib/auth-middleware';
 import { connectToDB } from '@/app/lib/mongoose';
 
-
 // GET /api/properties - Get all properties (with pagination and filtering)
 export async function GET(request: NextRequest) {
   try {
@@ -38,8 +37,8 @@ export async function GET(request: NextRequest) {
       count: properties.length,
       properties
     }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching properties:', error);
+  } catch (_error) {
+
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch properties' 
@@ -53,8 +52,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     await connectDB();
     
     const data = await request.json();
-    console.log("Received property data:", data);
-    
+
     // Validate required fields
     const requiredFields = ['title', 'description', 'price', 'propertyType', 'listingType', 'area', 'address', 'images'];
     const missingFields = requiredFields.filter(field => !data[field]);
@@ -122,8 +120,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     );
     
   } catch (error: any) {
-    console.error('Error creating property:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({
@@ -200,8 +197,7 @@ async function createProperty(request: NextRequest, userId: string) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('Error creating property:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({

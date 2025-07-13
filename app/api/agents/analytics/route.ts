@@ -82,8 +82,8 @@ async function getAgentAnalytics(request: NextRequest, userId: string) {
       success: true,
       analytics
     });
-  } catch (error) {
-    console.error('Error generating agent analytics:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while generating agent analytics' },
       { status: 500 }
@@ -98,7 +98,6 @@ function calculateResponseRate(inquiries: any[]) {
   const respondedInquiries = inquiries.filter(inquiry => inquiry.status !== 'pending');
   return Math.round((respondedInquiries.length / inquiries.length) * 100);
 }
-
 
 function calculateAverageResponseTime(inquiries: any[]) {
   const respondedInquiries = inquiries.filter(inquiry => 
@@ -115,12 +114,10 @@ function calculateAverageResponseTime(inquiries: any[]) {
   return Math.round((totalResponseTime / respondedInquiries.length) / (1000 * 60 * 60) * 10) / 10;
 }
 
-
 function calculateLeadConversionRate(properties: any[], inquiries: any[]) {
   const soldProperties = properties.filter(p => p.status === 'sold').length;
   return inquiries.length > 0 ? Math.round((soldProperties / inquiries.length) * 100) : 0;
 }
-
 
 function calculatePropertyTypeDistribution(properties: any[]) {
   const distribution: Record<string, number> = {};
@@ -132,7 +129,6 @@ function calculatePropertyTypeDistribution(properties: any[]) {
   
   return distribution;
 }
-
 
 function getTopPerformingListings(properties: any[], inquiries: any[]) {
   // Count inquiries per property
@@ -160,7 +156,6 @@ function getTopPerformingListings(properties: any[], inquiries: any[]) {
     daysListed: Math.floor((new Date().getTime() - new Date(property.createdAt).getTime()) / (1000 * 60 * 60 * 24))
   }));
 }
-
 
 function generateTimeSeriesData(inquiries: any[], startDate: Date, endDate: Date, period: string) {
   let interval: 'day' | 'week' | 'month';
@@ -246,7 +241,6 @@ function generateCompetitorComparison() {
     }
   };
 }
-
 
 function calculatePotentialEarnings(properties: any[]) {
   // Calculate potential commission based on property values

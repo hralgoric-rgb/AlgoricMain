@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Hero() {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
@@ -15,18 +17,18 @@ export default function Hero() {
             Discover premium residential plots in prime locations. Your dream home starts here.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/properties"
+            <Link
+              href="/search"
               className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               Browse Properties
-            </a>
-            <a
+            </Link>
+            <Link
               href="/contact"
               className="px-8 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
             >
               Contact Us
-            </a>
+            </Link>
           </div>
         </div>
       </div>

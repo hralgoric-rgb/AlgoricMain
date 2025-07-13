@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(result.data);
-  } catch (error) {
-    console.error("Geocoding failed:", error);
+  } catch (_error) {
+
     return NextResponse.json({ error: "Failed to fetch coordinates" }, { status: 500 });
   }
 }

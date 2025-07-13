@@ -89,8 +89,8 @@ export const POST = withAuth(async (
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error creating inquiry:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while creating the inquiry' },
       { status: 500 }
@@ -108,8 +108,7 @@ export const GET = withAuth(async (
     const url = new URL(request.url);
     const pathSegments = url.pathname.split('/').filter(segment => segment);
     const propertyId = pathSegments[pathSegments.length - 1]; // Last segment is the property ID
-    
-    
+
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
       return NextResponse.json(
         { error: 'Invalid property ID format' },
@@ -162,8 +161,8 @@ export const GET = withAuth(async (
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching inquiries:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching inquiries' },
       { status: 500 }

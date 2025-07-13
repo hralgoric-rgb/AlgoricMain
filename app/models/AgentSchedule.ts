@@ -101,7 +101,6 @@ const agentScheduleSchema = new Schema<IAgentSchedule>(
 );
 
 // Create indexes for efficient querying
-agentScheduleSchema.index({ agent: 1 });
 agentScheduleSchema.index({ 'appointments.date': 1 });
 agentScheduleSchema.index({ 'appointments.client': 1 });
 agentScheduleSchema.index({ 'appointments.property': 1 });

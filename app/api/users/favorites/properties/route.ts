@@ -27,8 +27,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       favorites: user.favorites?.properties || [],
       success: true
     });
-  } catch (error) {
-    console.error('Error fetching favorite properties:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching favorite properties' },
       { status: 500 }

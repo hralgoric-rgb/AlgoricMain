@@ -99,7 +99,7 @@ export default function DelhiAreaAnalyzer() {
         behavior: "smooth",
       });
     } catch (err: any) {
-      console.error("Error fetching area data:", err);
+
       setError(err.message || "Failed to fetch area data. Please try again.");
       toast.error(
         "Could not find data for this area. Please try another location.",
@@ -117,8 +117,8 @@ export default function DelhiAreaAnalyzer() {
         const areasList = data.areas.split(",");
         setAllAreas(areasList);
       })
-      .catch((err) => {
-        console.error("Error loading Delhi areas:", err);
+      .catch((_err) => {
+
       });
 
     // Add click event listener to handle clicks outside of suggestions
@@ -152,8 +152,8 @@ export default function DelhiAreaAnalyzer() {
     setShowSuggestions(filteredSuggestions.length > 0);
   }, [searchTerm, allAreas]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (_e: React.FormEvent) => {
+    _e.preventDefault();
     fetchAreaData(searchTerm);
     setShowSuggestions(false);
   };
@@ -246,7 +246,7 @@ export default function DelhiAreaAnalyzer() {
                   <input
                     type="text"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(_e) => setSearchTerm(_e.target.value)}
                     onFocus={() => setShowSuggestions(suggestions.length > 0)}
                     placeholder="Enter a Delhi area (e.g. Dwarka, Rohini, Vasant Kunj)"
                     className="w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm text-white rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-white/50"

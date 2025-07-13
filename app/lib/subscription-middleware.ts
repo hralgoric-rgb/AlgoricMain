@@ -108,8 +108,8 @@ export function withSubscription(
       
       // If all checks pass, call the original handler
       return await handler(request, userId);
-    } catch (error) {
-      console.error('Error in subscription middleware:', error);
+    } catch (_error) {
+
       return NextResponse.json(
         { error: 'An error occurred while checking subscription status' },
         { status: 500 }

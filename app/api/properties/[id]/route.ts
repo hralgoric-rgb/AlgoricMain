@@ -10,7 +10,7 @@ const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 // GET /api/properties/[id] - Get a single property by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -41,8 +41,8 @@ export async function GET(
     }
 
     return NextResponse.json(property, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching property:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching the property' },
       { status: 500 }
@@ -105,7 +105,6 @@ export const PUT = withAuth(async (
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Error updating property:', error);
 
     // Handle validation errors
     if (error.name === 'ValidationError') {
@@ -172,8 +171,8 @@ export const DELETE = withAuth(async (
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Error deleting property:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while deleting the property' },
       { status: 500 }

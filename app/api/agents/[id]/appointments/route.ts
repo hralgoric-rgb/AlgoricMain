@@ -101,8 +101,8 @@ export const GET = withAuth(async (
     });
     
     return NextResponse.json({ appointments });
-  } catch (error) {
-    console.error('Error fetching appointments:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching appointments' },
       { status: 500 }
@@ -259,8 +259,7 @@ export const POST = withAuth(async (
     });
     
   } catch (error: any) {
-    console.error('Error creating appointment:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({

@@ -27,12 +27,11 @@ export default function GoogleLoginButton() {
     setTimeout(() => {
       window.location.reload();
     }, 1000);
-  } catch (error) {
-    console.error("Login error:", error);
+  } catch (_error) {
+
     toast.error("Login failed. Try again.");
   }
 };
-
 
   useEffect(() => {
     const script = document.createElement("script");

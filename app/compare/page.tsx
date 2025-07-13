@@ -257,10 +257,10 @@ export default function CompareProperties() {
         setProperties(dummyProperties);
         setFetchError("Demo mode: Using sample properties");
       }
-    } catch (error) {
+    } catch (_error) {
       setFetchError(
-        error instanceof Error
-          ? error.message
+        _error instanceof Error
+          ? _error.message
           : "Failed to load favorite properties",
       );
       setProperties(dummyProperties);
@@ -332,11 +332,9 @@ export default function CompareProperties() {
   }, [selectedProperty1, selectedProperty2]);
   const transformApiDataToPropertyFormat = (apiData: any[]): Property[] => {
     if (!Array.isArray(apiData)) {
-      console.error("API data is not an array:", apiData);
+
       return [];
     }
-
-    console.log("Raw API Data:", apiData);
 
     try {
       const transformedData = apiData
@@ -383,10 +381,9 @@ export default function CompareProperties() {
         })
         .filter(Boolean); // Remove any null items
 
-      console.log("Transformed Properties:", transformedData);
       return transformedData as Property[];
-    } catch (error) {
-      console.error("Error transforming API data:", error);
+    } catch (_error) {
+
       return [];
     }
   };

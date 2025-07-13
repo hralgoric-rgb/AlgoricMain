@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
       .sort({ rating: -1 });
       
     return NextResponse.json({ builders }, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching builders:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to fetch builders' },
       { status: 500 }
@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
       { message: 'Builder created successfully', builder: newBuilder },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Error creating builder:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'Failed to create builder' },
       { status: 500 }

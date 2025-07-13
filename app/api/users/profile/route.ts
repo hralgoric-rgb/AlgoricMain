@@ -18,8 +18,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
     }
     
     return NextResponse.json(user);
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching user profile' },
       { status: 500 }
@@ -90,8 +90,7 @@ export const PUT = withAuth(async (request: NextRequest, userId: string) => {
       user,
     });
   } catch (error: any) {
-    console.error('Error updating user profile:', error);
-    
+
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.keys(error.errors).map(key => ({

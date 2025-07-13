@@ -10,7 +10,7 @@ const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 // GET /api/agents/[id] - Get agent details and their properties
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -89,8 +89,8 @@ export async function GET(
         pages: Math.ceil(totalProperties / limit),
       },
     });
-  } catch (error) {
-    console.error('Error fetching agent details:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching agent details' },
       { status: 500 }

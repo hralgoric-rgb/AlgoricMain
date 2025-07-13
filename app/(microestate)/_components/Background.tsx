@@ -231,6 +231,7 @@ const FloatingCircles = () => {
 };
 
 
+export default ParticleBackground;
 export {
     FloatingCircles,
     ParticleBackground

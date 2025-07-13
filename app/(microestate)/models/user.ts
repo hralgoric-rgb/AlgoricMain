@@ -4,10 +4,10 @@ import mongoose, { Schema, models } from "mongoose";
 interface IUser {
   name: string;
   email: string;
-  username: string
   password?: string;
   image?: string;
   emailVerified?: Date;
+  isVerified?: boolean;
   googleId?: string;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
@@ -61,10 +61,6 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
-    username: {
-      type: String,
-      required: true,
-    },
     email: {
       type: String,
       required: true,
@@ -79,6 +75,10 @@ const userSchema = new Schema<IUser>(
     emailVerified: {
       type: Date,
     },
+    isVerified: {
+  type: Boolean,
+  default: false,
+},
     googleId: {
       type: String,
       unique: true,
@@ -91,6 +91,7 @@ const userSchema = new Schema<IUser>(
     verificationTokenExpiry: {
       type: Date,
     },
+    
     resetPasswordToken: {
       type: String,
     },
@@ -166,6 +167,7 @@ const userSchema = new Schema<IUser>(
 );
 
 // Check if model exists already to prevent recompiling during hot reload in development
-const User = models.User || mongoose.model<IUser>("User", userSchema);
+const User = mongoose.models.User as mongoose.Model<IUser> || mongoose.model<IUser>("User", userSchema);
+
 
 export default User;

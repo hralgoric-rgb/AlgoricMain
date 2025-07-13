@@ -46,9 +46,8 @@ export default function Pricing() {
   //       });
   //       setProcessing(false);
   //     }
-  //   } catch (error) {
-  //     console.error("Payment error:", error);
-  //     toast({
+  //   } catch (_error) {
+  //     //     toast({
   //       title: "Payment Error",
   //       description: "Failed to initiate payment. Please try again later.",
   //       variant: "destructive",

@@ -4,7 +4,6 @@ import { motion} from "framer-motion";
 import { Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-
 function ElegantShape({
     className,
     delay = 0,

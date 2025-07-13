@@ -9,8 +9,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 } 
 
-
-
 /**
  * Hashes a password using bcrypt
  * @param password Plain text password to hash
@@ -58,6 +56,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
     },
   });
 
+  
   // Send email
   const info = await transporter.sendMail({
     from: `"100GAJ Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
@@ -248,7 +247,7 @@ export function verifyToken(token: string): { userId: string; email: string } {
   try {
     const decoded = jwt.verify(token, secret) as { sub: string; email: string };
     return { userId: decoded.sub, email: decoded.email };
-  } catch (error) {
-    throw new Error(`Invalid or expired token: ${error}`);
+  } catch (_error) {
+    throw new Error(`Invalid or expired token: ${_error}`);
   }
 }

@@ -44,8 +44,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       subscription
     });
-  } catch (error) {
-    console.error('Error fetching subscription:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching subscription' },
       { status: 500 }
@@ -155,8 +155,8 @@ export const PATCH = withAuth(async (request: NextRequest, userId: string) => {
       message: 'Subscription updated successfully',
       subscription
     });
-  } catch (error) {
-    console.error('Error updating subscription:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while updating subscription' },
       { status: 500 }
@@ -216,8 +216,8 @@ export const DELETE = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Subscription cancelled successfully',
     });
-  } catch (error) {
-    console.error('Error cancelling subscription:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while cancelling subscription' },
       { status: 500 }

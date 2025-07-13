@@ -27,8 +27,8 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       favorites: user.favorites?.builders || [],
       success: true
     });
-  } catch (error) {
-    console.error('Error fetching favorite builders:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while fetching favorite builders' },
       { status: 500 }
@@ -85,8 +85,8 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       success: true,
       message: 'Builder added to favorites'
     });
-  } catch (error) {
-    console.error('Error adding builder to favorites:', error);
+  } catch (_error) {
+
     return NextResponse.json(
       { error: 'An error occurred while adding builder to favorites' },
       { status: 500 }
