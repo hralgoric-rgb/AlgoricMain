@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongodb';
 import VerificationRequest from '@/app/models/VerificationRequest';
 import User from '@/app/models/User';
-import Builder from '@/app/models/Builder';
 import mongoose from 'mongoose';
 import { verifyToken } from '@/app/lib/utils';
 
@@ -72,8 +71,10 @@ export async function POST(
     } else if (verificationRequest.type === 'builder') {
       // Update user profile to mark as builder
       user.isBuilder = true;
+      user.role = 'builder';
+      
       if (verificationRequest.requestDetails) {
-        // Update user's builderInfo
+        // Update user's builderInfo with all the details
         user.builderInfo = {
           ...user.builderInfo,
           verified: true,
@@ -82,40 +83,30 @@ export async function POST(
           established: verificationRequest.requestDetails.established ? new Date(verificationRequest.requestDetails.established) : undefined,
           experience: verificationRequest.requestDetails.experience,
           specializations: verificationRequest.requestDetails.specialization ? [verificationRequest.requestDetails.specialization] : [],
+          completedProjects: 0,
+          ongoingProjects: 0,
+          rating: 4.0,
+          reviewCount: 0
         };
         
-        // Add image to user profile if provided in verification request
+        // Add image and bio to user profile if provided in verification request
         if (verificationRequest.requestDetails.image) {
           user.image = verificationRequest.requestDetails.image;
         }
         
-        // Create Builder document
-        const builderData = {
-          title: verificationRequest.requestDetails.companyName || user.name,
-          image: verificationRequest.requestDetails.image || user.image || 'https://via.placeholder.com/300x200',
-          logo: verificationRequest.requestDetails.logo || user.image || 'https://via.placeholder.com/100x100',
-          projects: 0,
-          description: verificationRequest.requestDetails.additionalInfo || `${user.name} is a verified builder on 100Gaj.`,
-          established: verificationRequest.requestDetails.established || 'N/A',
-          headquarters: verificationRequest.requestDetails.headquarters || 'N/A',
-          specialization: verificationRequest.requestDetails.specialization || 'General Construction',
-          rating: 0,
-          completed: 0,
-          ongoing: 0,
-          contact: {
-            email: user.email,
-            phone: user.phone,
-          }
-        };
-        await Builder.findOneAndUpdate(
-          { title: builderData.title },
-          builderData,
-          { upsert: true, new: true }
-        );
+        if (verificationRequest.requestDetails.additionalInfo) {
+          user.bio = verificationRequest.requestDetails.additionalInfo;
+        }
       } else {
         // Minimal builderInfo if no details provided
         if (!user.builderInfo) {
-          user.builderInfo = { verified: true };
+          user.builderInfo = { 
+            verified: true,
+            completedProjects: 0,
+            ongoingProjects: 0,
+            rating: 4.0,
+            reviewCount: 0
+          };
         } else {
           user.builderInfo.verified = true;
         }

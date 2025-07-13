@@ -61,14 +61,14 @@ interface IUser {
     twitter?: string;
     linkedin?: string;
     instagram?: string;
-  };
-  // User favorites
-  favorites?: {
-    properties?: mongoose.Types.ObjectId[];
-    agents?: mongoose.Types.ObjectId[];
-    builders?: mongoose.Types.ObjectId[];
-    localities?: string[]; // IDs or names of localities
-  };
+  };    // User favorites
+    favorites?: {
+      properties?: mongoose.Types.ObjectId[];
+      agents?: mongoose.Types.ObjectId[];
+      builders?: mongoose.Types.ObjectId[];
+      projects?: mongoose.Types.ObjectId[];
+      localities?: string[]; // IDs or names of localities
+    };
   // User properties (listings)
   properties?: mongoose.Types.ObjectId[]; // references to properties owned/listed by user
   preferences?: {
@@ -244,6 +244,12 @@ const userSchema = new Schema<IUser>(
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Builder",
+        },
+      ],
+      projects: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Project",
         },
       ],
       localities: [String],

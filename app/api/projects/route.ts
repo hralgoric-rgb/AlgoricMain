@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectDB from '@/app/lib/mongodb';
 import Project from '@/app/models/Project';
+import User from '@/app/models/User'; // Import User model for populate
 import { withAuth } from '@/app/lib/auth-middleware';
 
 // GET /api/projects - Get all projects
@@ -14,7 +16,10 @@ export async function GET(request: NextRequest) {
     const locality = searchParams.get('locality');
     const limit = parseInt(searchParams.get('limit') || '10');
     
-    const query: any = { status: 'active' };
+    // Include both active and approved projects, exclude only rejected ones
+    const query: any = { 
+      status: { $in: ['active', 'pending', 'approved'] } 
+    };
     
     if (projectType) query.projectType = projectType;
     if (city) query.city = { $regex: city, $options: 'i' };
@@ -25,6 +30,8 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .populate('developer', 'name email')
       .select('-__v');
+    
+    console.log(`Found ${projects.length} projects with query:`, query);
     
     return NextResponse.json({ 
       success: true, 

@@ -14,6 +14,9 @@ import {
   FaMap,
   FaList,
   FaNewspaper,
+  FaRuler,
+  FaBuilding,
+  FaClock,
 } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -21,6 +24,7 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import { FavoritesAPI } from "../lib/api-helpers";
+import { useFavorites } from "../contexts/FavoritesContext";
 import Map from "../components/Map";
 import Navbar from "../components/navbar";
 
@@ -216,6 +220,79 @@ interface Property {
   tags?: string[];
 }
 
+// Interface for projects
+interface Project {
+  _id: string;
+  projectName: string;
+  projectType: string;
+  propertyTypesOffered: string[];
+  projectStage: string;
+  reraRegistrationNo: string;
+  projectTagline: string;
+  developerDescription: string;
+  city: string;
+  locality: string;
+  projectAddress: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  unitTypes: {
+    type: string;
+    sizeRange: {
+      min: number;
+      max: number;
+      unit: string;
+    };
+    priceRange: {
+      min: number;
+      max: number;
+      perSqft?: number;
+    };
+  }[];
+  possessionDate: string;
+  constructionStatus: string;
+  projectImages: string[];
+  developer: any;
+  developerContact: {
+    name: string;
+    phone: string;
+    email: string;
+  };
+  status: string;
+  verified: boolean;
+  views: number;
+  favorites: number;
+  inquiries: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Combined interface for search results
+interface SearchItem {
+  _id: string;
+  title: string;
+  type: 'property' | 'project';
+  location: string;
+  coordinates: [number, number];
+  price: number | string;
+  area: number | string;
+  images: string[];
+  propertyType?: string;
+  projectType?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  listingType?: string;
+  status?: string;
+  tags?: string[];
+  // Project specific fields
+  projectName?: string;
+  projectStage?: string;
+  constructionStatus?: string;
+  unitTypes?: any[];
+  possessionDate?: string;
+}
+
 interface MapBounds {
   north: number;
   south: number;
@@ -251,6 +328,7 @@ interface Article {
 const SearchPage = () => {
   // if(isServer())return null;
   const [token, setToken] = useState<string | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
   useEffect(() => {
     const authToken =
       typeof window !== "undefined"
@@ -276,7 +354,11 @@ const SearchPage = () => {
   const [zoom, setZoom] = useState(12);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [allProperties, setAllProperties] = useState<Property[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [filteredSearchItems, setFilteredSearchItems] = useState<SearchItem[]>([]);
+  const [allSearchItems, setAllSearchItems] = useState<SearchItem[]>([]);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+  const [showingType, setShowingType] = useState<'all' | 'properties' | 'projects'>('all');
   const [articles, setArticles] = useState<Article[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [articlesError, setArticlesError] = useState<string | null>(null);
@@ -286,24 +368,6 @@ const SearchPage = () => {
   const [newlyAddedProperties, setNewlyAddedProperties] = useState<Set<string>>(
     new Set(),
   );
-  const [favorites, setFavorites] = useState<Property[]>([]);
-
-  const fetchFavorite = async () => {
-    if (token) {
-      try {
-        const propertiesData = await FavoritesAPI.getProperties();
-        setFavorites(propertiesData.favorites);
-      } catch (_error) {
-
-        toast.error("Failed to fetch favorites");
-      }
-    }
-  };
-  useEffect(() => {
-    if (token) {
-      fetchFavorite();
-    }
-  }, [token]);
   const router = useRouter();
   // Property types from backend
   const propertyTypes = [
@@ -318,10 +382,9 @@ const SearchPage = () => {
   ];
   const bedOptions = [1, 2, 3, 4, 5, 6];
 
-  // Fetch initial properties on component mount
+  // Fetch initial data on component mount
   useEffect(() => {
-    fetchProperties();
-    fetchFavorite();
+    fetchAllData();
     const filterParam = searchParams.get("filter");
     if (filterParam === "sale") {
       setSelectedFilters((prev) => ({
@@ -371,8 +434,6 @@ const SearchPage = () => {
   // Fetch properties from API
   const fetchProperties = async () => {
     try {
-      setIsLoading(true);
-
       const response = await axios.get("/api/properties");
 
       if (response.data.success) {
@@ -395,10 +456,12 @@ const SearchPage = () => {
         }
         setAllProperties(properties);
         setFilteredProperties(properties);
+        return properties;
       } else {
         // Use mock data as fallback
         setAllProperties(mockProperties);
         setFilteredProperties(mockProperties);
+        return mockProperties;
       }
     } catch (_error) {
 
@@ -410,7 +473,7 @@ const SearchPage = () => {
             const properties = JSON.parse(cachedProperties);
             setAllProperties(properties);
             setFilteredProperties(properties);
-            return;
+            return properties;
           }
         } catch (_e) {
 
@@ -420,6 +483,123 @@ const SearchPage = () => {
       // Use mock data as fallback if no cache
       setAllProperties(mockProperties);
       setFilteredProperties(mockProperties);
+      return mockProperties;
+    }
+  };
+
+  // Fetch projects from API
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get("/api/projects");
+
+      if (response.data.success) {
+        const projects = response.data.projects;
+        
+        // Store the projects in sessionStorage for quick access on refresh
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(
+              "cachedProjects",
+              JSON.stringify(projects),
+            );
+            sessionStorage.setItem(
+              "projectsCacheTime",
+              new Date().toString(),
+            );
+          } catch (_e) {
+
+          }
+        }
+        setAllProjects(projects);
+        return projects;
+      } else {
+        setAllProjects([]);
+        return [];
+      }
+    } catch (_error) {
+
+      // Try to get cached projects from sessionStorage
+      if (typeof window !== "undefined") {
+        try {
+          const cachedProjects = sessionStorage.getItem("cachedProjects");
+          if (cachedProjects) {
+            const projects = JSON.parse(cachedProjects);
+            setAllProjects(projects);
+            return projects;
+          }
+        } catch (_e) {
+
+        }
+      }
+
+      setAllProjects([]);
+      return [];
+    }
+  };
+
+  // Convert property to SearchItem
+  const propertyToSearchItem = (property: Property): SearchItem => ({
+    _id: property._id,
+    title: property.title,
+    type: 'property',
+    location: property.location || `${property.address.city}`,
+    coordinates: property.address.location.coordinates,
+    price: property.price,
+    area: property.area,
+    images: property.images,
+    propertyType: property.propertyType,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    listingType: property.listingType,
+    status: property.status,
+    tags: property.tags,
+  });
+
+  // Convert project to SearchItem
+  const projectToSearchItem = (project: Project): SearchItem => {
+    const minPrice = Math.min(...project.unitTypes.map(u => u.priceRange.min));
+    const maxPrice = Math.max(...project.unitTypes.map(u => u.priceRange.max));
+    const minArea = Math.min(...project.unitTypes.map(u => u.sizeRange.min));
+    const maxArea = Math.max(...project.unitTypes.map(u => u.sizeRange.max));
+
+    return {
+      _id: project._id,
+      title: project.projectName,
+      type: 'project',
+      location: `${project.locality}, ${project.city}`,
+      coordinates: [project.coordinates.longitude, project.coordinates.latitude],
+      price: `${(minPrice)} Lacs - ₹${(maxPrice)} Lacs`,
+      area: `${minArea}-${maxArea} sqft`,
+      images: project.projectImages,
+      projectType: project.projectType,
+      projectName: project.projectName,
+      projectStage: project.projectStage,
+      constructionStatus: project.constructionStatus,
+      unitTypes: project.unitTypes,
+      possessionDate: project.possessionDate,
+      status: project.status,
+    };
+  };
+
+  // Combine and fetch all data
+  const fetchAllData = async () => {
+    try {
+      setIsLoading(true);
+      
+      const [properties, projects] = await Promise.all([
+        fetchProperties(),
+        fetchProjects()
+      ]);
+
+      const searchItems = [
+        ...properties.map(propertyToSearchItem),
+        ...projects.map(projectToSearchItem)
+      ];
+
+      setAllSearchItems(searchItems);
+      setFilteredSearchItems(searchItems);
+    } catch (error) {
+      console.error('Error fetching data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -474,41 +654,64 @@ const SearchPage = () => {
         params.search = searchQuery.trim();
       }
 
-      // Log the params for debugging
+      console.log('Search params:', params);
 
       try {
-        const response = await axios.get("/api/properties/map-search", {
-          params,
-        });
+        // Try to get properties from API
+        const [propertiesResponse, projectsResponse] = await Promise.all([
+          axios.get("/api/properties/map-search", { params }).catch(() => null),
+          axios.get("/api/projects", { params }).catch(() => null)
+        ]);
 
-        if (response.data.properties && response.data.properties.length > 0) {
-          const apiProperties = response.data.properties;
+        let apiProperties: Property[] = [];
+        let apiProjects: Project[] = [];
 
-          // Update filteredProperties with the API results
-          setFilteredProperties(apiProperties);
-        } else {
-          // If API returns no results, filter current properties based on bounds
-          const propertiesInBounds = allProperties.filter((prop) => {
-            if (!prop.address?.location?.coordinates) return false;
+        // Handle properties response
+        if (propertiesResponse?.data?.properties?.length > 0) {
+          apiProperties = propertiesResponse?.data.properties || [];
+        }
 
-            const lat = prop.address.location.coordinates[1];
-            const lng = prop.address.location.coordinates[0];
+        // Handle projects response
+        if (projectsResponse?.data?.success && projectsResponse.data.projects?.length > 0) {
+          apiProjects = projectsResponse.data.projects;
+        }
 
-            // Apply client-side filters for map-bound properties
-            if (!isPropertyMatchingFilters(prop)) return false;
+        // If we got results from API, use them
+        if (apiProperties.length > 0 || apiProjects.length > 0) {
+          // Convert to search items
+          const searchItems = [
+            ...apiProperties.map(propertyToSearchItem),
+            ...apiProjects.map(projectToSearchItem)
+          ];
+
+          // Filter by map bounds
+          const itemsInBounds = searchItems.filter((item) => {
+            if (!item.coordinates || item.coordinates.length !== 2) return false;
+
+            const lat = item.coordinates[1];
+            const lng = item.coordinates[0];
 
             return lat <= north && lat >= south && lng <= east && lng >= west;
           });
 
-          setFilteredProperties(propertiesInBounds);
+          setFilteredSearchItems(itemsInBounds);
+          
+          // Update legacy properties for backward compatibility
+          const propertiesOnly = itemsInBounds.filter(item => item.type === 'property');
+          const legacyProperties = propertiesOnly.map(item => {
+            return allProperties.find(prop => prop._id === item._id);
+          }).filter(Boolean) as Property[];
+          setFilteredProperties(legacyProperties);
+        } else {
+          // Fallback to client-side filtering
+          fallbackToClientFiltering();
         }
-      } catch (_error) {
-
-        // Fallback to client-side filtering based on map bounds
+      } catch (error) {
+        console.error('Error in map search:', error);
         fallbackToClientFiltering();
       }
-    } catch (_error) {
-
+    } catch (error) {
+      console.error('Error in searchPropertiesInMapBounds:', error);
       fallbackToClientFiltering();
     } finally {
       setIsLoading(false);
@@ -597,27 +800,40 @@ const SearchPage = () => {
 
     const { north, south, east, west } = mapBounds;
 
-    const propertiesInBounds = allProperties.filter((prop) => {
-      if (!prop.address?.location?.coordinates) return false;
+    // Filter from all search items (properties + projects)
+    const itemsInBounds = allSearchItems.filter((item) => {
+      if (!item.coordinates || item.coordinates.length !== 2) return false;
 
-      const lat = prop.address.location.coordinates[1];
-      const lng = prop.address.location.coordinates[0];
+      const lat = item.coordinates[1];
+      const lng = item.coordinates[0];
 
-      // Check if the property is within map bounds
-      const isInBounds =
-        lat <= north && lat >= south && lng <= east && lng >= west;
+      // Check if the item is within map bounds
+      const isInBounds = lat <= north && lat >= south && lng <= east && lng >= west;
 
-      // Apply additional filters
-      return isInBounds && isPropertyMatchingFilters(prop);
+      // Apply additional filters for properties
+      if (item.type === 'property' && isInBounds) {
+        const property = allProperties.find(p => p._id === item._id);
+        return property ? isPropertyMatchingFilters(property) : false;
+      }
+
+      // For projects, just check bounds (simpler filtering)
+      return isInBounds;
     });
 
-    setFilteredProperties(propertiesInBounds);
+    setFilteredSearchItems(itemsInBounds);
+    
+    // Update legacy properties for backward compatibility
+    const propertiesOnly = itemsInBounds.filter(item => item.type === 'property');
+    const legacyProperties = propertiesOnly.map(item => {
+      return allProperties.find(prop => prop._id === item._id);
+    }).filter(Boolean) as Property[];
+    setFilteredProperties(legacyProperties);
   };
 
   const handleSearch = (_e: React.FormEvent) => {
     _e.preventDefault();
 
-    filterProperties();
+    filterSearchItems();
   };
 
   const handleFilterChange = (filterType: keyof FilterState, value: any) => {
@@ -636,18 +852,20 @@ const SearchPage = () => {
     }));
   };
 
-  // Update filterProperties function to properly filter properties
-  const filterProperties = useCallback(() => {
-    // if (mapBounds) {
-    //     // If map bounds exist, use API for map-based search
-    //     searchPropertiesInMapBounds();
-    //     return;
-    // }
+  // Update filterProperties function to properly filter both properties and projects
+  const filterSearchItems = useCallback(() => {
+    let itemsToFilter = allSearchItems;
 
-    // Otherwise perform client-side filtering
-    const filtered = allProperties.filter((property) => {
-      // Skip properties without proper coordinates
-      if (!property.address?.location?.coordinates) {
+    // Filter by type if specified
+    if (showingType === 'properties') {
+      itemsToFilter = allSearchItems.filter(item => item.type === 'property');
+    } else if (showingType === 'projects') {
+      itemsToFilter = allSearchItems.filter(item => item.type === 'project');
+    }
+
+    const filtered = itemsToFilter.filter((item) => {
+      // Skip items without proper coordinates
+      if (!item.coordinates || item.coordinates.length !== 2) {
         return false;
       }
 
@@ -655,99 +873,133 @@ const SearchPage = () => {
       if (searchQuery && searchQuery.trim() !== "") {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
-          property.title.toLowerCase().includes(query) ||
-          (property.location &&
-            property.location.toLowerCase().includes(query)) ||
-          (property.address?.city &&
-            property.address.city.toLowerCase().includes(query)) ||
-          (property.address?.state &&
-            property.address.state.toLowerCase().includes(query)) ||
-          (property.propertyType &&
-            property.propertyType.toLowerCase().includes(query)) ||
-          (property.tags &&
-            property.tags.some((tag) => tag.toLowerCase().includes(query)));
+          item.title.toLowerCase().includes(query) ||
+          item.location.toLowerCase().includes(query) ||
+          (item.propertyType && item.propertyType.toLowerCase().includes(query)) ||
+          (item.projectType && item.projectType.toLowerCase().includes(query)) ||
+          (item.tags && item.tags.some((tag) => tag.toLowerCase().includes(query)));
 
         if (!matchesSearch) return false;
       }
 
-      // Property type filter - case insensitive comparison
-      if (
-        selectedFilters.propertyType.length > 0 &&
-        !selectedFilters.propertyType.some(
-          (type) =>
-            property.propertyType &&
-            property.propertyType.toLowerCase() === type.toLowerCase(),
-        )
-      ) {
-        return false;
+      // For properties
+      if (item.type === 'property') {
+        // Property type filter - case insensitive comparison
+        if (
+          selectedFilters.propertyType.length > 0 &&
+          !selectedFilters.propertyType.some(
+            (type) =>
+              item.propertyType &&
+              item.propertyType.toLowerCase() === type.toLowerCase(),
+          )
+        ) {
+          return false;
+        }
+
+        // Status filter (rent or sale) - check listingType property
+        if (
+          selectedFilters.status.length > 0 &&
+          !selectedFilters.status.some(
+            (status) => item.listingType === status,
+          )
+        ) {
+          return false;
+        }
+
+        // Beds filter - exact match
+        if (
+          selectedFilters.beds.length > 0 &&
+          item.bedrooms &&
+          !selectedFilters.beds.includes(item.bedrooms)
+        ) {
+          return false;
+        }
+
+        // Baths filter - exact match
+        if (
+          selectedFilters.baths.length > 0 &&
+          item.bathrooms &&
+          !selectedFilters.baths.includes(item.bathrooms)
+        ) {
+          return false;
+        }
+
+        // Area filter for properties
+        if (typeof item.area === 'number') {
+          if (
+            item.area < selectedFilters.area[0] ||
+            item.area > selectedFilters.area[1]
+          ) {
+            return false;
+          }
+        }
+
+        // Price filter for properties
+        if (typeof item.price === 'number') {
+          if (
+            item.price < selectedFilters.priceRange[0] ||
+            item.price > selectedFilters.priceRange[1]
+          ) {
+            return false;
+          }
+        }
       }
 
-      // Status filter (rent or sale) - check listingType property
-      if (
-        selectedFilters.status.length > 0 &&
-        !selectedFilters.status.some(
-          (status) => property.listingType === status,
-        )
-      ) {
-        return false;
-      }
+      // For projects - simpler filtering since they have different structure
+      if (item.type === 'project') {
+        // Property type filter can apply to project types
+        if (
+          selectedFilters.propertyType.length > 0 &&
+          item.projectType &&
+          !selectedFilters.propertyType.some(
+            (type) => item.projectType && item.projectType.toLowerCase().includes(type.toLowerCase())
+          )
+        ) {
+          return false;
+        }
 
-      // Beds filter - exact match
-      if (
-        selectedFilters.beds.length > 0 &&
-        !selectedFilters.beds.includes(property.bedrooms)
-      ) {
-        return false;
-      }
-
-      // Baths filter - exact match
-      if (
-        selectedFilters.baths.length > 0 &&
-        !selectedFilters.baths.includes(property.bathrooms)
-      ) {
-        return false;
-      }
-
-      // Area filter
-      if (
-        property.area < selectedFilters.area[0] ||
-        property.area > selectedFilters.area[1]
-      ) {
-        return false;
-      }
-
-      // Price filter
-      if (
-        property.price < selectedFilters.priceRange[0] ||
-        property.price > selectedFilters.priceRange[1]
-      ) {
-        return false;
+        // Projects are generally for sale, so filter by status if it's rent-only
+        if (
+          selectedFilters.status.length > 0 &&
+          selectedFilters.status.includes("rent") &&
+          !selectedFilters.status.includes("sale")
+        ) {
+          return false;
+        }
       }
 
       return true;
     });
 
-    setFilteredProperties(filtered);
-  }, [allProperties, searchQuery, selectedFilters]);
+    setFilteredSearchItems(filtered);
+    
+    // Also update the legacy filtered properties for backward compatibility
+    const propertiesOnly = filtered.filter(item => item.type === 'property');
+    const legacyProperties = propertiesOnly.map(item => {
+      // Convert back to Property interface for components that still expect it
+      return allProperties.find(prop => prop._id === item._id);
+    }).filter(Boolean) as Property[];
+    setFilteredProperties(legacyProperties);
+  }, [allSearchItems, searchQuery, selectedFilters, showingType, allProperties]);
 
   // Move useEffect to the end of the component
   useEffect(() => {
     // Add a small delay to prevent too many rapid calls when changing filters
     const timer = setTimeout(() => {
 
-      filterProperties();
+      filterSearchItems();
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [selectedFilters, searchQuery, filterProperties]);
+  }, [selectedFilters, searchQuery, showingType, filterSearchItems]);
 
-  // Make a separate useEffect for property data changes
+  // Make a separate useEffect for data changes
   useEffect(() => {
-    if (allProperties.length > 0) {
+    if (allSearchItems.length > 0) {
 
-      filterProperties();
+      filterSearchItems();
     }
-  }, [allProperties, filterProperties]);
+  }, [allSearchItems, filterSearchItems]);
 
   // Detect screen size and set initial view mode
   useEffect(() => {
@@ -781,40 +1033,17 @@ const SearchPage = () => {
     setSearchQuery("");
   };
 
-  // Toggle favorite status
-  const toggleFavorite = async (propertyId: string) => {
+  // Handle favorite toggle for search items
+  const handleFavoriteToggle = async (itemId: string, itemType: 'property' | 'project') => {
+    if (!token) {
+      toast.error("Please login to add to favorites");
+      return;
+    }
+
     try {
-      // Check if property is already in favorites
-      const isFavorited = favorites.some(
-        (property) => property._id === propertyId,
-      );
-
-      if (isFavorited) {
-        // Remove from favorites
-        await axios.delete(`/api/users/favorites/${propertyId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        toast.success("Removed from favorites");
-        fetchFavorite();
-      } else {
-        // Add to favorites
-        await axios.post(
-          "/api/users/favorites",
-          { propertyId },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-        toast.success("Added to favorites");
-        // Update local state
-        fetchFavorite();
-      }
-    } catch (_error) {
-
+      await toggleFavorite(itemId, itemType);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
     }
   };
 
@@ -1045,11 +1274,11 @@ const SearchPage = () => {
   }, [mapInstance]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="h-screen bg-black text-white overflow-hidden flex flex-col">
       <Navbar />
 
       {/* Fixed Search Bar */}
-      <div className="sticky top-0 z-50 bg-black shadow-orange-500 shadow-md">
+      <div className="sticky top-0 z-50 bg-black shadow-orange-500 shadow-md flex-shrink-0">
         <div className="container mx-auto px-0 md:px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="hidden md:flex items-center pl-4 md:pl-0">
@@ -1065,7 +1294,7 @@ const SearchPage = () => {
                   onKeyDown={(_e) => {
                     if (_e.key === "Enter") {
                       _e.preventDefault();
-                      filterProperties();
+                      filterSearchItems();
                     }
                   }}
                   placeholder="Search location, property type..."
@@ -1093,9 +1322,9 @@ const SearchPage = () => {
             <div className="hidden md:flex items-center gap-2 pr-4 md:pr-0">
               <div className="text-sm text-gray-400">
                 <span className="font-medium text-orange-600">
-                  {filteredProperties.length}
+                  {filteredSearchItems.length}
                 </span>{" "}
-                properties found
+                results found
               </div>
             </div>
           </div>
@@ -1375,7 +1604,7 @@ const SearchPage = () => {
                 <button
                   onClick={() => {
                     setShowFilters(false);
-                    filterProperties();
+                    filterSearchItems();
                   }}
                   className="flex-1 py-3 rounded-md bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-md"
                 >
@@ -1388,8 +1617,16 @@ const SearchPage = () => {
       </AnimatePresence>
 
       {/* Mobile View Toggle Buttons - Only visible on small screens */}
-      <div className="md:hidden sticky top-[85px] z-20 bg-black py-2 px-4 flex justify-between border-b border-gray-800">
-        <Image src="/logo.png" height={64} width={64} alt="100Gaj" />
+      <div className="md:hidden flex-shrink-0 z-20 bg-black py-2 px-4 flex justify-between border-b border-gray-800">
+        <div className="flex items-center">
+          <Image src="/logo.png" height={40} width={40} alt="100Gaj" className="mr-2" />
+          <div className="text-xs text-gray-400">
+            <span className="font-medium text-orange-600">
+              {filteredSearchItems.length}
+            </span>{" "}
+            results
+          </div>
+        </div>
         <div className="flex">
           <button
             onClick={() => setViewMode('list')}
@@ -1408,38 +1645,86 @@ const SearchPage = () => {
         </div>
       </div>
 
+      {/* Type Toggle - Properties/Projects */}
+      <div className="flex-shrink-0 z-20 bg-black py-2 md:py-3 px-4 border-b border-gray-800">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="flex bg-gray-800 rounded-lg p-1">
+                <button
+                  onClick={() => setShowingType('all')}
+                  className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-colors ${
+                    showingType === 'all' 
+                      ? 'bg-orange-500 text-white' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  All <span className="hidden sm:inline">({allSearchItems.length})</span>
+                </button>
+                <button
+                  onClick={() => setShowingType('properties')}
+                  className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-colors ${
+                    showingType === 'properties' 
+                      ? 'bg-orange-500 text-white' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Properties <span className="hidden sm:inline">({allSearchItems.filter(item => item.type === 'property').length})</span>
+                </button>
+                <button
+                  onClick={() => setShowingType('projects')}
+                  className={`px-2 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-colors ${
+                    showingType === 'projects' 
+                      ? 'bg-orange-500 text-white' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Projects <span className="hidden sm:inline">({allSearchItems.filter(item => item.type === 'project').length})</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="hidden md:block text-sm text-gray-400">
+              <span className="font-medium text-orange-600">
+                {filteredSearchItems.length}
+              </span>{" "}
+              results found
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div
-        className={`flex flex-col md:flex-row ${showFilters ? "h-[calc(100vh-125px)]" : "h-[calc(100vh-85px)]"}`}
-      >
+      <div className="flex flex-col md:flex-row flex-1 min-h-0">
         {/* Map Section */}
         <div
           id="map-container"
           className={`${
-            viewMode === 'list' ? "hidden md:block" : "block"
-          } flex-1 h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] sticky top-16 overflow-hidden`}
-          style={{ display: (viewMode === 'map' || viewMode === 'split' || window.innerWidth >= 768) ? 'block' : 'none' }}
+            viewMode === 'list' ? "hidden" : "block"
+          } ${
+            viewMode === 'split' ? "md:flex-1" : "flex-1"
+          } h-full overflow-hidden`}
+          style={{ 
+            display: (viewMode === 'map' || (viewMode === 'split' && window.innerWidth >= 768)) ? 'block' : 'none' 
+          }}
         >
           <MapErrorBoundary>
             <Map
               center={mapCenter}
               zoom={zoom}
               onMapLoad={setMapInstance}
-              properties={filteredProperties.map((property) => ({
-                id: property._id,
-                coordinates: property.address?.location?.coordinates
+              properties={filteredSearchItems.map((item) => ({
+                id: item._id,
+                coordinates: item.coordinates && item.coordinates.length === 2
                   ? {
-                      lat: property.address.location.coordinates[1],
-                      lng: property.address.location.coordinates[0],
+                      lat: item.coordinates[1],
+                      lng: item.coordinates[0],
                     }
                   : { lat: 28.7041, lng: 77.1025 }, // Default to Delhi if no coordinates
-                title: property.title,
-                price:
-                  typeof property.price === "string"
-                    ? property.price
-                    : `₹${property.price.toLocaleString()}`,
-                type: property.propertyType,
-                isNew: newlyAddedProperties.has(property._id), // Mark as new if in our tracked set
+                title: item.title,
+                price: typeof item.price === "string" ? item.price : `₹${item.price.toLocaleString()}`,
+                type: (item.type === 'property' ? item.propertyType : item.projectType) || 'Unknown',
+                isNew: newlyAddedProperties.has(item._id), // Mark as new if in our tracked set
               }))}
               onMarkerClick={(propertyId) => {
                 const element = document.getElementById(`property-${propertyId}`);
@@ -1461,29 +1746,41 @@ const SearchPage = () => {
                     }
                   }
                 }}
-                className="bg-orange-500 text-white px-3 py-1 rounded-md shadow-orange-500 shadow-sm hover:bg-orange-600 transition-colors font-bold"
+                className="bg-orange-500 text-white px-3 py-2 rounded-md shadow-lg hover:bg-orange-600 transition-colors font-medium text-sm"
               >
                 Search this area
               </button>
 
               {/* List view toggle button - only visible on mobile when map is shown */}
+              {viewMode === 'map' && (
+                <button
+                  onClick={() => setViewMode('list')}
+                  className="md:hidden bg-black/80 backdrop-blur-sm text-white px-3 py-1 rounded-md text-xs font-medium border border-gray-600"
+                >
+                  View List
+                </button>
+              )}
             </div>
           </MapErrorBoundary>
         </div>
 
         {/* Properties List + Articles Section */}
         <div
-          className={`${viewMode === 'map' ? "hidden md:block" : "block"} md:w-1/2 bg-black overflow-y-auto`}
-          style={{ display: (viewMode === 'list' || viewMode === 'split' || window.innerWidth >= 768) ? 'block' : 'none' }}
-        >
-          <div className="p-4 md:p-6">
-            {/* Properties Count + Article Toggle */}
-            <div className="flex items-center justify-between mb-4">
+          className={`${viewMode === 'map' ? "hidden" : "flex"} ${
+            viewMode === 'split' ? "md:w-1/2" : "w-full"
+          } bg-black flex-col min-h-0`}
+          style={{ 
+            display: (viewMode === 'list' || (viewMode === 'split' && window.innerWidth >= 768)) ? 'flex' : 'none' 
+          }}
+        >          <div className="flex-1 overflow-y-auto">
+            <div className="p-3 md:p-6 min-h-full">
+              {/* Results Count + Article Toggle */}
+              <div className="flex items-center justify-between mb-4">
               <div className="text-sm text-gray-400">
                 <span className="font-medium text-orange-600">
-                  {filteredProperties.length}
+                  {filteredSearchItems.length}
                 </span>{" "}
-                properties found
+                results found
               </div>
 
               <div className="flex items-center gap-3">
@@ -1499,127 +1796,158 @@ const SearchPage = () => {
               </div>
             </div>
 
-            {/* Properties List */}
+            {/* Search Results List */}
             {!showArticles && (
               <>
                 {isLoading ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
                   </div>
-                ) : filteredProperties.length > 0 ? (
-                  <div className="space-y-4">
-                    {filteredProperties.map((property) => (
+                ) : filteredSearchItems.length > 0 ? (
+                  <div className="space-y-3 md:space-y-4 pb-20">
+                    {filteredSearchItems.map((item) => (
                       <motion.div
-                        key={property._id}
-                        id={`property-${property._id}`}
+                        key={item._id}
+                        id={`item-${item._id}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`bg-gray-900 rounded-md shadow-orange-500 shadow-md overflow-hidden hover:shadow-md transition-shadow text-white`}
+                        className={`bg-gray-900 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all text-white border border-gray-800`}
                       >
                         <div
                           className="flex flex-col md:flex-row cursor-pointer"
                           onClick={() => {
-                            router.push(`/search/${property._id}`);
+                            if (item.type === 'property') {
+                              router.push(`/search/${item._id}`);
+                            } else {
+                              router.push(`/projects/${item._id}`);
+                            }
                           }}
                         >
-                          <div className="relative md:w-2/5">
+                          <div className="relative w-full md:w-2/5 h-48 md:h-auto">
                             <Image
                               src={
-                                property.images && property.images.length > 0
-                                  ? property.images[0]
-                                  : "/placeholder.jpg"
+                                item.images && item.images.length > 0
+                                  ? item.images[0]
+                                  : "/placeholder-property.jpg"
                               }
-                              alt={property.title}
+                              alt={item.title}
                               fill
                               sizes="(max-width: 768px) 100vw, 40vw"
                               className="object-cover"
+                              priority={false}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "/placeholder-property.jpg";
+                              }}
                             />
                             <div className="absolute top-2 right-2">
-                              <span className="bg-orange-600/80 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium">
-                                {property.listingType === "rent"
-                                  ? "For Rent"
-                                  : "For Sale"}
-                              </span>
+                              {item.type === 'property' ? (
+                                <span className="bg-orange-600/90 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium shadow-sm">
+                                  {item.listingType === "rent" ? "For Rent" : "For Sale"}
+                                </span>
+                              ) : (
+                                <span className="bg-blue-600/90 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium shadow-sm">
+                                  Project
+                                </span>
+                              )}
                             </div>
-                            {newlyAddedProperties.has(property._id) && (
+                            {newlyAddedProperties.has(item._id) && (
                               <div className="absolute top-2 left-2">
-                                <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                                <span className="bg-green-500/90 backdrop-blur-sm text-white px-2 py-1 rounded text-xs font-medium shadow-sm">
                                   New
                                 </span>
                               </div>
                             )}
                             <button
-                              className="absolute top-2 left-2 h-8 w-8 flex items-center justify-center bg-white/80 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition"
-                              onClick={(_e) => {
-                                _e.stopPropagation();
-                                if (!token) {
-                                  toast.error(
-                                    "Please login to add to favorites",
-                                  );
-                                } else {
-                                  toggleFavorite(property._id);
-                                }
-                              }}
-                              style={{
-                                left: newlyAddedProperties.has(property._id)
-                                  ? "55px"
-                                  : "10px",
+                              className="absolute bottom-2 right-2 h-8 w-8 flex items-center justify-center bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleFavoriteToggle(item._id, item.type);
                               }}
                             >
                               <FaHeart
-                                className={`h-4 w-4 ${favorites.some((fav) => fav._id === property._id) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
+                                className={`h-4 w-4 ${isFavorite(item._id, item.type) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
                               />
                             </button>
                           </div>
                           <div className="p-4 md:w-3/5 flex flex-col">
                             <div className="mb-auto">
-                              <h3 className="text-base font-medium text-white line-clamp-1">
-                                {property.title}
-                              </h3>
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="text-base font-medium text-white line-clamp-1">
+                                  {item.title}
+                                </h3>
+                                <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded">
+                                  {item.type === 'property' ? 'Property' : 'Project'}
+                                </span>
+                              </div>
                               <p className="text-xs mt-1 flex items-center text-white/60">
                                 <FaMapMarkerAlt className="h-3 w-3 mr-1 text-orange-400" />
-                                {property.address?.city
-                                  ? `${property.address.city}, ${property.address.state || ""}`
-                                  : "Location unavailable"}
+                                {item.location || "Location unavailable"}
                               </p>
 
-                              <div className="mt-3 flex items-center text-xs text-white/70">
-                                {property.bedrooms > 0 && (
-                                  <div className="flex items-center mr-3">
-                                    <FaBed className="h-3 w-3 mr-1 text-white" />
-                                    <span>{property.bedrooms} BHK</span>
-                                  </div>
+                              <div className="mt-3 flex items-center text-xs text-white/70 flex-wrap gap-x-3 gap-y-1">
+                                {item.type === 'property' ? (
+                                  <>
+                                    {item.bedrooms && (
+                                      <span className="flex items-center">
+                                        <FaBed className="h-3 w-3 mr-1" />
+                                        {item.bedrooms} BR
+                                      </span>
+                                    )}
+                                    {item.bathrooms && (
+                                      <span className="flex items-center">
+                                        <FaBath className="h-3 w-3 mr-1" />
+                                        {item.bathrooms} BA
+                                      </span>
+                                    )}
+                                    {item.area && (
+                                      <span className="flex items-center">
+                                        <FaRuler className="h-3 w-3 mr-1" />
+                                        {typeof item.area === 'number' ? `${item.area} sqft` : item.area}
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {item.constructionStatus && (
+                                      <span className="flex items-center">
+                                        <FaBuilding className="h-3 w-3 mr-1" />
+                                        {item.constructionStatus}
+                                      </span>
+                                    )}
+                                    {item.projectStage && (
+                                      <span className="flex items-center">
+                                        <FaClock className="h-3 w-3 mr-1" />
+                                        {item.projectStage}
+                                      </span>
+                                    )}
+                                  </>
                                 )}
-                                {property.bathrooms > 0 && (
-                                  <div className="flex items-center mr-3">
-                                    <FaBath className="h-3 w-3 mr-1 text-white" />
-                                    <span>{property.bathrooms} Baths</span>
-                                  </div>
-                                )}
-                                <div className="flex items-center">
-                                  <FaRulerCombined className="h-3 w-3 mr-1 text-white" />
-                                  <span>
-                                    {typeof property.area === "string"
-                                      ? property.area
-                                      : `${property.area} sqft`}
-                                  </span>
-                                </div>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-700">
-                              <div className="text-orange-500 font-medium">
-                                {typeof property.price === "string"
-                                  ? property.price
-                                  : `₹${property.price.toLocaleString()}`}
+                            <div className="mt-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-bold text-white">
+                                  ₹{item.price ? item.price.toLocaleString() : "N/A"}
+                                </span>
+                                {item.type === 'property' && item.listingType === "rent" && (
+                                  <span className="text-xs text-white/60">/month</span>
+                                )}
                               </div>
-                              <Link
-                                href={`/search/${property._id}`}
-                                className="px-3 py-1 bg-gray-800 text-white text-xs rounded-md hover:bg-gray-700 transition-colors flex items-center gap-1 border border-gray-700"
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (item.type === 'property') {
+                                    router.push(`/search/${item._id}`);
+                                  } else {
+                                    router.push(`/projects/${item._id}`);
+                                  }
+                                }}
+                                className="text-xs px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded transition-colors"
                               >
-                                View Details{" "}
-                                <FaArrowRight className="h-2 w-2" />
-                              </Link>
+                                View Details
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1630,7 +1958,7 @@ const SearchPage = () => {
                   <div className="text-center py-12 px-4 bg-white rounded-md shadow-orange-500 shadow-sm border border-gray-700">
                     <FaSearch className="h-6 w-6 mx-auto text-gray-400 mb-3" />
                     <h3 className="text-base font-medium text-gray-900 mb-1">
-                      No properties found
+                      No results found
                     </h3>
                     <p className="text-gray-500 text-sm mb-4">
                       Try adjusting your filters or search query
@@ -1713,6 +2041,7 @@ const SearchPage = () => {
                 )}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

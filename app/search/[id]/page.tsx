@@ -13,19 +13,23 @@ import {
   FaHospital,
   FaTree,
   FaGraduationCap,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import { IoLocationOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import { BsBuilding, BsGraphUp } from "react-icons/bs";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 import Footer from "@/app/components/footer";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import CirclePattern from "../../components/CirclePattern";
 import { toast } from "sonner";
 import Navbar from "@/app/components/navbar";
+import { LocalityAnalysis } from "@/components/ui/locality-analysis";
+import { PropertyNewsWhiteSection } from "@/components/ui/property-news-white";
 
 // Decorative components matching other pages
 // const HouseIcon = () => (
@@ -41,19 +45,37 @@ interface Property {
   description: string;
   price: number;
   propertyType: string;
+  subType?: string;
   listingType: string;
   status: string;
   bedrooms: number;
   bathrooms: number;
   area: number;
+  carpetArea?: number;
+  balconyCount?: number;
   lotSize?: number;
   yearBuilt?: string;
   parking?: number;
+  furnished?: boolean;
+  furnishing?: string;
+  propertyAge?: string;
+  possessionStatus?: string;
+  availableFrom?: string;
+  facing?: string;
+  waterElectricity?: string;
+  priceNegotiable?: boolean;
+  maintenanceCharges?: number;
+  securityDeposit?: number;
+  ownershipType?: string;
   address: {
     street?: string;
     city: string;
+    locality?: string;
     state?: string;
     zipCode?: string;
+    projectName?: string;
+    floorNumber?: string;
+    landmark?: string;
     location?: {
       type: string;
       coordinates: [number, number];
@@ -62,6 +84,7 @@ interface Property {
   amenities?: string[];
   features?: string[];
   images: string[];
+  virtualTourUrl?: string;
   views: number;
   owner: {
     name: string;
@@ -70,6 +93,7 @@ interface Property {
   ownerDetails: {
     name: string;
     phone: string;
+    email?: string;
   };
   agent?: {
     _id: string;
@@ -88,6 +112,20 @@ interface Property {
 //   rating?: number;
 //   icon: React.ReactNode;
 // }
+
+// Area Data Interface for Delhi Area Analyzer
+interface AreaData {
+  location: string;
+  zone: string;
+  pros: string[];
+  cons: string[];
+  crime_level: string;
+  crime_rating: number;
+  safety_rating: number;
+  total_crimes: number;
+  electricity_issues: string;
+  water_clogging: string;
+}
 
 // Locality review interface
 // interface LocalityReview {
@@ -133,9 +171,138 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const [contactFormSuccess, setContactFormSuccess] = useState(false);
   const [contactFormError, setContactFormError] = useState<string | null>(null);
   const [propertyId, setPropertyId] = useState<string>('');
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [showImageOverlay, setShowImageOverlay] = useState(false);
+
+  // EMI Calculator state
+  const [emiData, setEmiData] = useState({
+    loanAmount: 5000000,
+    interestRate: 8.5,
+    tenure: 20
+  });
 
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Check authentication status from sessionStorage
+  const checkAuthStatus = () => {
+    if (typeof window !== 'undefined') {
+      const authToken = sessionStorage.getItem("authToken");
+      setIsAuthenticated(!!authToken);
+      return !!authToken;
+    }
+    return false;
+  };
+
+  // EMI Calculation function
+  const calculateEMI = () => {
+    const principal = emiData.loanAmount;
+    const monthlyRate = emiData.interestRate / 12 / 100;
+    const months = emiData.tenure * 12;
+    
+    const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+    const totalAmount = emi * months;
+    const totalInterest = totalAmount - principal;
+    
+    return {
+      emi: Math.round(emi),
+      totalInterest: Math.round(totalInterest),
+      totalAmount: Math.round(totalAmount)
+    };
+  };
+
+  const emiCalculation = calculateEMI();
+
+  // Handle image overlay
+  const openImageOverlay = (index: number) => {
+    setSelectedImageIndex(index);
+    setShowImageOverlay(true);
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  };
+
+  const closeImageOverlay = () => {
+    setShowImageOverlay(false);
+    setSelectedImageIndex(null);
+    document.body.style.overflow = 'unset'; // Restore scrolling
+  };
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (!property || selectedImageIndex === null) return;
+    
+    const totalImages = property.images.length;
+    if (direction === 'prev') {
+      setSelectedImageIndex(selectedImageIndex === 0 ? totalImages - 1 : selectedImageIndex - 1);
+    } else {
+      setSelectedImageIndex(selectedImageIndex === totalImages - 1 ? 0 : selectedImageIndex + 1);
+    }
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!showImageOverlay) return;
+      
+      if (e.key === 'Escape') {
+        closeImageOverlay();
+      } else if (e.key === 'ArrowLeft') {
+        navigateImage('prev');
+      } else if (e.key === 'ArrowRight') {
+        navigateImage('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [showImageOverlay, selectedImageIndex]);
+
+  // Cleanup overflow on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  // Handle show contact button click
+  const handleShowContact = () => {
+    if (!isAuthenticated) {
+      // Redirect to home page and show login message
+      toast.error("Please login to view contact details");
+    } else {
+      setShowContactDetails(true);
+    }
+  };
+
+  // Handle contact owner actions
+  const handleContactOwner = (type: 'phone' | 'email') => {
+    if (!isAuthenticated) {
+      toast.error("Please login to contact the owner");
+      
+      return;
+    }
+
+    if (!property) return;
+
+    const { phone } = property.ownerDetails;
+    const email = property.owner.email;
+    if (type === 'phone') {
+      if (phone) {
+        window.location.href = `tel:${phone}`;
+        toast.success("Opening phone dialer...");
+      } else {
+        toast.error("Phone number not available");
+      }
+    } else if (type === 'email') {
+      if (email) {
+        const emailSubject = `Inquiry about ${property.title}`;
+        window.location.href = `mailto:${email}?subject=${encodeURIComponent(emailSubject)}`;
+        toast.success("Opening email client...");
+      } else {
+        toast.error("Email address not available");
+      }
+    }
+  };
 
   // Resolve params
   useEffect(() => {
@@ -145,6 +312,26 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     }
     resolveParams();
   }, [params]);
+
+  // Check authentication status on component mount and storage changes
+  useEffect(() => {
+    checkAuthStatus();
+    
+    // Listen for storage changes to update auth status
+    const handleStorageChange = () => {
+      checkAuthStatus();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check periodically for same-window changes
+    const interval = setInterval(checkAuthStatus, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   const fetchPropertyData = async () => {
     if (!propertyId) return;
@@ -157,11 +344,17 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
       setProperty(response.data);
 
+      // Update EMI loan amount based on property price
+      setEmiData(prev => ({
+        ...prev,
+        loanAmount: Math.round(response.data.price * 0.8)
+      }));
+
       // Fetch similar properties (same area, property type, etc.)
       fetchSimilarProperties(response.data);
 
       // Check if property is in user's favorites
-      if (session?.user) {
+      if (isAuthenticated) {
         checkFavoriteStatus();
       }
     } catch (_err) {
@@ -174,6 +367,13 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     fetchPropertyData();
   }, [propertyId]);
+
+  // Auto-show contact details when user logs in
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowContactDetails(true);
+    }
+  }, [isAuthenticated]);
 
   const fetchSimilarProperties = async (currentProperty: Property) => {
     try {
@@ -230,6 +430,12 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     _e.preventDefault();
 
     if (!property) return;
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      handleShowContact();
+      return;
+    }
 
     // Validate form
     if (
@@ -330,7 +536,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-orange-500 z-10"></div>
         </div>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20 mt-16">
           <div className="max-w-4xl">
             <div className="flex flex-wrap gap-3 mb-6">
               <motion.div
@@ -352,6 +558,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               >
                 <span className="text-white font-medium">
                   {property.propertyType}
+                  {property.subType && ` - ${property.subType}`}
                 </span>
               </motion.div>
 
@@ -365,6 +572,19 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   {property.status}
                 </span>
               </motion.div>
+
+              {property.possessionStatus && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="inline-block bg-green-500/80 backdrop-blur-sm px-4 py-2 rounded-full"
+                >
+                  <span className="text-white font-medium">
+                    {property.possessionStatus}
+                  </span>
+                </motion.div>
+              )}
             </div>
 
             <motion.div
@@ -449,19 +669,29 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
               <div className="flex flex-col items-center text-center text-white">
                 <FaRulerCombined className="h-6 w-6 text-orange-400 mb-1" />
-                <span className="text-sm opacity-80">Area</span>
+                <span className="text-sm opacity-80">{property.carpetArea ? "Super Area" : "Area"}</span>
                 <span className="text-xl font-semibold">
                   {property.area} sqft
                 </span>
               </div>
 
-              <div className="flex flex-col items-center text-center text-white">
-                <FaCar className="h-6 w-6 text-orange-400 mb-1" />
-                <span className="text-sm opacity-80">Parking</span>
-                <span className="text-xl font-semibold">
-                  {property.parking || "N/A"}
-                </span>
-              </div>
+              {property.carpetArea ? (
+                <div className="flex flex-col items-center text-center text-white">
+                  <FaRulerCombined className="h-6 w-6 text-orange-400 mb-1" />
+                  <span className="text-sm opacity-80">Carpet Area</span>
+                  <span className="text-xl font-semibold">
+                    {property.carpetArea} sqft
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center text-center text-white">
+                  <FaCar className="h-6 w-6 text-orange-400 mb-1" />
+                  <span className="text-sm opacity-80">Parking</span>
+                  <span className="text-xl font-semibold">
+                    {property.parking || 0}
+                  </span>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
@@ -648,32 +878,76 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         <dt className="text-black/70">Property Type</dt>
                         <dd className="font-medium text-black">
                           {property.propertyType}
+                          {property.subType && ` (${property.subType})`}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-black/70">Listing Type</dt>
+                        <dd className="font-medium text-black">
+                          For {property.listingType}
                         </dd>
                       </div>
                       <div className="flex justify-between">
                         <dt className="text-black/70">Price</dt>
                         <dd className="font-medium text-black">
                           ₹{property.price.toLocaleString()}
+                          {property.priceNegotiable && <span className="text-orange-500 text-sm ml-1">(Negotiable)</span>}
                         </dd>
                       </div>
+                      {property.maintenanceCharges && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Maintenance</dt>
+                          <dd className="font-medium text-black">
+                            ₹{property.maintenanceCharges.toLocaleString()}/month
+                          </dd>
+                        </div>
+                      )}
+                      {property.securityDeposit && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Security Deposit</dt>
+                          <dd className="font-medium text-black">
+                            ₹{property.securityDeposit.toLocaleString()}
+                          </dd>
+                        </div>
+                      )}
                       <div className="flex justify-between">
-                        <dt className="text-black/70">Area</dt>
+                        <dt className="text-black/70">Super Area</dt>
                         <dd className="font-medium text-black">
                           {property.area} sqft
                         </dd>
                       </div>
-                      <div className="flex justify-between">
-                        <dt className="text-black/70">Bedrooms</dt>
-                        <dd className="font-medium text-black">
-                          {property.bedrooms}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-black/70">Bathrooms</dt>
-                        <dd className="font-medium text-black">
-                          {property.bathrooms}
-                        </dd>
-                      </div>
+                      {property.carpetArea && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Carpet Area</dt>
+                          <dd className="font-medium text-black">
+                            {property.carpetArea} sqft
+                          </dd>
+                        </div>
+                      )}
+                      {property.bedrooms > 0 && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Bedrooms</dt>
+                          <dd className="font-medium text-black">
+                            {property.bedrooms}
+                          </dd>
+                        </div>
+                      )}
+                      {property.bathrooms > 0 && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Bathrooms</dt>
+                          <dd className="font-medium text-black">
+                            {property.bathrooms}
+                          </dd>
+                        </div>
+                      )}
+                      {property.balconyCount && property.balconyCount > 0 && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Balconies</dt>
+                          <dd className="font-medium text-black">
+                            {property.balconyCount}
+                          </dd>
+                        </div>
+                      )}
                     </dl>
                   </div>
 
@@ -682,12 +956,76 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                       Additional Details
                     </h3>
                     <dl className="space-y-3">
+                      {property.propertyAge && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Property Age</dt>
+                          <dd className="font-medium text-black">
+                            {property.propertyAge}
+                          </dd>
+                        </div>
+                      )}
+                      {property.possessionStatus && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Possession</dt>
+                          <dd className="font-medium text-black">
+                            {property.possessionStatus}
+                          </dd>
+                        </div>
+                      )}
+                      {property.availableFrom && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Available From</dt>
+                          <dd className="font-medium text-black">
+                            {property.availableFrom}
+                          </dd>
+                        </div>
+                      )}
                       <div className="flex justify-between">
-                        <dt className="text-black/70">Year Built</dt>
+                        <dt className="text-black/70">Furnished</dt>
                         <dd className="font-medium text-black">
-                          {property.yearBuilt || "N/A"}
+                          {property.furnished !== undefined ? (property.furnished ? "Yes" : "No") : "N/A"}
                         </dd>
                       </div>
+                      {property.furnishing && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Furnishing Type</dt>
+                          <dd className="font-medium text-black">
+                            {property.furnishing}
+                          </dd>
+                        </div>
+                      )}
+                      {property.balconyCount !== undefined && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Balconies</dt>
+                          <dd className="font-medium text-black">
+                            {property.balconyCount}
+                          </dd>
+                        </div>
+                      )}
+                      {property.facing && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Facing</dt>
+                          <dd className="font-medium text-black">
+                            {property.facing}
+                          </dd>
+                        </div>
+                      )}
+                      {property.waterElectricity && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Water & Electricity</dt>
+                          <dd className="font-medium text-black">
+                            {property.waterElectricity}
+                          </dd>
+                        </div>
+                      )}
+                      {property.ownershipType && (
+                        <div className="flex justify-between">
+                          <dt className="text-black/70">Ownership Type</dt>
+                          <dd className="font-medium text-black">
+                            {property.ownershipType}
+                          </dd>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <dt className="text-black/70">Status</dt>
                         <dd className="font-medium text-black">
@@ -698,14 +1036,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         <dt className="text-black/70">Parking</dt>
                         <dd className="font-medium text-black">
                           {property.parking || "N/A"}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-black/70">Lot Size</dt>
-                        <dd className="font-medium text-black">
-                          {property.lotSize
-                            ? `${property.lotSize} sqft`
-                            : "N/A"}
                         </dd>
                       </div>
                       <div className="flex justify-between">
@@ -735,7 +1065,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   {property.images.slice(0, 6).map((img, index) => (
                     <div
                       key={index}
-                      className="relative aspect-[4/3] rounded-lg overflow-hidden border border-black/10 group"
+                      className="relative aspect-[4/3] rounded-lg overflow-hidden border border-black/10 group cursor-pointer"
+                      onClick={() => openImageOverlay(index)}
                     >
                       <Image
                         src={`${img}`}
@@ -743,16 +1074,125 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 text-black"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
                 {property.images.length > 6 && (
                   <div className="mt-4 text-center">
-                    <button className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors">
+                    <button 
+                      onClick={() => openImageOverlay(0)}
+                      className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+                    >
                       View All {property.images.length} Photos
                     </button>
                   </div>
                 )}
+              </motion.div>
+
+              {/* Location Details Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+                id="location"
+                className="bg-white p-8 rounded-xl shadow-lg border border-black/10"
+              >
+                <h2 className="text-2xl font-semibold text-black mb-6">
+                  Location Details
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-medium text-black mb-4">Address</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-start">
+                        <IoLocationOutline className="h-5 w-5 text-orange-500 mr-3 mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-black font-medium">
+                            {property.address.street}
+                          </p>
+                          <p className="text-black/70 text-sm">
+                            {property.address.locality && `${property.address.locality}, `}
+                            {property.address.city}
+                            {property.address.state && `, ${property.address.state}`}
+                            {property.address.zipCode && ` - ${property.address.zipCode}`}
+                          </p>
+                        </div>
+                      </div>
+                      {property.address.projectName && (
+                        <div className="flex justify-between">
+                          <span className="text-black/70">Project</span>
+                          <span className="font-medium text-black">{property.address.projectName}</span>
+                        </div>
+                      )}
+                      {property.address.floorNumber && (
+                        <div className="flex justify-between">
+                          <span className="text-black/70">Floor</span>
+                          <span className="font-medium text-black">{property.address.floorNumber}</span>
+                        </div>
+                      )}
+                      {property.address.landmark && (
+                        <div className="flex justify-between">
+                          <span className="text-black/70">Landmark</span>
+                          <span className="font-medium text-black">{property.address.landmark}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-black mb-4">Contact Owner</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-black/70">Name</span>
+                        <span className="font-medium text-black">{property.ownerDetails.name}</span>
+                      </div>
+                      {session?.user || showContactDetails ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-black/70">Phone</span>
+                            <span className="font-medium text-black">{property.ownerDetails.phone}</span>
+                          </div>
+                          {property.ownerDetails.email && (
+                            <div className="flex justify-between">
+                              <span className="text-black/70">Email</span>
+                              <span className="font-medium text-black">{property.ownerDetails.email}</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex justify-center">
+                          <button 
+                            onClick={handleShowContact}
+                            className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors flex items-center gap-2"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                            </svg>
+                            Show Contact Details
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </motion.div>
 
               {/* Amenities Section */}
@@ -793,216 +1233,20 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                 </motion.div>
               )}
 
-              {/* Locality Info Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                viewport={{ once: true }}
-                id="locality"
-                className="bg-white p-8 rounded-xl shadow-lg border border-black/10"
-              >
-                <h2 className="text-2xl font-semibold text-black mb-6">
-                  Locality Information
-                </h2>
 
-                <div className="mb-8">
-                  <div className="aspect-video relative rounded-lg overflow-hidden border border-black/10 mb-4">
-                    <Image
-                      src="/airpirt.jpeg"
-                      alt="Location Map"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <button className="px-4 py-2 bg-white text-black rounded-md hover:bg-orange-500 hover:text-white transition-colors flex items-center gap-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        View on Map
-                      </button>
-                    </div>
-                  </div>
-
-                  <h3 className="text-lg font-medium text-black mb-4">
-                    About {property.address.city}
-                  </h3>
-                  <p className="text-black mb-4">
-                    {property.address.city} is a vibrant area known for its
-                    excellent connectivity, infrastructure, and quality of life.
-                    The locality offers a blend of residential comfort with
-                    urban conveniences, making it a preferred choice for
-                    homebuyers and investors alike.
-                  </p>
-                </div>
-
-                <h3 className="text-lg font-medium text-black mb-4">
-                  Nearby Amenities
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {[
-                    {
-                      name: "City Center Mall",
-                      distance: "1.2 km",
-                      rating: 4.2,
-                      icon: (
-                        <FaShoppingBag className="h-5 w-5 text-orange-500" />
-                      ),
-                    },
-                    {
-                      name: "Global Hospital",
-                      distance: "2.5 km",
-                      rating: 4.5,
-                      icon: <FaHospital className="h-5 w-5 text-orange-500" />,
-                    },
-                    {
-                      name: "Central Park",
-                      distance: "0.8 km",
-                      rating: 4.3,
-                      icon: <FaTree className="h-5 w-5 text-orange-500" />,
-                    },
-                    {
-                      name: "International School",
-                      distance: "1.5 km",
-                      rating: 4.7,
-                      icon: (
-                        <FaGraduationCap className="h-5 w-5 text-orange-500" />
-                      ),
-                    },
-                  ].map((amenity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
-                    >
-                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
-                        {amenity.icon}
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-black">
-                          {amenity.name}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-black/70">
-                            {amenity.distance}
-                          </span>
-                          <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full flex items-center">
-                            {amenity.rating} ★
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Reviews Section */}
+              {/* Delhi Area Analyzer */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
                 viewport={{ once: true }}
-                id="reviews"
+                id="area-analysis"
                 className="bg-white p-8 rounded-xl shadow-lg border border-black/10"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold text-black">
-                    Locality Reviews
-                  </h2>
-                  <button className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors">
-                    Add Review
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  {[
-                    {
-                      id: "1",
-                      author: "Rahul Sharma",
-                      rating: 4.5,
-                      date: "2 months ago",
-                      comment:
-                        "Great locality with all amenities nearby. The area is safe and well-connected to major parts of the city.",
-                      avatar: "/a1.jpg",
-                    },
-                    {
-                      id: "2",
-                      author: "Priya Patel",
-                      rating: 5,
-                      date: "3 months ago",
-                      comment:
-                        "I've been living in this area for over 5 years and have seen tremendous development. Schools, hospitals, and shopping centers are all within reach.",
-                      avatar: "/a2.jpg",
-                    },
-                    {
-                      id: "3",
-                      author: "Vikram Singh",
-                      rating: 4,
-                      date: "1 month ago",
-                      comment:
-                        "Good investment opportunity. Property prices have been steadily increasing due to the upcoming metro station and commercial complexes.",
-                      avatar: "/a4.jpg",
-                    },
-                  ].map((review, index) => (
-                    <div
-                      key={index}
-                      className="border-b border-gray-200 pb-6 last:border-0"
-                    >
-                      <div className="flex items-start">
-                        <div className="h-12 w-12 rounded-full overflow-hidden mr-4 flex-shrink-0">
-                          <Image
-                            src={review.avatar || "/a5.jpg"}
-                            alt={review.author}
-                            width={48}
-                            height={48}
-                            className="object-cover h-full w-full"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-black">
-                              {review.author}
-                            </h4>
-                            <span className="text-sm text-black/60">
-                              {review.date}
-                            </span>
-                          </div>
-                          <div className="flex items-center mb-2">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <svg
-                                key={i}
-                                xmlns="http://www.w3.org/2000/svg"
-                                className={`h-4 w-4 ${i < Math.floor(review.rating) ? "text-yellow-500" : "text-gray-300"}`}
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                            <span className="ml-2 text-sm font-medium text-black/70">
-                              {review.rating} out of 5
-                            </span>
-                          </div>
-                          <p className="text-black">{review.comment}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 text-center">
-                  <button className="px-4 py-2 border border-orange-500 text-orange-500 rounded-md hover:bg-orange-500 hover:text-white transition-colors">
-                    View All Reviews
-                  </button>
-                </div>
+                <h2 className="text-2xl font-semibold text-black mb-6">
+                  Area Analysis
+                </h2>
+                <LocalityAnalysis locality={property.address?.locality || property.address?.city || 'Delhi'} />
               </motion.div>
             </div>
 
@@ -1014,7 +1258,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
-                className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg text-white sticky top-24"
+                className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg text-white sticky top-24 mb-28"
               >
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-2xl font-bold">
@@ -1042,29 +1286,54 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   </div>
                 </div>
                 <div className="space-y-3 mb-5">
-                  <button className="w-full py-3 bg-white text-orange-600 font-semibold rounded-md hover:bg-white/90 transition-colors flex items-center justify-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
+                  {isAuthenticated || showContactDetails ? (
+                    <>
+                      <button 
+                        onClick={() => handleContactOwner('phone')}
+                        className="w-full py-3 bg-white text-orange-600 font-semibold rounded-md hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                        </svg>
+                        Call: {property.ownerDetails.phone}
+                      </button>
+                      <button 
+                        onClick={() => handleContactOwner('email')}
+                        className="w-full py-3 bg-black text-white font-semibold rounded-md hover:bg-black/80 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                        Email Owner
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={handleShowContact}
+                      className="w-full py-3 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
                     >
-                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                    </svg>
-                    Call Owner
-                  </button>
-                  <button className="w-full py-3 bg-black text-white font-semibold rounded-md hover:bg-black/80 transition-colors flex items-center justify-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                    Email Owner
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                      </svg>
+                      Show Contact Details
+                    </button>
+                  )}
                 </div>
                 <div className="text-sm text-white/70 text-center">
                   Listed on {new Date(property.createdAt).toLocaleDateString()}
@@ -1092,17 +1361,26 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                     <p className="font-medium text-black text-lg">
                       {property.ownerDetails.name || "Property Owner"}
                     </p>
-                    <p className="text-sm text-black/70 mb-2">
-                      {property.ownerDetails.phone || "Contact via phone"}
-                    </p>
-                    <div className="flex gap-2">
-                      <button className="text-xs px-2 py-1 bg-orange-100 text-orange-600 rounded-md hover:bg-orange-200 transition-colors">
-                        View Profile
+                    {session?.user || showContactDetails ? (
+                      <p className="text-sm text-black/70 mb-2">
+                        {property.ownerDetails.phone || "Contact via phone"}
+                      </p>
+                    ) : (
+                      <button 
+                        onClick={handleShowContact}
+                        className="text-sm text-orange-600 hover:text-orange-700 font-medium mb-2 flex items-center gap-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                        </svg>
+                        Show Contact Info
                       </button>
-                      <button className="text-xs px-2 py-1 bg-black/10 text-black rounded-md hover:bg-black/20 transition-colors">
-                        All Listings
-                      </button>
-                    </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -1119,7 +1397,30 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   Interested in this property?
                 </h3>
 
-                {contactFormSuccess ? (
+                {!session?.user ? (
+                  <div className="text-center py-8">
+                    <div className="mb-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-12 w-12 text-gray-400 mx-auto mb-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <p className="text-gray-600 mb-4">
+                        Please log in to contact the property owner
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleShowContact}
+                      className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 transition-colors"
+                    >
+                      Login to Contact Owner
+                    </button>
+                  </div>
+                ) : contactFormSuccess ? (
                   <div className="p-4 bg-orange-50 rounded-md text-black mb-4 border border-orange-500/20">
                     <p className="font-medium">Thank you for your inquiry!</p>
                     <p className="text-sm mt-1">
@@ -1257,16 +1558,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                         ₹
                       </span>
                       <input
-                        type="text"
-                        value={Math.round(
-                          property.price * 0.8,
-                        ).toLocaleString()}
-                        readOnly
-                        className="w-full pl-8 pr-3 py-2 border border-black/20 rounded-md text-black"
+                        type="number"
+                        value={emiData.loanAmount}
+                        onChange={(e) => setEmiData({...emiData, loanAmount: parseInt(e.target.value) || 0})}
+                        className="w-full pl-8 pr-3 py-2 border border-black/20 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
                       />
                     </div>
                     <p className="text-xs text-black/60 mt-1">
-                      80% of property value
+                      Default: 80% of property value
                     </p>
                   </div>
 
@@ -1276,10 +1575,11 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                     </label>
                     <div className="relative">
                       <input
-                        type="text"
-                        value="8.5"
-                        readOnly
-                        className="w-full pl-3 pr-8 py-2 border border-black/20 rounded-md text-black"
+                        type="number"
+                        step="0.1"
+                        value={emiData.interestRate}
+                        onChange={(e) => setEmiData({...emiData, interestRate: parseFloat(e.target.value) || 0})}
+                        className="w-full pl-3 pr-8 py-2 border border-black/20 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black">
                         %
@@ -1293,10 +1593,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                     </label>
                     <div className="relative">
                       <input
-                        type="text"
-                        value="20"
-                        readOnly
-                        className="w-full pl-3 pr-8 py-2 border border-black/20 rounded-md text-black"
+                        type="number"
+                        value={emiData.tenure}
+                        onChange={(e) => setEmiData({...emiData, tenure: parseInt(e.target.value) || 0})}
+                        className="w-full pl-3 pr-12 py-2 border border-black/20 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black">
                         years
@@ -1308,20 +1608,19 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                     <div className="flex justify-between items-center">
                       <span className="text-black/70">Monthly EMI</span>
                       <span className="text-lg font-semibold text-orange-600">
-                        ₹
-                        {Math.round(
-                          property.price * 0.8 * 0.00861,
-                        ).toLocaleString()}
+                        ₹{emiCalculation.emi.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-black/70">Total Interest</span>
                       <span className="text-black">
-                        ₹
-                        {Math.round(
-                          property.price * 0.8 * 0.00861 * 20 * 12 -
-                            property.price * 0.8,
-                        ).toLocaleString()}
+                        ₹{emiCalculation.totalInterest.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-black/70">Total Amount</span>
+                      <span className="text-black font-medium">
+                        ₹{emiCalculation.totalAmount.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -1345,11 +1644,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       {similarProperties.length > 0 && (
         <section
           id="similar"
-          className="py-16 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden"
+          className="py-16 bg-gradient-to-b from-black to-gray-900 relative overflow-hidden mb-16"
         >
-          <div className="absolute inset-0 text-white/5">
-            <CirclePattern />
-          </div>
 
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 max-w-3xl mx-auto">
@@ -1447,153 +1743,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       )}
 
       {/* Property News Section */}
-      <section id="news" className="py-16 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 text-black/5 opacity-30">
-          <CirclePattern />
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="inline-block bg-orange-500/10 text-orange-600 px-4 py-2 rounded-full mb-4"
-            >
-              <span className="font-medium">STAY UPDATED</span>
-            </motion.div>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-black mb-6"
-            >
-              Latest Real Estate News
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="text-lg text-black/70 max-w-3xl mx-auto"
-            >
-              Stay informed about the latest trends, policies, and developments
-              in the real estate market
-            </motion.p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Home Loan Interest Rates Reduced by Major Banks",
-                description:
-                  "Several major banks have announced a reduction in home loan interest rates, making property purchase more affordable for homebuyers.",
-                url: "#",
-                image: "/image1.jpg",
-                publishedAt: "2023-06-15T10:30:00Z",
-                source: { name: "Financial Express" },
-              },
-              {
-                title:
-                  "New Metro Line to Boost Property Values in Eastern Suburbs",
-                description:
-                  "The upcoming metro line connecting eastern suburbs to the city center is expected to significantly increase property values in the region.",
-                url: "#",
-                image: "/airpirt.jpeg",
-                publishedAt: "2023-06-10T14:15:00Z",
-                source: { name: "Urban News" },
-              },
-              {
-                title: "Sustainable Housing: The Future of Real Estate",
-                description:
-                  "Developers are increasingly focusing on eco-friendly and sustainable housing projects to meet the growing demand for green living spaces.",
-                url: "#",
-                image: "/canada.jpeg",
-                publishedAt: "2023-06-05T09:45:00Z",
-                source: { name: "Green Living" },
-              },
-              {
-                title:
-                  "Government Announces New Housing Scheme for First-time Buyers",
-                description:
-                  "The government has introduced a new scheme offering subsidies and tax benefits to first-time homebuyers to promote affordable housing.",
-                url: "#",
-                image: "/dwarka.jpeg",
-                publishedAt: "2023-06-01T11:20:00Z",
-                source: { name: "Policy Times" },
-              },
-            ].map((article, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-xl overflow-hidden border border-black/10 hover:border-orange-500/30 hover:shadow-lg transition-all duration-300 group"
-              >
-                <a href={article.url} className="block">
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={article.image}
-                      alt={article.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center mb-3">
-                      <span className="text-xs text-orange-500">
-                        {article.source.name}
-                      </span>
-                      <span className="mx-2 text-black/20">•</span>
-                      <span className="text-xs text-black/50">
-                        {new Date(article.publishedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-black mb-2 line-clamp-2 group-hover:text-orange-500 transition-colors duration-300">
-                      {article.title}
-                    </h3>
-                    <p className="text-black/70 text-sm line-clamp-3">
-                      {article.description}
-                    </p>
-                  </div>
-                  <div className="px-5 pb-5 pt-2">
-                    <div className="flex items-center text-orange-500 text-sm font-medium">
-                      Read Article
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 7l5 5-5 5M5 7l5 5-5 5"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </a>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <a
-              href="#"
-              className="inline-block px-6 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
-            >
-              View All News & Articles
-            </a>
-          </div>
-        </div>
-      </section>
+      <PropertyNewsWhiteSection />
 
       {/* FAQs Section */}
       <section className="py-16 bg-orange-50 relative overflow-hidden">
@@ -1681,6 +1831,80 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
       </section>
+
+      {/* Image Overlay */}
+      <AnimatePresence>
+        {showImageOverlay && selectedImageIndex !== null && property && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+            onClick={closeImageOverlay}
+          >
+            {/* Close Button */}
+            <button
+              onClick={closeImageOverlay}
+              className="absolute top-4 right-4 z-60 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+              aria-label="Close image overlay"
+            >
+              <FaTimes className="h-6 w-6" />
+            </button>
+
+            {/* Image Counter */}
+            <div className="absolute top-4 left-4 z-60 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              {selectedImageIndex + 1} / {property.images.length}
+            </div>
+
+            {/* Navigation Buttons */}
+            {property.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateImage('prev');
+                  }}
+                  className="absolute left-4 z-60 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                  aria-label="Previous image"
+                >
+                  <FaChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateImage('next');
+                  }}
+                  className="absolute right-16 z-60 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                  aria-label="Next image"
+                >
+                  <FaChevronRight className="h-6 w-6" />
+                </button>
+              </>
+            )}
+
+            {/* Main Image */}
+            <div
+              className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={property.images[selectedImageIndex]}
+                alt={`${property.title} - Image ${selectedImageIndex + 1}`}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Image Title */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-60 bg-black/50 text-white px-4 py-2 rounded-lg text-center">
+              <p className="font-medium">{property.title}</p>
+              <p className="text-sm opacity-80">Image {selectedImageIndex + 1} of {property.images.length}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </main>
