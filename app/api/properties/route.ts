@@ -101,9 +101,12 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       amenities: data.amenities || [],
       features: data.features || [],
       furnished: data.furnished || false,
-      ownerDetails:{
-        name:data.ownerDetails.name,
-        phone:data.ownerDetails.phone
+      balconyCount: data.balconyCount || 0,
+      priceNegotiable: data.priceNegotiable || false,
+      ownerDetails: {
+        name: data.ownerDetails.name,
+        phone: data.ownerDetails.phone,
+        email: data.ownerDetails.email || null
       }
     };
     

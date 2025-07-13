@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 type FavoriteItem = {
   _id: string;
-  type: "property" | "agent" | "builders";
+  type: "property" | "agent" | "builders" | "project";
 };
 
 type FavoritesContextType = {
@@ -15,6 +15,7 @@ type FavoritesContextType = {
     properties: string[];
     agents: string[];
     builders: string[];
+    projects: string[];
     localities: string[];
   };
   isLoading: boolean;
@@ -41,6 +42,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     properties: [],
     agents: [],
     builders: [],
+    projects: [],
     localities: []
   });
 
@@ -68,6 +70,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       const agentsRes = await FavoritesAPI.getAgents();
       // Fetch builders
       const buildersRes = await FavoritesAPI.getBuilders();
+      // Fetch projects
+      const projectsRes = await FavoritesAPI.getProjects();
       // Fetch localities
       const localitiesRes = await FavoritesAPI.getLocalities();
       
@@ -77,6 +81,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         agents: agentsRes.favorites.map((fav: any) => fav._id),
 
         builders: buildersRes.favorites.map((fav: any) => fav._id),
+        projects: projectsRes.favorites.map((fav: any) => fav._id),
         localities: localitiesRes.favorites
       });
     } catch (_error) {
@@ -149,6 +154,23 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
                 builders: [...prev.builders, id]
               }));
               toast.success("Builder added to favorites");
+            }
+            break;
+          case "project":
+            if (isFav) {
+              await FavoritesAPI.removeProject(id);
+              setFavorites(prev => ({
+                ...prev,
+                projects: prev.projects.filter(itemId => itemId !== id)
+              }));
+              toast.success("Project removed from favorites");
+            } else {
+              await FavoritesAPI.addProject(id);
+              setFavorites(prev => ({
+                ...prev,
+                projects: [...prev.projects, id]
+              }));
+              toast.success("Project added to favorites");
             }
             break;
         }

@@ -85,7 +85,8 @@ export async function GET(
       .skip(skip)
       .limit(limit)
       .populate("reviewer", "name image")
-      .populate("propertyTransaction", "title address");
+      .populate("propertyTransaction", "title address")
+      .lean(); // Use lean() for better performance
 
     // Get total count
     const total = await Review.countDocuments({
@@ -118,8 +119,14 @@ export async function GET(
       ),
     };
 
+    // Format reviews to use userName when available
+    const formattedReviews = reviews.map((review: any) => ({
+      ...review,
+      user: review.userName || review.reviewer?.name || 'Anonymous User'
+    }));
+
     return NextResponse.json({
-      reviews,
+      reviews: formattedReviews,
       stats,
       pagination: {
         total,
@@ -145,7 +152,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     const pathSegments = url.pathname.split("/").filter((segment) => segment);
     const agentId = pathSegments[2]; // "agents" at 0, "id" at 1, actual ID at 2
 
-    const { rating, comment, title, propertyTransaction } =
+    const { rating, comment, title, propertyTransaction, userName } =
       await request.json();
 
     if (!isValidObjectId(agentId)) {
@@ -204,6 +211,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       rating,
       title,
       comment,
+      userName, // Store the custom userName
       propertyTransaction,
       status: "pending", // Reviews need approval before being public
     });

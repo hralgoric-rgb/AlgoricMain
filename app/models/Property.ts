@@ -6,15 +6,28 @@ interface IProperty {
   description: string;
   price: number;
   propertyType: string; // apartment, house, villa, commercial, etc.
+  subType?: string; // Studio Apartment, Builder Floor, etc.
   listingType: string; // sale, rent
   status: string; // active, pending, sold
   bedrooms: number;
   bathrooms: number;
   area: number; // square feet/meters
+  carpetArea?: number; // carpet area in square feet/meters
+  balconyCount?: number;
   yearBuilt?: number;
   floors?: number;
   parking?: number;
   furnished: boolean;
+  furnishing?: string; // Unfurnished, Semi-Furnished, Fully Furnished
+  propertyAge?: string; // New Construction, Less than 1 year, etc.
+  possessionStatus?: string; // Ready to Move, Under Construction
+  availableFrom?: string; // date when property is available
+  facing?: string; // North, South, East, West, etc.
+  waterElectricity?: string; // 24x7 Available, Limited Hours, etc.
+  priceNegotiable?: boolean;
+  maintenanceCharges?: number;
+  securityDeposit?: number;
+  ownershipType?: string; // Freehold, Leasehold, etc.
   amenities: string[];
   features: string[];
   address: {
@@ -24,6 +37,9 @@ interface IProperty {
     state: string;
     zipCode: string;
     country: string;
+    projectName?: string;
+    floorNumber?: string;
+    landmark?: string;
     location: {
       type: string;
       coordinates: number[]; // [longitude, latitude]
@@ -41,6 +57,7 @@ interface IProperty {
   ownerDetails: {
     name: string;
     phone: string;
+    email?: string;
   };
   agent?: mongoose.Types.ObjectId;
   views: number;
@@ -71,6 +88,9 @@ const propertySchema = new Schema<IProperty>(
       required: true,
       enum: ['apartment', 'house', 'villa', 'land', 'commercial', 'office', 'other'],
     },
+    subType: {
+      type: String,
+    },
     listingType: {
       type: String,
       required: true,
@@ -97,6 +117,15 @@ const propertySchema = new Schema<IProperty>(
       required: true,
       min: 0,
     },
+    carpetArea: {
+      type: Number,
+      min: 0,
+    },
+    balconyCount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
     yearBuilt: {
       type: Number,
     },
@@ -111,6 +140,45 @@ const propertySchema = new Schema<IProperty>(
     furnished: {
       type: Boolean,
       default: false,
+    },
+    furnishing: {
+      type: String,
+      enum: ['Unfurnished', 'Semi-Furnished', 'Fully Furnished'],
+    },
+    propertyAge: {
+      type: String,
+      enum: ['New Construction', 'Less than 1 year', '1-5 years', '5-10 years', '10-15 years', '15+ years'],
+    },
+    possessionStatus: {
+      type: String,
+      enum: ['Ready to Move', 'Under Construction'],
+    },
+    availableFrom: {
+      type: String,
+    },
+    facing: {
+      type: String,
+      enum: ['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'],
+    },
+    waterElectricity: {
+      type: String,
+      enum: ['24x7 Available', 'Limited Hours', 'Frequent Cuts', 'No Issues'],
+    },
+    priceNegotiable: {
+      type: Boolean,
+      default: false,
+    },
+    maintenanceCharges: {
+      type: Number,
+      min: 0,
+    },
+    securityDeposit: {
+      type: Number,
+      min: 0,
+    },
+    ownershipType: {
+      type: String,
+      enum: ['Freehold', 'Leasehold', 'Co-operative Society', 'Power of Attorney'],
     },
     amenities: {
       type: [String],
@@ -145,6 +213,15 @@ const propertySchema = new Schema<IProperty>(
         type: String,
         required: true,
         default: 'India',
+      },
+      projectName: {
+        type: String,
+      },
+      floorNumber: {
+        type: String,
+      },
+      landmark: {
+        type: String,
       },
       location: {
         type: {
@@ -200,6 +277,9 @@ const propertySchema = new Schema<IProperty>(
       phone: {
         type: String,
         required: true,
+      },
+      email: {
+        type: String,
       },
     },
     agent: {
