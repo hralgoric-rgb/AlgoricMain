@@ -73,7 +73,7 @@ export default function LandlordDashboard() {
             <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent text-3xl">👋</span>
             Welcome, <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">{landlordName}</span>!
           </h1>
-          <p className="text-gray-300 mt-2">Here&apos;s a quick overview of your rental listings and activity today.</p>
+          <p className="text-gray-300 mt-2">Here's a quick overview of your rental listings and activity today.</p>
         </motion.div>
         {/* Stats Cards (2x2 grid) */}
         <motion.div

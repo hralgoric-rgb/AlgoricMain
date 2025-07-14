@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -20,7 +20,7 @@ interface RequestStatus {
 export default function VerificationRequestForm() {
   const { data: session } = useSession();
   const router = useRouter();
-  const { toast } = useToast();
+  // Remove the useToast hook call since we're using sonner now
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -165,11 +165,7 @@ export default function VerificationRequestForm() {
     _e.preventDefault();
 
     if (!token) {
-      toast({
-        title: "Authentication Error",
-        description: "Please log in again",
-        variant: "destructive",
-      });
+      toast.error("Authentication Error: Please log in again");
       router.push("/login");
       return;
     }
@@ -203,7 +199,7 @@ export default function VerificationRequestForm() {
               .map((l) => l.trim())
               .filter(Boolean),
             additionalInfo: agentForm.additionalInfo,
-            image: imageUrl,
+            agentImage: imageUrl,
           },
         }),
       });
@@ -211,11 +207,7 @@ export default function VerificationRequestForm() {
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Request submitted",
-          description:
-            "Your agent verification request has been submitted successfully",
-        });
+        toast.success("Request submitted: Your agent verification request has been submitted successfully");
         setRequestStatus((prev) => ({ ...prev, agent: "pending" }));
 
         // Reset form
@@ -230,23 +222,14 @@ export default function VerificationRequestForm() {
         });
         setAgentImagePreview(null);
       } else {
-        toast({
-          title: "Error",
-          description: data.message || data.error || "Failed to submit request",
-          variant: "destructive",
-        });
+        toast.error(`Error: ${data.message || data.error || "Failed to submit request"}`);
         setRequestStatus((prev) => ({ ...prev, agent: "error" }));
       }
     } catch (_error) {
 
-      toast({
-        title: "Error",
-        description:
-         _error instanceof Error
+      toast.error(`Error: ${_error instanceof Error
             ? _error.message
-            : "Failed to submit verification request",
-        variant: "destructive",
-      });
+            : "Failed to submit verification request"}`);
       setRequestStatus((prev) => ({ ...prev, agent: "error" }));
     }
   };
@@ -256,11 +239,7 @@ export default function VerificationRequestForm() {
     _e.preventDefault();
 
     if (!token) {
-      toast({
-        title: "Authentication Error",
-        description: "Please log in again",
-        variant: "destructive",
-      });
+      toast.error("Authentication Error: Please log in again");
       router.push("/login");
       return;
     }
@@ -292,7 +271,7 @@ export default function VerificationRequestForm() {
             headquarters: builderForm.headquarters,
             specialization: builderForm.specialization,
             additionalInfo: builderForm.additionalInfo,
-            image: imageUrl,
+            builderImage: imageUrl,
             logo: logoUrl,
           },
         }),
@@ -301,11 +280,7 @@ export default function VerificationRequestForm() {
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Request submitted",
-          description:
-            "Your builder verification request has been submitted successfully",
-        });
+        toast.success("Request submitted: Your builder verification request has been submitted successfully");
         setRequestStatus((prev) => ({ ...prev, builder: "pending" }));
 
         // Reset form
@@ -321,23 +296,14 @@ export default function VerificationRequestForm() {
         setBuilderImagePreview(null);
         setBuilderLogoPreview(null);
       } else {
-        toast({
-          title: "Error",
-          description: data.message || data.error || "Failed to submit request",
-          variant: "destructive",
-        });
+        toast.error(`Error: ${data.message || data.error || "Failed to submit request"}`);
         setRequestStatus((prev) => ({ ...prev, builder: "error" }));
       }
     } catch (_error) {
 
-      toast({
-        title: "Error",
-        description:
-          _error instanceof Error
+      toast.error(`Error: ${_error instanceof Error
             ? _error.message
-            : "Failed to submit verification request",
-        variant: "destructive",
-      });
+            : "Failed to submit verification request"}`);
       setRequestStatus((prev) => ({ ...prev, builder: "error" }));
     }
   };

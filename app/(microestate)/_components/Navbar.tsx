@@ -64,7 +64,7 @@ function Navbar() {
                         className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg px-6 py-2 shadow-md transition-all duration-200"
                         onClick={() => router.push("/microestate/auth")}
                             >
-                                let&apos;s talk
+                                let's talk
                             </Button>
                         </div>
             </div>
