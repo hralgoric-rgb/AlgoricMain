@@ -1,7 +1,8 @@
 import mongoose, { ConnectOptions } from "mongoose";
 
 declare global {
-  // This extends the global NodeJS namespace to include our mongoose cache
+  // This extends the global NodeJS interface to include our mongoose cache
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface Global {
       mongoose: {
@@ -25,30 +26,30 @@ if (!cached) {
 }
 
 async function dbConnect(): Promise<typeof mongoose> {
-  if (cached.conn) {
+  if (cached?.conn) {
     return cached.conn;
   }
 
-  if (!cached.promise) {
+  if (!cached?.promise) {
     const opts: ConnectOptions = {
       bufferCommands: true,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log("MongoDB connected successfully");
       return mongoose;
     });
   }
 
   try {
-    cached.conn = await cached.promise;
+    cached!.conn = await cached!.promise;
   } catch (e) {
-    cached.promise = null;
+    cached!.promise = null;
     console.error("MongoDB connection error:", e);
     throw e;
   }
 
-  return cached.conn;
+  return cached!.conn;
 }
 
 export default dbConnect;

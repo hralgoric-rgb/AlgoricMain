@@ -7,6 +7,7 @@ if (!process.env.MONGODB_URI) {
 const MONGODB_URI = process.env.MONGODB_URI;
 
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: { conn: any; promise: Promise<any> | null } | undefined;
 }
 
