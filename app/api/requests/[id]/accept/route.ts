@@ -58,8 +58,8 @@ export async function POST(
           languages: verificationRequest.requestDetails.languages,
         };
         // Add image to user profile if provided in verification request
-        if (verificationRequest.requestDetails.image) {
-          user.image = verificationRequest.requestDetails.image;
+        if (verificationRequest.requestDetails.agentImage) {
+          user.image = verificationRequest.requestDetails.agentImage;
         }
       } else {
         if (!user.agentInfo) {
@@ -73,7 +73,7 @@ export async function POST(
       if (verificationRequest.requestDetails) {
         const builderData = {
           title: verificationRequest.requestDetails.companyName || user.name,
-          image: verificationRequest.requestDetails.image || user.image || 'https://via.placeholder.com/300x200',
+          image: verificationRequest.requestDetails.builderImage || user.image || 'https://via.placeholder.com/300x200',
           logo: verificationRequest.requestDetails.logo || user.image || 'https://via.placeholder.com/100x100',
           projects: 0,
           description: verificationRequest.requestDetails.additionalInfo || `${user.name} is a verified builder on 100Gaj.`,

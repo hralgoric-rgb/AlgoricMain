@@ -203,7 +203,7 @@ export default function VerificationRequestForm() {
               .map((l) => l.trim())
               .filter(Boolean),
             additionalInfo: agentForm.additionalInfo,
-            image: imageUrl,
+            agentImage: imageUrl,
           },
         }),
       });
@@ -292,7 +292,7 @@ export default function VerificationRequestForm() {
             headquarters: builderForm.headquarters,
             specialization: builderForm.specialization,
             additionalInfo: builderForm.additionalInfo,
-            image: imageUrl,
+            builderImage: imageUrl,
             logo: logoUrl,
           },
         }),
