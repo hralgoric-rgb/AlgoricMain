@@ -1,28 +1,13 @@
 import type { Metadata, Viewport } from "next";
 
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./providers";
 import dynamic from 'next/dynamic';
-import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 
 // Dynamically import the PremiumPopup component with no SSR to avoid hydration issues
 const PremiumPopup = dynamic(() => import('@/components/ui/PremiumPopup'));
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-});
 
 const inter = Inter({
   variable: "--font-inter",
@@ -63,7 +48,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#FF6600" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
+        className={`${inter.variable} antialiased`}
       >
         <Toaster position="top-center" />
         <AuthProvider>

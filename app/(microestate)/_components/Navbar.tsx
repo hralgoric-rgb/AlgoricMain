@@ -59,14 +59,21 @@ function Navbar() {
                 </div>
 
                 {/* CTA Button */}
-                <div className="hidden md:block ml-8">
-                            <Button
+                <div className="flex items-center gap-2">
+                    <Button
                         className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg px-6 py-2 shadow-md transition-all duration-200"
                         onClick={() => router.push("/microestate/auth")}
-                            >
-                                let's talk
-                            </Button>
-                        </div>
+                    >
+                        Login
+                    </Button>
+                    <a
+                        href="/microestate/register"
+                        className="bg-black border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white font-bold rounded-lg px-6 py-2 shadow-md transition-all duration-200 ml-2"
+                        style={{ textDecoration: 'none' }}
+                    >
+                        Register
+                    </a>
+                </div>
             </div>
         </nav>
     );
