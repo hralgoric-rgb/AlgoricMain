@@ -57,8 +57,8 @@ export async function POST(
           languages: verificationRequest.requestDetails.languages,
         };
         // Add image to user profile if provided in verification request
-        if (verificationRequest.requestDetails.image) {
-          user.image = verificationRequest.requestDetails.image;
+        if (verificationRequest.requestDetails.agentImage) {
+          user.image = verificationRequest.requestDetails.agentImage;
         }
       } else {
         if (!user.agentInfo) {
@@ -74,45 +74,29 @@ export async function POST(
       user.role = 'builder';
       
       if (verificationRequest.requestDetails) {
-        // Update user's builderInfo with all the details
-        user.builderInfo = {
-          ...user.builderInfo,
-          verified: true,
-          companyName: verificationRequest.requestDetails.companyName,
-          licenseNumber: verificationRequest.requestDetails.licenseNumber,
-          established: verificationRequest.requestDetails.established ? new Date(verificationRequest.requestDetails.established) : undefined,
-          experience: verificationRequest.requestDetails.experience,
-          specializations: verificationRequest.requestDetails.specialization ? [verificationRequest.requestDetails.specialization] : [],
-          completedProjects: 0,
-          ongoingProjects: 0,
-          rating: 4.0,
-          reviewCount: 0
+        const builderData = {
+          title: verificationRequest.requestDetails.companyName || user.name,
+          image: verificationRequest.requestDetails.builderImage || user.image || 'https://via.placeholder.com/300x200',
+          logo: verificationRequest.requestDetails.logo || user.image || 'https://via.placeholder.com/100x100',
+          projects: 0,
+          description: verificationRequest.requestDetails.additionalInfo || `${user.name} is a verified builder on 100Gaj.`,
+          established: verificationRequest.requestDetails.established || 'N/A',
+          headquarters: verificationRequest.requestDetails.headquarters || 'N/A',
+          specialization: verificationRequest.requestDetails.specialization || 'General Construction',
+          rating: 0,
+          completed: 0,
+          ongoing: 0,
+          contact: {
+            email: user.email,
+            phone: user.phone,
+          }
         };
-        
-        // Add image and bio to user profile if provided in verification request
-        if (verificationRequest.requestDetails.image) {
-          user.image = verificationRequest.requestDetails.image;
-        }
-        
-        if (verificationRequest.requestDetails.additionalInfo) {
-          user.bio = verificationRequest.requestDetails.additionalInfo;
-        }
-      } else {
-        // Minimal builderInfo if no details provided
-        if (!user.builderInfo) {
-          user.builderInfo = { 
-            verified: true,
-            completedProjects: 0,
-            ongoingProjects: 0,
-            rating: 4.0,
-            reviewCount: 0
-          };
-        } else {
-          user.builderInfo.verified = true;
-        }
+        await Builder.findOneAndUpdate(
+          { title: builderData.title },
+          builderData,
+          { upsert: true, new: true }
+        );
       }
-      
-      await user.save();
     }
     
     return NextResponse.json(
