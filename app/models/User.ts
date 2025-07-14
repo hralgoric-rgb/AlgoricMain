@@ -12,7 +12,7 @@ interface IUser {
   resetPasswordToken?: string;
   resetPasswordTokenExpiry?: Date;
   phone?: string;
-  role: string; // user, agent, admin, builder
+  role: string; // user, agent, admin
   bio?: string;
   address?: {
     street?: string;
@@ -37,38 +37,20 @@ interface IUser {
     sales?: number; // count of completed sales/rentals
     assignedProperties: mongoose.Types.ObjectId[];
   };
-  
-  // Builder specific fields
-  isBuilder?: boolean;
-  builderInfo?: {
-    companyName?: string;
-    licenseNumber?: string;
-    reraId?: string;
-    established?: Date;
-    experience?: number; // years
-    specializations?: string[];
-    completedProjects?: number;
-    ongoingProjects?: number;
-    rating?: number;
-    reviewCount?: number;
-    verified?: boolean;
-    projects?: mongoose.Types.ObjectId[];
-  };
-  
   // Social media links
   social?: {
     facebook?: string;
     twitter?: string;
     linkedin?: string;
     instagram?: string;
-  };    // User favorites
-    favorites?: {
-      properties?: mongoose.Types.ObjectId[];
-      agents?: mongoose.Types.ObjectId[];
-      builders?: mongoose.Types.ObjectId[];
-      projects?: mongoose.Types.ObjectId[];
-      localities?: string[]; // IDs or names of localities
-    };
+  };
+  // User favorites
+  favorites?: {
+    properties?: mongoose.Types.ObjectId[];
+    agents?: mongoose.Types.ObjectId[];
+    builders?: mongoose.Types.ObjectId[];
+    localities?: string[]; // IDs or names of localities
+  };
   // User properties (listings)
   properties?: mongoose.Types.ObjectId[]; // references to properties owned/listed by user
   preferences?: {
@@ -124,7 +106,7 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["user", "agent", "admin", "builder"],
+      enum: ["user", "agent", "admin"],
       default: "user",
     },
     bio: {
@@ -180,46 +162,6 @@ const userSchema = new Schema<IUser>(
         },
       ],
     },
-    isBuilder: {
-      type: Boolean,
-      default: false,
-    },
-    builderInfo: {
-      companyName: String,
-      licenseNumber: String,
-      reraId: String,
-      established: Date,
-      experience: Number,
-      specializations: [String],
-      completedProjects: {
-        type: Number,
-        default: 0,
-      },
-      ongoingProjects: {
-        type: Number,
-        default: 0,
-      },
-      rating: {
-        type: Number,
-        min: 0,
-        max: 5,
-        default: 0,
-      },
-      reviewCount: {
-        type: Number,
-        default: 0,
-      },
-      verified: {
-        type: Boolean,
-        default: false,
-      },
-      projects: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Project",
-        },
-      ],
-    },
     social: {
       facebook: String,
       twitter: String,
@@ -244,12 +186,6 @@ const userSchema = new Schema<IUser>(
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Builder",
-        },
-      ],
-      projects: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Project",
         },
       ],
       localities: [String],

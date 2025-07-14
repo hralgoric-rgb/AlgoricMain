@@ -6,7 +6,6 @@ interface IReview {
   rating: number;
   title: string;
   comment: string;
-  userName?: string; // Custom name for the review
   propertyTransaction?: mongoose.Types.ObjectId;
   status: string; // pending, approved, rejected
   createdAt: Date;
@@ -40,10 +39,6 @@ const reviewSchema = new Schema<IReview>(
       type: String,
       required: true,
       maxlength: 1000,
-    },
-    userName: {
-      type: String,
-      maxlength: 100,
     },
     propertyTransaction: {
       type: mongoose.Schema.Types.ObjectId,

@@ -208,10 +208,6 @@ export default function VerificationAdmin() {
   const handleAccept = async (id: string) => {
     setLoadingId(id);
     try {
-      // Find the request to get its type for better feedback
-      const request = pendingRequests.find(req => req._id === id);
-      const requestType = request?.type || 'verification';
-      
       const response = await fetch(`/api/requests/${id}/accept`, {
         method: "POST",
         headers: {
@@ -223,13 +219,7 @@ export default function VerificationAdmin() {
       const data = await response.json();
 
       if (response.ok) {
-        if (requestType === 'builder') {
-          toast.success("Builder verification request accepted! User profile updated and builder account created.");
-        } else if (requestType === 'agent') {
-          toast.success("Agent verification request accepted! User profile updated with agent credentials.");
-        } else {
-          toast.success("Verification request accepted");
-        }
+        toast.success("Verification request accepted");
 
         // Refresh data
         fetchRequests();

@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const propertyType = searchParams.get('propertyType');
     const city = searchParams.get('city');
-    const locality = searchParams.get('locality');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -24,7 +23,6 @@ export async function GET(request: NextRequest) {
     
     if (propertyType) query.propertyType = propertyType;
     if (city) query['address.city'] = { $regex: city, $options: 'i' };
-    if (locality) query['address.locality'] = { $regex: locality, $options: 'i' };
     if (minPrice) query.price = { ...query.price, $gte: parseInt(minPrice) };
     if (maxPrice) query.price = { ...query.price, $lte: parseInt(maxPrice) };
     
@@ -69,7 +67,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     // Handle address required fields
     if (!data.address) {
       return NextResponse.json(
-        { error: 'Address must include street, city, locality, and state' },
+        { error: 'Address must include street, city, and state' },
         { status: 400 }
       );
     }
@@ -101,12 +99,9 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       amenities: data.amenities || [],
       features: data.features || [],
       furnished: data.furnished || false,
-      balconyCount: data.balconyCount || 0,
-      priceNegotiable: data.priceNegotiable || false,
-      ownerDetails: {
-        name: data.ownerDetails.name,
-        phone: data.ownerDetails.phone,
-        email: data.ownerDetails.email || null
+      ownerDetails:{
+        name:data.ownerDetails.name,
+        phone:data.ownerDetails.phone
       }
     };
     

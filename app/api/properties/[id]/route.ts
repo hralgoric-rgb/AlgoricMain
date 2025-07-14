@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDB } from '@/app/lib/mongoose';
+import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
 import { withAuth } from '@/app/lib/auth-middleware';
 import mongoose from 'mongoose';
@@ -22,7 +22,7 @@ export async function GET(
       );
     }
 
-    await connectToDB();
+    await connectDB();
 
     // Find property by ID and increment views
     const property = await Property.findByIdAndUpdate(
@@ -66,7 +66,7 @@ export const PUT = withAuth(async (
     }
 
     const data = await request.json();
-    await connectToDB();
+    await connectDB();
 
     // Find property and check ownership
     const property = await Property.findById(id);
@@ -141,7 +141,7 @@ export const DELETE = withAuth(async (
       );
     }
 
-    await connectToDB();
+    await connectDB();
 
     // Find property and check ownership
     const property = await Property.findById(id);
