@@ -3,7 +3,7 @@ import CommercialProperties from "@/app/models/CommercialProperty";
 import connectDB from "@/app/lib/mongodb";
 import { Types } from "mongoose";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await connectDB();
 
@@ -52,24 +52,6 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const body = await req.json();
-
-    // Basic validation
-    const requiredFields = [
-      "name",
-      "type",
-      "location",
-      "totalShares",
-      "availableShares",
-      "pricePerShare",
-    ];
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { success: false, message: `Missing required field: ${field}` },
-          { status: 400 }
-        );
-      }
-    }
 
     const newProperty = await CommercialProperties.create(body);
 
