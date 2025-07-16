@@ -295,10 +295,11 @@ utilityBillSchema.statics.getUtilityStats = function(propertyId: string) {
       
       // Calculate by type
       result.types.forEach((typeData: any) => {
-        if (!stats.byType[typeData.type]) {
-          stats.byType[typeData.type] = 0;
+        const utilityType = typeData.type as UtilityType;
+        if (!stats.byType[utilityType]) {
+          stats.byType[utilityType] = 0;
         }
-        stats.byType[typeData.type] += typeData.amount;
+        stats.byType[utilityType] += typeData.amount;
       });
     });
     

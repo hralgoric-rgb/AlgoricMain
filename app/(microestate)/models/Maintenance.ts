@@ -277,8 +277,8 @@ maintenanceRequestSchema.statics.findByLandlord = function(landlordId: string): 
 maintenanceRequestSchema.statics.findOverdueRequests = function(): Promise<IMaintenanceRequest[]> {
   return this.find({
     status: { $in: ["submitted", "acknowledged", "in_progress"] }
-  }).populate("propertyId tenantId landlordId").then(requests => {
-    return requests.filter(request => request.isOverdue());
+  }).populate("propertyId tenantId landlordId").then((requests: IMaintenanceRequest[]) => {
+    return requests.filter((request: IMaintenanceRequest) => request.isOverdue());
   });
 };
 
