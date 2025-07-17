@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Background from '../../_components/Background';
 import { FaHome, FaBuilding, FaWarehouse, FaHotel, FaCouch, FaWifi, FaCar, FaDog, FaCheckSquare, FaSortAmountDown, FaSortAmountUp, FaRupeeSign } from 'react-icons/fa';
+import { Building, Home, MapPin, CreditCard, Edit, Trash2, Eye } from 'lucide-react';
 
 const propertyTypes = [
   { label: 'Apartment', icon: <FaBuilding className="inline-block mr-1" /> },
@@ -171,150 +172,113 @@ const mockProperties = [
   },
 ];
 
-export default function PropertyListingPage() {
-  const [properties] = useState(mockProperties);
-  const [location, setLocation] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [minSize, setMinSize] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+export default function PropertiesPage() {
+  const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState('newest');
-
-  // Unique locations for dropdown
-  const locations = Array.from(new Set(properties.map(p => p.location)));
+  const [sort, setSort] = useState('newest');
 
   // Filtering logic
-  let filtered = properties.filter(p =>
-    (!location || p.location === location) &&
-    (!minPrice || p.price >= Number(minPrice)) &&
-    (!maxPrice || p.price <= Number(maxPrice)) &&
-    (!minSize || p.size >= Number(minSize)) &&
-    (selectedTypes.length === 0 || selectedTypes.includes(p.type.split(' ')[1] || p.type)) &&
-    (selectedAmenities.length === 0 || selectedAmenities.every(a => p.amenities?.includes(a)))
-  );
+  const filteredProperties = mockProperties
+    .filter((property) =>
+      property.title.toLowerCase().includes(search.toLowerCase()) ||
+      property.location.toLowerCase().includes(search.toLowerCase())
+    )
+    .filter((property) =>
+      !selectedType || property.type.toLowerCase().includes(selectedType.toLowerCase())
+    )
+    .filter((property) =>
+      selectedAmenities.length === 0 || selectedAmenities.every(a => property.amenities?.includes(a))
+    )
+    .sort((a, b) => {
+      if (sort === 'newest') return new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime();
+      if (sort === 'oldest') return new Date(a.postedDate).getTime() - new Date(b.postedDate).getTime();
+      if (sort === 'priceLow') return a.price - b.price;
+      if (sort === 'priceHigh') return b.price - a.price;
+      if (sort === 'size') return b.size - a.size;
+      return 0;
+    });
 
-  // Sorting logic
-  if (sortBy === 'priceHigh') filtered = [...filtered].sort((a, b) => b.price - a.price);
-  else if (sortBy === 'size') filtered = [...filtered].sort((a, b) => b.size - a.size);
-  else filtered = [...filtered].sort((a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime());
-
-  // Handlers
-  const handleTypeChange = (type: string) => {
-    setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
-  };
-  const handleAmenityChange = (amenity: string) => {
-    setSelectedAmenities(prev => prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]);
-  };
-
-  const clearAllFilters = () => {
-    setLocation('');
-    setMinPrice('');
-    setMaxPrice('');
-    setMinSize('');
-    setSelectedTypes([]);
-    setSelectedAmenities([]);
-    setSortBy('newest');
+  const handleAmenityToggle = (amenity: string) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]
+    );
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <Background />
+    <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
       <div className="container mx-auto py-10 mt-24 relative z-10">
-        <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">
-          Available Properties
-        </h1>
-        {/* Filter Bar */}
-        <div className="filter-card bg-[#1e1e2f] bg-opacity-90 rounded-2xl p-6 mb-8 shadow-2xl relative backdrop-blur-md border border-orange-500/10">
-          <button className="absolute top-4 right-4 text-orange-400 hover:underline text-sm font-semibold z-10" onClick={clearAllFilters}>
-            Clear All
-          </button>
-          {/* Row 1: Main Inputs */}
-          <div className="flex flex-wrap gap-6 mb-4">
-            {/* Location */}
-            <div className="flex flex-col gap-2 min-w-[150px] flex-1">
-              <label className="text-orange-400 font-semibold">Location</label>
-              <select
-                className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-              >
-                <option value="">All</option>
-                {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-              </select>
-            </div>
-            {/* Min Size */}
-            <div className="flex flex-col gap-2 min-w-[120px] flex-1">
-              <label className="text-orange-400 font-semibold">Min Size (sqft)</label>
-              <Input type="number" min={0} value={minSize} onChange={e => setMinSize(e.target.value)} placeholder="Min sqft" className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition" />
-            </div>
-            {/* Min Price */}
-            <div className="flex flex-col gap-2 min-w-[120px] flex-1">
-              <label className="text-orange-400 font-semibold">Min Price</label>
-              <Input type="number" min={0} value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="Min" className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition" />
-            </div>
-            {/* Max Price */}
-            <div className="flex flex-col gap-2 min-w-[120px] flex-1">
-              <label className="text-orange-400 font-semibold">Max Price</label>
-              <Input type="number" min={0} value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Max" className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition" />
-            </div>
-            {/* Sort By */}
-            <div className="flex flex-col gap-2 min-w-[170px] flex-1">
-              <label className="text-orange-400 font-semibold">Sort By</label>
-              <select
-                className="rounded-lg px-4 py-2 bg-[#23232a] border border-orange-400 text-white focus:ring-2 focus:ring-orange-500 transition"
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
-              >
-                {sortOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          {/* Row 2: Property Type */}
-          <div className="flex flex-col gap-2 mb-4 w-full">
-            <label className="text-orange-400 font-semibold">Property Type</label>
-            <div className="flex flex-wrap gap-2">
-              {propertyTypes.map(type => (
-                <button
-                  key={type.label}
-                  className={`pill flex items-center gap-1 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selectedTypes.includes(type.label) ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-[#2c2c3e] text-white border-[#444] hover:bg-orange-400/30'}`}
-                  onClick={() => handleTypeChange(type.label)}
-                  type="button"
+        <section className="mb-10 animate-fadeIn">
+          <h2 className="text-2xl font-bold heading-gradient mb-6 flex items-center gap-2"><Building className="w-6 h-6 text-orange-500" /> Properties</h2>
+          {/* Filter/Search/Sort Bar */}
+          <div className="bg-glass border border-orange-500/20 rounded-2xl shadow-lg p-6 mb-8 flex flex-col md:flex-row gap-4 items-center">
+            <Input
+              type="text"
+              placeholder="Search by title or location..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full md:w-1/4 bg-[#181c24] text-white border-orange-500/20 focus:border-orange-500"
+            />
+            <div className="flex gap-2 flex-wrap">
+              {propertyTypes.map(pt => (
+                <Button
+                  key={pt.label}
+                  size="sm"
+                  variant={selectedType === pt.label ? 'default' : 'outline'}
+                  className={`flex items-center gap-1 ${selectedType === pt.label ? 'bg-orange-500 text-white' : 'text-orange-400 border-orange-500/30'}`}
+                  onClick={() => setSelectedType(selectedType === pt.label ? '' : pt.label)}
                 >
-                  {type.icon} {type.label}
-                </button>
+                  {pt.icon}{pt.label}
+                </Button>
               ))}
             </div>
-          </div>
-          {/* Row 3: Amenities */}
-          <div className="flex flex-col gap-2 w-full">
-            <label className="text-orange-400 font-semibold">Amenities</label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2 flex-wrap">
               {amenitiesList.map(am => (
-                <button
+                <Button
                   key={am.label}
-                  className={`pill flex items-center gap-1 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500 ${selectedAmenities.includes(am.label) ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-[#2c2c3e] text-white border-[#444] hover:bg-orange-400/30'}`}
-                  onClick={() => handleAmenityChange(am.label)}
-                  type="button"
+                  size="sm"
+                  variant={selectedAmenities.includes(am.label) ? 'default' : 'outline'}
+                  className={`flex items-center gap-1 ${selectedAmenities.includes(am.label) ? 'bg-orange-500 text-white' : 'text-orange-400 border-orange-500/30'}`}
+                  onClick={() => handleAmenityToggle(am.label)}
                 >
-                  {am.icon} {am.label}
-                </button>
+                  {am.icon}{am.label}
+                </Button>
               ))}
             </div>
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value)}
+              className="bg-[#181c24] text-orange-400 border border-orange-500/30 rounded px-3 py-2 focus:outline-none focus:border-orange-500"
+            >
+              {sortOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-orange-400 hover:text-white"
+              onClick={() => {
+                setSearch('');
+                setSelectedType('');
+                setSelectedAmenities([]);
+                setSort('newest');
+              }}
+            >
+              Reset
+            </Button>
           </div>
-        </div>
-        {/* Property Listings Grid */}
-        <div className="mb-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filtered.map(property => (
-              <PropertyCard key={property._id} property={property} />
-            ))}
+          {/* Properties Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {filteredProperties.length === 0 ? (
+              <div className="col-span-full text-center text-gray-400">No properties found.</div>
+            ) : (
+              filteredProperties.map((property) => (
+                <PropertyCard key={property._id} property={property} />
+              ))
+            )}
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

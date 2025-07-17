@@ -1,6 +1,4 @@
-import { NextConfig } from "next";
-
-const config: NextConfig = {
+const nextConfig = {
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
@@ -202,4 +200,4 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+module.exports = nextConfig; 
