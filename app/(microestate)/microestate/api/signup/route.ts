@@ -11,12 +11,12 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
-    const { email, password, name, role } = await request.json();
+    const { email, password, firstName , role , lastName  , phone  } = await request.json();
 
-    if (!email || !password || !name.trim()) {
+    if (!email || !password || !firstName.trim() || !lastName.trim() || !phone) {
       return NextResponse.json(
         {
-          error: "Name, email, and password are required",
+          error: "Name, email, and password , First name ,  lastname , phone no are required ",
         },
         { status: 400 }
       );
@@ -50,7 +50,9 @@ export async function POST(request: NextRequest) {
     verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
 
     const newUser = new User({
-      name,
+      firstName,
+      lastName,
+      phone,
       email,
       password: hashedPassword,
       role,
@@ -77,7 +79,6 @@ export async function POST(request: NextRequest) {
         message:
           "User registered successfully. Please check your email for verification code.",
         userId: newUser._id,
-        newUser
       },
       { status: 201 }
     );
