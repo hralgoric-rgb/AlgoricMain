@@ -18,6 +18,7 @@ export interface IUser extends Document {
   };
   role: "landlord" | "tenant";
   profileImage?: string;
+  qr?: string;
   createdAt: Date;
   updatedAt: Date;
   
@@ -103,6 +104,9 @@ const userSchema = new Schema<IUser>(
       required: [true, "Role is required"],
     },
     profileImage: {
+      type: String,
+    },
+    qr: {
       type: String,
     },
   },

@@ -12,10 +12,6 @@ export interface IAddress {
   state: string;
   zipCode: string;
   country: string;
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
 }
 
 // Rent details interface
@@ -70,13 +66,11 @@ export interface IProperty extends Document {
   amenities: string[];
   features: IPropertyFeatures;
   images: string[];
-  virtualTourUrl?: string;
   status: PropertyStatus;
   leaseTerms: ILeaseTerms;
   utilities: IUtilities;
   availableFrom?: Date;
-  lastUpdated: Date;
-  viewCount: number;
+  lastUpdated: Date
   favoriteCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -168,20 +162,8 @@ const propertySchema = new Schema<IProperty>(
         type: String,
         required: [true, 'Country is required'],
         trim: true,
-        default: 'USA',
-      },
-      coordinates: {
-        latitude: {
-          type: Number,
-          min: [-90, 'Latitude must be between -90 and 90'],
-          max: [90, 'Latitude must be between -90 and 90'],
-        },
-        longitude: {
-          type: Number,
-          min: [-180, 'Longitude must be between -180 and 180'],
-          max: [180, 'Longitude must be between -180 and 180'],
-        },
-      },
+        default: 'India',
+      }
     },
     propertyType: {
       type: String,
@@ -264,15 +246,6 @@ const propertySchema = new Schema<IProperty>(
         message: 'All images must be valid URLs',
       },
     },
-    virtualTourUrl: {
-      type: String,
-      validate: {
-        validator: function(url: string) {
-          return !url || /^https?:\/\/.+/.test(url);
-        },
-        message: 'Virtual tour must be a valid URL',
-      },
-    },
     status: {
       type: String,
       enum: {
@@ -328,14 +301,6 @@ const propertySchema = new Schema<IProperty>(
       type: Date,
       default: Date.now,
     },
-    viewCount: {
-      type: Number,
-      default: 0,
-    },
-    favoriteCount: {
-      type: Number,
-      default: 0,
-    },
   },
   {
     timestamps: true,
@@ -360,20 +325,7 @@ propertySchema.methods.calculateMonthlyTotal = function(this: IProperty): number
   return total;
 };
 
-propertySchema.methods.incrementViewCount = function(this: IProperty): void {
-  this.viewCount += 1;
-  this.lastUpdated = new Date();
-};
 
-propertySchema.methods.toggleAvailability = function(this: IProperty): void {
-  this.status = this.status === 'available' ? 'rented' : 'available';
-  this.lastUpdated = new Date();
-};
-
-propertySchema.methods.getFullAddress = function(this: IProperty): string {
-  const { street, city, state, zipCode, country } = this.address;
-  return `${street}, ${city}, ${state} ${zipCode}, ${country}`;
-};
 
 propertySchema.methods.generateListingUrl = function(this: IProperty): string {
   const slug = this.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -385,168 +337,8 @@ propertySchema.methods.isRecentlyUpdated = function(this: IProperty): boolean {
   return this.lastUpdated > oneDayAgo;
 };
 
-propertySchema.methods.getPropertyAge = function(this: IProperty): number {
-  const createdDate = new Date(this.createdAt);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - createdDate.getTime());
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-};
-
-// Static Methods
-propertySchema.statics.findAvailable = function(): Promise<IProperty[]> {
-  return this.find({ status: 'available' }).populate('landlordId').sort({ lastUpdated: -1 });
-};
-
-propertySchema.statics.findByLandlord = function(landlordId: string): Promise<IProperty[]> {
-  return this.find({ landlordId }).sort({ createdAt: -1 });
-};
-
-propertySchema.statics.findByLocation = function(city: string, state?: string): Promise<IProperty[]> {
-  const query: any = { 'address.city': new RegExp(city, 'i') };
-  if (state) {
-    query['address.state'] = new RegExp(state, 'i');
-  }
-  return this.find(query).populate('landlordId').sort({ lastUpdated: -1 });
-};
-
-propertySchema.statics.findByPriceRange = function(minPrice: number, maxPrice: number): Promise<IProperty[]> {
-  return this.find({
-    'rent.amount': { $gte: minPrice, $lte: maxPrice }
-  }).populate('landlordId').sort({ 'rent.amount': 1 });
-};
-
-propertySchema.statics.findByPropertyType = function(propertyType: PropertyType): Promise<IProperty[]> {
-  return this.find({ propertyType }).populate('landlordId').sort({ lastUpdated: -1 });
-};
-
-propertySchema.statics.searchProperties = function(query: {
-  city?: string;
-  propertyType?: PropertyType;
-  minPrice?: number;
-  maxPrice?: number;
-  bedrooms?: number;
-  bathrooms?: number;
-  amenities?: string[];
-  features?: string[];
-}): Promise<IProperty[]> {
-  const searchQuery: any = { status: 'available' };
-  
-  if (query.city) {
-    searchQuery['address.city'] = new RegExp(query.city, 'i');
-  }
-  
-  if (query.propertyType) {
-    searchQuery.propertyType = query.propertyType;
-  }
-  
-  if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-    searchQuery['rent.amount'] = {};
-    if (query.minPrice !== undefined) searchQuery['rent.amount'].$gte = query.minPrice;
-    if (query.maxPrice !== undefined) searchQuery['rent.amount'].$lte = query.maxPrice;
-  }
-  
-  if (query.bedrooms !== undefined) {
-    searchQuery.bedrooms = { $gte: query.bedrooms };
-  }
-  
-  if (query.bathrooms !== undefined) {
-    searchQuery.bathrooms = { $gte: query.bathrooms };
-  }
-  
-  if (query.amenities && query.amenities.length > 0) {
-    searchQuery.amenities = { $in: query.amenities };
-  }
-  
-  if (query.features && query.features.length > 0) {
-    query.features.forEach(feature => {
-      searchQuery[`features.${feature}`] = true;
-    });
-  }
-  
-  return this.find(searchQuery).populate('landlordId').sort({ lastUpdated: -1 });
-};
-
-propertySchema.statics.getPropertyStats = function(landlordId?: string) {
-  const matchQuery = landlordId ? { landlordId: new mongoose.Types.ObjectId(landlordId) } : {};
-  
-  return this.aggregate([
-    { $match: matchQuery },
-    {
-      $group: {
-        _id: null,
-        totalProperties: { $sum: 1 },
-        availableProperties: {
-          $sum: { $cond: [{ $eq: ['$status', 'available'] }, 1, 0] }
-        },
-        rentedProperties: {
-          $sum: { $cond: [{ $eq: ['$status', 'rented'] }, 1, 0] }
-        },
-        totalRevenue: {
-          $sum: { $cond: [{ $eq: ['$status', 'rented'] }, '$rent.amount', 0] }
-        },
-        rentAmounts: { $push: '$rent.amount' },
-        propertyTypes: { $push: '$propertyType' },
-        locations: { $push: { city: '$address.city', state: '$address.state' } }
-      }
-    }
-  ]).then(results => {
-    const result = results[0] || {
-      totalProperties: 0,
-      availableProperties: 0,
-      rentedProperties: 0,
-      totalRevenue: 0,
-      rentAmounts: [],
-      propertyTypes: [],
-      locations: []
-    };
-    
-    const stats = {
-      totalProperties: result.totalProperties,
-      availableProperties: result.availableProperties,
-      rentedProperties: result.rentedProperties,
-      averageRent: result.rentAmounts.length > 0 
-        ? result.rentAmounts.reduce((a: number, b: number) => a + b, 0) / result.rentAmounts.length 
-        : 0,
-      totalRevenue: result.totalRevenue,
-      byType: {} as Record<PropertyType, number>,
-      byLocation: {} as Record<string, number>
-    };
-    
-    // Count by property type
-    result.propertyTypes.forEach((type: PropertyType) => {
-      stats.byType[type] = (stats.byType[type] || 0) + 1;
-    });
-    
-    // Count by location
-    result.locations.forEach((location: any) => {
-      const key = `${location.city}, ${location.state}`;
-      stats.byLocation[key] = (stats.byLocation[key] || 0) + 1;
-    });
-    
-    return stats;
-  });
-};
-
-// Pre-save middleware
-propertySchema.pre<IProperty>('save', function(next) {
-  this.lastUpdated = new Date();
-  
-  // Validate lease terms
-  if (this.leaseTerms.maximumTerm < this.leaseTerms.minimumTerm) {
-    this.leaseTerms.maximumTerm = this.leaseTerms.minimumTerm;
-  }
-  
-  next();
-});
-
 // Indexes for performance
 propertySchema.index({ landlordId: 1, status: 1 });
-propertySchema.index({ 'address.city': 1, 'address.state': 1 });
-propertySchema.index({ propertyType: 1, status: 1 });
-propertySchema.index({ 'rent.amount': 1, status: 1 });
-propertySchema.index({ bedrooms: 1, bathrooms: 1, status: 1 });
-propertySchema.index({ lastUpdated: -1 });
-propertySchema.index({ availableFrom: 1, status: 1 });
 
 // Create the model
 const Property: IPropertyModel = mongoose.models.Property as IPropertyModel || 
