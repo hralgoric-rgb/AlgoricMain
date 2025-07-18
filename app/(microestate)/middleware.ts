@@ -18,7 +18,7 @@ interface AuthenticatedRequest extends Request {
   user: IUser;
 }
 
-interface AuthMiddlewareResponse extends Response {
+interface AuthMiddlewareResponse {
   status(code: number): AuthMiddlewareResponse;
   json(data: any): AuthMiddlewareResponse;
 }
