@@ -23,6 +23,7 @@ export async function GET() {
         image: 1,
         description: 1,
         rentalIncome: 1,
+        totalArea: 1,
         occupancyRate: 1,
         totalValue: 1,
         features: 1,
