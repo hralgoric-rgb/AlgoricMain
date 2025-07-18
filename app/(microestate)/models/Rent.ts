@@ -211,7 +211,7 @@ rentPaymentSchema.pre<IRentPayment>("save", function(next) {
   
   // Auto-update status to overdue if past due date and not paid
   if (this.dueDate < now && this.status === "pending") {
-    this.status = "overdue";
+    this.status = "overdue";  
   }
   
   // Set paid date if marking as paid
@@ -224,7 +224,7 @@ rentPaymentSchema.pre<IRentPayment>("save", function(next) {
 
 // Indexes for performance
 rentPaymentSchema.index({ leaseId: 1, dueDate: 1 });
-rentPaymentSchema.index({ tenantId: 1, status: 1 });
+rentPaymentSchema.index({ tenantId: 1, status: 1 });  
 rentPaymentSchema.index({ landlordId: 1, status: 1 });
 rentPaymentSchema.index({ dueDate: 1, status: 1 });
 rentPaymentSchema.index({ status: 1, dueDate: 1 });
