@@ -1,7 +1,35 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, TrendingUp, Shield, Star, Users, Calendar, DollarSign, Target, Zap, Building2, Eye, Share2, Heart, AlertCircle, CheckCircle, Info, Plus, Minus, ShoppingCart, CreditCard, Briefcase, Warehouse, Store, Server, UserPlus, Coffee } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  TrendingUp,
+  Shield,
+  Star,
+  Users,
+  Calendar,
+  DollarSign,
+  Target,
+  Zap,
+  Building2,
+  Eye,
+  Share2,
+  Heart,
+  AlertCircle,
+  CheckCircle,
+  Info,
+  Plus,
+  Minus,
+  ShoppingCart,
+  CreditCard,
+  Briefcase,
+  Warehouse,
+  Store,
+  Server,
+  UserPlus,
+  Coffee,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -15,102 +43,45 @@ interface PropertyDetailPageProps {
   }>;
 }
 
-export default function PropertyDetailPage({ params }: PropertyDetailPageProps) {
+export default function PropertyDetailPage({
+  params,
+}: PropertyDetailPageProps) {
   const router = useRouter();
   const [property, setProperty] = useState<CommercialProperty | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedShares, setSelectedShares] = useState(1);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [propertyId, setPropertyId] = useState<string>('');
+  const [propertyId, setPropertyId] = useState<string>("");
 
-  // Resolve params
+  // Fetch property data based on ID
   useEffect(() => {
-    async function resolveParams() {
-      const resolvedParams = await params;
-      setPropertyId(resolvedParams.id);
-    }
-    resolveParams();
+    const fetchProperty = async () => {
+      try {
+        const resolvedParams = await params;
+        const id = resolvedParams.id;
+        setPropertyId(id);
+        setIsLoading(true);
+
+        const response = await fetch(`/api/commercial/${id}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setProperty(data.data);
+        } else {
+          console.error("Error fetching property:", data.message);
+          setProperty(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch property details:", error);
+        setProperty(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProperty();
   }, [params]);
-
-  // Mock data - convert to CommercialProperty format
-  const createMockProperty = (id: string): CommercialProperty => ({
-    _id: id,
-    title: "Cyber Hub Office Complex",
-    description: "Premium Grade A office space in Cyber Hub with multinational tenants",
-    location: "Gurgaon, Haryana",
-    address: {
-      street: "DLF Cyber City, Phase 2",
-      city: "Gurgaon",
-      state: "Haryana",
-      zipCode: "122002",
-      coordinates: [77.0855, 28.4949],
-    },
-    images: ["/images/office-complex.jpg", "/canada.jpeg", "/airpirt.jpeg"],
-    propertyType: "Office",
-    totalArea: 250000,
-    builtYear: 2018,
-    developer: {
-      name: "DLF Limited",
-      rating: 4.8,
-      projectsCompleted: 250,
-    },
-    totalPropertyValue: 25000000,
-    totalShares: 10000,
-    availableShares: 3500,
-    pricePerShare: 2500,
-    minInvestment: 2500,
-    currentROI: 8.5,
-    rentalYield: 8.5,
-    appreciationRate: 15.2,
-    currentOccupancy: 95,
-    monthlyRental: 850000,
-    spvId: `SPV_${id}`,
-    spvName: "Cyber Hub Office SPV",
-    status: "active",
-    featured: true,
-    amenities: [
-      "Central AC",
-      "High Speed Elevators", 
-      "Food Court",
-      "Gymnasium",
-      "Conference Rooms",
-      "Parking"
-    ],
-    nearbyLandmarks: [
-      "Cyber Hub",
-      "DLF Mall", 
-      "MG Road Metro",
-      "Cyber City Metro"
-    ],
-    documents: [
-      {
-        name: "Property Title Deed",
-        url: "/documents/title-deed.pdf",
-        type: "legal",
-      },
-      {
-        name: "Financial Statements", 
-        url: "/documents/financial.pdf",
-        type: "financial",
-      },
-    ],
-    createdAt: "2024-01-15T00:00:00Z",
-    updatedAt: "2024-03-01T00:00:00Z",
-  });
-
-  useEffect(() => {
-    // Simulate API call
-    if (!propertyId) return;
-    
-    const timer = setTimeout(() => {
-      const mockProperty = createMockProperty(propertyId);
-      setProperty(mockProperty);
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [propertyId]);
 
   const handleBuyShares = () => {
     setShowBuyModal(true);
@@ -129,17 +100,38 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
 
   const getExpectedMonthlyIncome = () => {
     if (!property) return 0;
-    return Math.round((getTotalInvestment() * property.currentROI) / 100 / 12);
+    return Math.round(
+      (getTotalInvestment() * property.currentYield) / 100 / 12
+    );
+  };
+
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "Low":
+        return "text-green-400 bg-green-500/10";
+      case "Medium":
+        return "text-yellow-400 bg-yellow-500/10";
+      case "High":
+        return "text-red-400 bg-red-500/10";
+      default:
+        return "text-gray-400 bg-gray-500/10";
+    }
   };
 
   const getPropertyTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
-      case "office": return Briefcase;
-      case "warehouse": return Warehouse;
-      case "retail": return Store;
-      case "mixed use": return Server;
-      case "industrial": return Coffee;
-      default: return Building2;
+      case "office":
+        return Briefcase;
+      case "warehouse":
+        return Warehouse;
+      case "retail":
+        return Store;
+      case "mixed use":
+        return Server;
+      case "industrial":
+        return Coffee;
+      default:
+        return Building2;
     }
   };
 
@@ -158,7 +150,9 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Property not found</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">
+            Property not found
+          </h1>
           <Link href="/equity">
             <Button className="bg-orange-500 hover:bg-orange-600 text-white">
               Back to Properties
@@ -186,7 +180,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            
+
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <PropertyIcon className="w-6 h-6 text-purple-500" />
@@ -197,7 +191,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               <div className="flex items-center gap-4 text-gray-400">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{property.location}</span>
+                  <span>{property.address.city}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-4 h-4" />
@@ -215,10 +209,14 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFavorite(!isFavorite)}
-                className={`border-gray-600 ${isFavorite ? 'text-red-400 border-red-400' : 'text-gray-300'} hover:bg-gray-800`}
+                className={`border-gray-600 ${
+                  isFavorite ? "text-red-400 border-red-400" : "text-gray-300"
+                } hover:bg-gray-800`}
               >
-                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
-                {isFavorite ? 'Saved' : 'Save'}
+                <Heart
+                  className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`}
+                />
+                {isFavorite ? "Saved" : "Save"}
               </Button>
               <Button
                 variant="outline"
@@ -252,7 +250,8 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 <div className="absolute top-4 right-4">
                   <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
                     <span className="text-white text-sm font-semibold">
-                      {property.availableShares.toLocaleString()} shares available
+                      {property.availableShares.toLocaleString()} shares
+                      available
                     </span>
                   </div>
                 </div>
@@ -266,38 +265,48 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               transition={{ delay: 0.1 }}
               className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800"
             >
-              <h2 className="text-2xl font-bold text-white mb-4">Property Overview</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Property Overview
+              </h2>
               <p className="text-gray-300 text-lg leading-relaxed mb-6">
                 {property.description}
               </p>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-white font-semibold">{property.totalArea.toLocaleString()} sq ft</div>
+                  <div className="text-white font-semibold">
+                    {property.totalArea.toLocaleString()} sq ft
+                  </div>
                   <div className="text-gray-400 text-sm">Total Area</div>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-white font-semibold">{property.builtYear}</div>
+                  <div className="text-white font-semibold">
+                    {property.builtYear}
+                  </div>
                   <div className="text-gray-400 text-sm">Year Built</div>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Users className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-white font-semibold">{property.currentOccupancy}%</div>
+                  <div className="text-white font-semibold">
+                    {property.currentOccupancy}%
+                  </div>
                   <div className="text-gray-400 text-sm">Occupancy</div>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Target className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-white font-semibold">{property.currentROI}%</div>
+                  <div className="text-white font-semibold">
+                    {property.currentROI}%
+                  </div>
                   <div className="text-gray-400 text-sm">Annual ROI</div>
                 </div>
               </div>
@@ -312,11 +321,21 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
             >
               <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" style={{ color: '#B6FF3F' }} />
+                  <CheckCircle
+                    className="w-5 h-5"
+                    style={{ color: "#B6FF3F" }}
+                  />
                   Key Features
                 </h3>
                 <div className="space-y-3">
-                  {["Prime Location", "High Occupancy", "A+ Tenants", "Modern Facilities", "24/7 Security", "Backup Power"].map((feature, index) => (
+                  {[
+                    "Prime Location",
+                    "High Occupancy",
+                    "A+ Tenants",
+                    "Modern Facilities",
+                    "24/7 Security",
+                    "Backup Power",
+                  ].map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-[#B6FF3F]" />
                       <span className="text-gray-300">{feature}</span>
@@ -350,11 +369,18 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
             >
               <h3 className="text-lg font-bold text-white mb-4">Key Tenants</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {["Microsoft India", "Accenture", "Deloitte", "EY", "KPMG"].map((tenant, index) => (
-                  <div key={index} className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200 cursor-pointer hover:bg-gray-800">
-                    <div className="font-semibold text-lg text-white">{tenant}</div>
-                  </div>
-                ))}
+                {["Microsoft India", "Accenture", "Deloitte", "EY", "KPMG"].map(
+                  (tenant, index) => (
+                    <div
+                      key={index}
+                      className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200 cursor-pointer hover:bg-gray-800"
+                    >
+                      <div className="font-semibold text-lg text-white">
+                        {tenant}
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
             </motion.div>
 
@@ -365,10 +391,17 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               transition={{ delay: 0.4 }}
               className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
             >
-              <h3 className="text-lg font-bold text-white mb-4">Financial Analysis</h3>
+              <h3 className="text-lg font-bold text-white mb-4">
+                Financial Analysis
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: '#B6FF3F' }}>₹12L</div>
+                  <div
+                    className="text-2xl font-bold"
+                    style={{ color: "#B6FF3F" }}
+                  >
+                    ₹12L
+                  </div>
                   <div className="text-gray-400">Gross Income</div>
                 </div>
                 <div className="text-center">
@@ -380,7 +413,12 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                   <div className="text-gray-400">Net Income</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold" style={{ color: '#a78bfa' }}>3.4%</div>
+                  <div
+                    className="text-2xl font-bold"
+                    style={{ color: "#a78bfa" }}
+                  >
+                    3.4%
+                  </div>
                   <div className="text-gray-400">Cap Rate</div>
                 </div>
               </div>
@@ -397,30 +435,44 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 transition={{ delay: 0.6 }}
                 className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-gray-800"
               >
-                <h2 className="text-xl font-bold text-white mb-6">Invest in This Property</h2>
-                
+                <h2 className="text-xl font-bold text-white mb-6">
+                  Invest in This Property
+                </h2>
+
                 {/* Share Information */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-400">Price per Share</span>
-                    <span className="text-2xl font-bold text-white">₹{property.pricePerShare.toLocaleString()}</span>
+                    <span className="text-2xl font-bold text-white">
+                      ₹{property.pricePerShare.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-gray-400">Available Shares</span>
                     <span className="text-white font-semibold">
-                      {property.availableShares.toLocaleString()} / {property.totalShares.toLocaleString()}
+                      {property.availableShares.toLocaleString()} /{" "}
+                      {property.totalShares.toLocaleString()}
                     </span>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
-                    <div 
+                    <div
                       className="h-2 rounded-full bg-[#B6FF3F]"
-                      style={{ width: `${(property.availableShares / property.totalShares) * 100}%` }}
+                      style={{
+                        width: `${
+                          (property.availableShares / property.totalShares) *
+                          100
+                        }%`,
+                      }}
                     />
                   </div>
                   <div className="text-xs text-gray-400">
-                    {((property.availableShares / property.totalShares) * 100).toFixed(1)}% available
+                    {(
+                      (property.availableShares / property.totalShares) *
+                      100
+                    ).toFixed(1)}
+                    % available
                   </div>
                 </div>
 
@@ -432,31 +484,51 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setSelectedShares(Math.max(1, selectedShares - 1))}
+                        onClick={() =>
+                          setSelectedShares(Math.max(1, selectedShares - 1))
+                        }
                         className="border-gray-600 text-gray-300 hover:bg-gray-800"
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
-                      <span className="text-lg font-bold text-white px-4">{selectedShares}</span>
+                      <span className="text-lg font-bold text-white px-4">
+                        {selectedShares}
+                      </span>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setSelectedShares(Math.min(property.availableShares, selectedShares + 1))}
+                        onClick={() =>
+                          setSelectedShares(
+                            Math.min(
+                              property.availableShares,
+                              selectedShares + 1
+                            )
+                          )
+                        }
                         className="border-gray-600 text-gray-300 hover:bg-gray-800"
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="bg-black/40 rounded-lg p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">Total Investment</span>
-                      <span className="text-xl font-bold text-white">₹{getTotalInvestment().toLocaleString()}</span>
+                      <span className="text-xl font-bold text-white">
+                        ₹{getTotalInvestment().toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Expected Monthly Income</span>
-                      <span className="text-lg font-semibold" style={{ color: '#B6FF3F' }}>₹{getExpectedMonthlyIncome().toLocaleString()}</span>
+                      <span className="text-gray-400">
+                        Expected Monthly Income
+                      </span>
+                      <span
+                        className="text-lg font-semibold"
+                        style={{ color: "#B6FF3F" }}
+                      >
+                        ₹{getExpectedMonthlyIncome().toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -478,11 +550,18 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 transition={{ delay: 0.7 }}
                 className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
               >
-                <h3 className="text-lg font-bold text-white mb-4">Market Analysis</h3>
+                <h3 className="text-lg font-bold text-white mb-4">
+                  Market Analysis
+                </h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Market Growth</span>
-                    <span className="font-semibold" style={{ color: '#B6FF3F' }}>+{property.appreciationRate}%</span>
+                    <span
+                      className="font-semibold"
+                      style={{ color: "#B6FF3F" }}
+                    >
+                      +{property.appreciationRate}%
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Comparable Properties</span>
@@ -490,7 +569,10 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                   </div>
                   <div>
                     <div className="text-gray-400 mb-2">Market Conditions</div>
-                    <div className="text-sm font-semibold" style={{ color: '#B6FF3F' }}>
+                    <div
+                      className="text-sm font-semibold"
+                      style={{ color: "#B6FF3F" }}
+                    >
                       High Demand, Limited Supply
                     </div>
                   </div>
@@ -504,18 +586,25 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 transition={{ delay: 0.8 }}
                 className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
               >
-                <h3 className="text-lg font-bold text-white mb-4">Property Management</h3>
+                <h3 className="text-lg font-bold text-white mb-4">
+                  Property Management
+                </h3>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-400 rounded-full flex items-center justify-center">
                     <Building2 className="w-6 h-6 text-violet-100" />
                   </div>
                   <div>
-                    <div className="text-white font-semibold">CBRE India</div>
-                    <div className="text-sm text-gray-400">Professional Management</div>
+                    <div className="text-white font-semibold">
+                      {property.propertyManager}
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      Professional Management
+                    </div>
                   </div>
                 </div>
                 <div className="text-sm text-gray-300">
-                  Experienced property management company ensuring optimal operations and tenant satisfaction.
+                  Experienced property management company ensuring optimal
+                  operations and tenant satisfaction.
                 </div>
               </motion.div>
             </div>

@@ -35,6 +35,7 @@ export interface CommercialProperty {
   currentROI: number; // Annual ROI percentage
   rentalYield: number; // Annual rental yield percentage
   appreciationRate: number; // Expected annual appreciation
+  currentYield: number;
 
   // Occupancy & Revenue
   currentOccupancy: number; // Percentage
@@ -51,6 +52,7 @@ export interface CommercialProperty {
   // Additional Info
   amenities: string[];
   nearbyLandmarks: string[];
+  propertyManager: string;
 
   // Documents
   documents: {

@@ -144,6 +144,18 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             <Sparkles className="w-4 h-4 text-yellow-400/60" />
           </div>
         </div>
+        {/* Property Image */}
+        {property.image ? (
+          <img
+            src={property.image}
+            alt={property.name}
+            className="w-full h-full object-cover rounded-2xl"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center rounded-2xl">
+            <Building2 className="w-16 h-16 text-orange-500/50" />
+          </div>
+        )}
       </div>
 
       {/* Enhanced Property Details */}
