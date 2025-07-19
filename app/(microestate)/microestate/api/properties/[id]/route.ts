@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/app/(microestate)/lib/db';
-import Property from '@/app/models/Property';
+import Property from '@/app/(microestate)/models/Property';
 import mongoose from 'mongoose';
 import { requireLandlord } from '@/app/(microestate)/middleware';
 
@@ -8,16 +8,16 @@ import { requireLandlord } from '@/app/(microestate)/middleware';
 const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 
 
-// GET microestate/api/properties/[id] - get all properties of a landlord
+// GET microestate/api/properties/[id] - get  property detail of a landlord
 export const GET = requireLandlord(async (
-  request: NextRequest,
-  context: { userId: string; userRole: string; userEmail: string }
+  params: { id: string },
+  // context: { userId: string; userRole: string; userEmail: string }
 ) => {
-  const { userId, userRole, userEmail } = context;
+  // const { userId, userRole, userEmail } = context;
   try {
-    // const { id } = await params;
+    const { id } = await params;
 
-    if (!isValidObjectId(userId)) {
+    if (!isValidObjectId(id)) {
       return NextResponse.json(
         { error: 'Invalid property ID format' },
         { status: 400 }
@@ -26,12 +26,12 @@ export const GET = requireLandlord(async (
 
     await dbConnect();
 
-    const property = await Property.find({landlordId: userId}).select("title propertyType address status createdAt ").sort({createdAt: -1})
+    const property = await Property.findById(id).select("-landlordId")
     .lean();
 
     if (!property) {
       return NextResponse.json(
-        { error: 'No Properties Found' },
+        { error: 'Properties not Found' },
         { status: 404 }
       );
     }
