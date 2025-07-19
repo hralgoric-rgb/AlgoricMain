@@ -151,88 +151,15 @@ userSchema.methods.generateAuthToken = function (): string {
     { 
       _id: this._id, 
       email: this.email, 
-      role: this.role 
+      role: this.role ,
+      name: this.firstName
     },
     jwtSecret,
     { expiresIn: "3d" }
   );
 };
 
-// // Create virtual for full name
-// userSchema.virtual("fullName").get(function (this: IUser) {
-//   return `${this.firstName} ${this.lastName}`;
-// });
 
-// // Ensure virtual fields are serialized
-// userSchema.set("toJSON", {
-//   virtuals: true,
-//   transform: function(_doc, ret) {
-//     delete ret.password;
-//     delete ret.__v;
-//     return ret;
-//   },
-// });
-
-// Create and export the model
 const User: IUserModel = mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
 
 export default User;
-
-// // Additional TypeScript types for API usage
-// export type UserRole = "landlord" | "tenant";
-
-// export interface CreateUserInput {
-//   firstName: string;
-//   lastName: string;
-//   email: string;
-//   password: string;
-//   phone: string;
-//   role: UserRole;
-//   address?: {
-//     street?: string;
-//     city?: string;
-//     state?: string;
-//     zipCode?: string;
-//     country?: string;
-//   };
-//   profileImage?: string;
-// }
-
-// export interface UpdateUserInput {
-//   firstName?: string;
-//   lastName?: string;
-//   phone?: string;
-//   address?: {
-//     street?: string;
-//     city?: string;
-//     state?: string;
-//     zipCode?: string;
-//     country?: string;
-//   };
-//   profileImage?: string;
-// }
-
-// export interface LoginCredentials {
-//   email: string;
-//   password: string;
-// }
-
-// export interface UserResponse {
-//   _id: string;
-//   firstName: string;
-//   lastName: string;
-//   fullName: string;
-//   email: string;
-//   phone: string;
-//   address: {
-//     street?: string;
-//     city?: string;
-//     state?: string;
-//     zipCode?: string;
-//     country?: string;
-//   };
-//   role: UserRole;
-//   profileImage?: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-// }

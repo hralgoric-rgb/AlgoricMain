@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }: { session: any; token: JWT }) {
       if (session.user) {
-        session.user._id = token._id;
+        session.user._id = token._id; 
         session.user.role = token.role;
       }
       return session;
@@ -62,4 +62,15 @@ export const authOptions: NextAuthOptions = {
     maxAge: 3 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: "microauthToken",
+      options: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",         // make it available on all paths
+        },
+    },
+  }
 };
