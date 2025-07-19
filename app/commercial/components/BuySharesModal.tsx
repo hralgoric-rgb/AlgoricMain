@@ -93,7 +93,8 @@ export default function BuySharesModal({
   // Get user data from session/localStorage (you may need to adapt this based on your auth system)
   const getUserData = () => {
     // This should be replaced with your actual user data retrieval logic
-    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const userStr =
+      typeof window !== "undefined" ? localStorage.getItem("user") : null;
     if (userStr) {
       try {
         return JSON.parse(userStr);
@@ -108,7 +109,7 @@ export default function BuySharesModal({
     setIsProcessing(false);
     setCurrentStep("details");
     toast.success(
-      `Successfully purchased ${form.shareCount} shares of ${property.title}!`,
+      `Successfully purchased ${form.shareCount} shares of ${property.title}!`
     );
     onSuccess();
     onClose();
@@ -130,7 +131,7 @@ export default function BuySharesModal({
     const userData = getUserData();
     return {
       amount: form.totalAmount,
-      userId: userData?.id || 'guest',
+      userId: userData?.id || "guest",
       propertyId: property._id,
       shareCount: form.shareCount,
       propertyTitle: property.title,
@@ -233,7 +234,9 @@ export default function BuySharesModal({
                         min="1"
                         max={property.availableShares}
                         value={form.shareCount}
-                        onChange={(_e) => handleShareCountChange(_e.target.value)}
+                        onChange={(_e) =>
+                          handleShareCountChange(_e.target.value)
+                        }
                         className="bg-gray-800 border-gray-700 text-white"
                       />
                       <p className="text-xs text-gray-400 mt-1">
@@ -404,7 +407,7 @@ export default function BuySharesModal({
                   >
                     Cancel
                   </Button>
-                  
+
                   <Button
                     disabled={!canProceed() || isProcessing}
                     className="flex-1 luxury-button"
