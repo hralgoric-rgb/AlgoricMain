@@ -14,9 +14,9 @@ export interface IUser extends Document {
   emailVerified?: Date;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
+  qr?: string;
   createdAt: Date;
   updatedAt: Date;
-  
   // Instance methods
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -66,7 +66,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: [true, "Phone number is required"],
       validate: {
-        validator: function(v: string) {
+        validator: function (v: string) {
           return /^\+?[\d\s\-\(\)]+$/.test(v);
         },
         message: "Please enter a valid phone number",
@@ -92,6 +92,9 @@ const userSchema = new Schema<IUser>(
     verificationTokenExpiry: {
       type: Date,
     },
+    qr: {
+      type: String,
+    },
   },
   {
     timestamps: true,
@@ -101,7 +104,6 @@ const userSchema = new Schema<IUser>(
 // Password hashing middleware
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
-  
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
