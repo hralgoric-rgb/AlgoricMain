@@ -1,29 +1,24 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 // TypeScript interface for User document
 export interface IUser extends Document {
+  name: string;
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   phone: string;
-  address: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
   role: "landlord" | "tenant";
   profileImage?: string;
+  emailVerified?: Date;
+  verificationToken?: string;
+  verificationTokenExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
   
   // Instance methods
   comparePassword(candidatePassword: string): Promise<boolean>;
-  generateAuthToken(): string;
 }
 
 // TypeScript interface for User model (static methods)
@@ -31,9 +26,14 @@ export interface IUserModel extends Model<IUser> {
   // Add any static methods here if needed
 }
 
-// User Schema (Base for both Landlord and Tenant)
+// User Schema
 const userSchema = new Schema<IUser>(
   {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+    },
     firstName: {
       type: String,
       required: [true, "First name is required"],
@@ -72,28 +72,6 @@ const userSchema = new Schema<IUser>(
         message: "Please enter a valid phone number",
       },
     },
-    address: {
-      street: {
-        type: String,
-        trim: true,
-      },
-      city: {
-        type: String,
-        trim: true,
-      },
-      state: {
-        type: String,
-        trim: true,
-      },
-      zipCode: {
-        type: String,
-        trim: true,
-      },
-      country: {
-        type: String,
-        trim: true,
-      },
-    },
     role: {
       type: String,
       enum: {
@@ -104,6 +82,15 @@ const userSchema = new Schema<IUser>(
     },
     profileImage: {
       type: String,
+    },
+    emailVerified: {
+      type: Date,
+    },
+    verificationToken: {
+      type: String,
+    },
+    verificationTokenExpiry: {
+      type: Date,
     },
   },
   {
@@ -135,100 +122,7 @@ userSchema.methods.comparePassword = async function (
   }
 };
 
-// JWT token generation
-userSchema.methods.generateAuthToken = function (): string {
-  const jwtSecret = process.env.JWT_SECRET;
-  
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET environment variable is not set");
-  }
-  
-  return jwt.sign(
-    { 
-      _id: this._id, 
-      email: this.email, 
-      role: this.role 
-    },
-    jwtSecret,
-    { expiresIn: "3d" }
-  );
-};
-
-// // Create virtual for full name
-// userSchema.virtual("fullName").get(function (this: IUser) {
-//   return `${this.firstName} ${this.lastName}`;
-// });
-
-// // Ensure virtual fields are serialized
-// userSchema.set("toJSON", {
-//   virtuals: true,
-//   transform: function(_doc, ret) {
-//     delete ret.password;
-//     delete ret.__v;
-//     return ret;
-//   },
-// });
-
 // Create and export the model
-const User: IUserModel = mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
+const User: IUserModel = mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema);
 
 export default User;
-
-// // Additional TypeScript types for API usage
-// export type UserRole = "landlord" | "tenant";
-
-// export interface CreateUserInput {
-//   firstName: string;
-//   lastName: string;
-//   email: string;
-//   password: string;
-//   phone: string;
-//   role: UserRole;
-//   address?: {
-//     street?: string;
-//     city?: string;
-//     state?: string;
-//     zipCode?: string;
-//     country?: string;
-//   };
-//   profileImage?: string;
-// }
-
-// export interface UpdateUserInput {
-//   firstName?: string;
-//   lastName?: string;
-//   phone?: string;
-//   address?: {
-//     street?: string;
-//     city?: string;
-//     state?: string;
-//     zipCode?: string;
-//     country?: string;
-//   };
-//   profileImage?: string;
-// }
-
-// export interface LoginCredentials {
-//   email: string;
-//   password: string;
-// }
-
-// export interface UserResponse {
-//   _id: string;
-//   firstName: string;
-//   lastName: string;
-//   fullName: string;
-//   email: string;
-//   phone: string;
-//   address: {
-//     street?: string;
-//     city?: string;
-//     state?: string;
-//     zipCode?: string;
-//     country?: string;
-//   };
-//   role: UserRole;
-//   profileImage?: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-// }
