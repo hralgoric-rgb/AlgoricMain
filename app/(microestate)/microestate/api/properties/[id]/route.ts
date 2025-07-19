@@ -11,9 +11,9 @@ const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 // GET microestate/api/properties/[id] - get  property detail of a landlord
 export const GET = requireLandlord(async (
   params: { id: string },
-  // context: { userId: string; userRole: string; userEmail: string }
+  context: { userId: string; userRole: string; userEmail: string }
 ) => {
-  // const { userId, userRole, userEmail } = context;
+  const { userId } = context;
   try {
     const { id } = await params;
 
@@ -26,8 +26,7 @@ export const GET = requireLandlord(async (
 
     await dbConnect();
 
-    const property = await Property.findById(id).select("-landlordId")
-    .lean();
+    const property = await Property.findOne({_id: id, landlordId: userId}).select("-landlordId").lean();
 
     if (!property) {
       return NextResponse.json(
