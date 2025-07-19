@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-
+    console.log(searchParams);
     const type = searchParams.get("type");
     const currentYield = searchParams.get("currentYield");
     const riskLevel = searchParams.get("riskLevel");
@@ -50,11 +50,13 @@ export async function GET(req: NextRequest) {
       features: 1,
     }).lean();
 
+    console.log("Raw Properties : ", rawProperties);
+
     const properties = rawProperties.map((property) => ({
       ...property,
       id: (property._id as Types.ObjectId).toString(),
     }));
-
+    console.log("properties", properties);
     return NextResponse.json({ success: true, data: properties });
   } catch (error: any) {
     return NextResponse.json(
