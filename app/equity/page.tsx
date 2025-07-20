@@ -1,4 +1,5 @@
 "use client";
+import React from 'react';
 import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowUpRight, Building2, TrendingUp, DollarSign, Target, BarChart3, Users, Shield, Clock, Zap, Star, Eye, ChevronRight, CheckCircle, UserPlus, CreditCard, TrendingDown } from "lucide-react";
@@ -7,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import PropertyCard from "./components/PropertyCard";
 import PortfolioSummary from "./components/PortfolioSummary";
 import PerformanceChart from "./components/PerformanceChart";
+import BackgroundVideo from "./components/BackgroundVideo";
+import EquityFooter from "./EquityFooter";
+import EquityAnimatedBackground from "./EquityAnimatedBackground";
+import EquityNavigation from "./components/EquityNavigation";
 
 export default function EquityDashboard() {
   // Mouse tracking for animated background
@@ -61,739 +66,309 @@ export default function EquityDashboard() {
     features: ["Prime Location", "High Occupancy", "Stable Tenants"]
   };
 
-  const quickStats = [
-    { label: "Portfolio Value", value: "₹12.5L", change: "+8.2%", icon: DollarSign, color: "text-green-400" },
-    { label: "Monthly Income", value: "₹28.5K", change: "+12.1%", icon: TrendingUp, color: "text-blue-400" },
-    { label: "Properties Owned", value: "12", change: "+2", icon: Building2, color: "text-orange-400" },
-    { label: "Total Returns", value: "31.5%", change: "+4.2%", icon: Target, color: "text-purple-400" }
-  ];
-
-  const investmentSteps = [
-    {
-      id: 1,
-      title: "Create Account",
-      description: "Sign up with your mobile number and complete KYC verification in under 5 minutes",
-      icon: UserPlus,
-      gradient: "from-blue-500 to-cyan-500",
-      borderGlow: "border-blue-500/50 shadow-blue-500/25",
-      time: "2 min"
+  const stats = [
+        {
+      title: "Portfolio Value",
+      value: "₹12.5L",
+      change: "+8.2%",
+      icon: DollarSign,
+      color: "from-[#B6FF3F] to-[#B6FF3F]",
+      borderColor: "border-[#B6FF3F]",
+      changeColor: "bg-[#B6FF3F]/20 text-[#B6FF3F]"
     },
     {
-      id: 2,
-      title: "Browse Properties", 
-      description: "Explore curated commercial real estate opportunities with detailed analytics",
-      icon: Building2,
-      gradient: "from-green-500 to-emerald-500", 
-      borderGlow: "border-green-500/50 shadow-green-500/25",
-      time: "5 min"
-    },
-    {
-      id: 3,
-      title: "Invest Securely",
-      description: "Start with just ₹2,500 and purchase fractional ownership through secure payment",
-      icon: CreditCard,
-      gradient: "from-orange-500 to-red-500",
-      borderGlow: "border-orange-500/50 shadow-orange-500/25", 
-      time: "1 min"
-    },
-    {
-      id: 4,
-      title: "Earn Returns",
-      description: "Receive monthly rental income and track your portfolio growth in real-time",
+      title: "Monthly Income",
+      value: "₹28.5K",
+      change: "+12.1%",
       icon: TrendingUp,
-      gradient: "from-purple-500 to-pink-500",
-      borderGlow: "border-purple-500/50 shadow-purple-500/25",
-      time: "Monthly"
+      color: "from-[#B6FF3F] to-[#B6FF3F]",
+      borderColor: "border-[#B6FF3F]",
+      changeColor: "bg-[#B6FF3F]/20 text-[#B6FF3F]"
+    },
+    {
+      title: "Properties Owned",
+      value: "12",
+      change: "+2",
+      icon: Building2,
+      color: "from-purple-400 to-purple-600",
+      borderColor: "border-purple-400",
+      changeColor: "bg-purple-400/20 text-purple-400"
+    },
+    {
+      title: "Total Returns",
+      value: "31.5%",
+      change: "+4.2%",
+      icon: Target,
+      color: "from-[#B6FF3F] to-[#B6FF3F]",
+      borderColor: "border-[#B6FF3F]",
+      changeColor: "bg-[#B6FF3F]/20 text-[#B6FF3F]"
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#18122B] via-[#1E1A36] to-black text-white relative overflow-hidden">
-      {/* Layered Animated Background */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Real-time Cursor Following Glow */}
-        <motion.div
-          className="absolute w-48 h-48 rounded-full pointer-events-none"
-          style={{
-            left: `${mousePosition.x}%`,
-            top: `${mousePosition.y}%`,
-            transform: 'translate(-50%, -50%)',
-            background: "radial-gradient(circle, rgba(255,140,0,0.6) 0%, rgba(255,115,22,0.3) 40%, rgba(255,69,0,0.1) 70%, transparent 100%)",
-            filter: "blur(15px)",
-            mixBlendMode: "screen"
-          }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        
-        {/* Glowing Circle 1 - Orange (#ff6a00) */}
-        <motion.div
-          className="absolute w-96 h-96 rounded-full pointer-events-none"
-          style={{
-            left: "20%",
-            top: "30%",
-            background: "radial-gradient(circle, rgba(255,106,0,0.4) 0%, rgba(255,106,0,0.2) 50%, rgba(255,106,0,0.1) 80%, transparent 100%)",
-            filter: "blur(40px)",
-            mixBlendMode: "screen"
-          }}
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -40, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          whileHover={{
-            scale: 1.2,
-            filter: "blur(50px)"
-          }}
-        />
-        
-        {/* Glowing Circle 2 - White to Purple Gradient */}
-        <motion.div
-          className="absolute w-80 h-80 rounded-full pointer-events-none"
-          style={{
-            right: "25%",
-            bottom: "20%",
-            background: "radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(180,0,255,0.4) 40%, rgba(180,0,255,0.2) 70%, transparent 100%)",
-            filter: "blur(35px)",
-            mixBlendMode: "screen"
-          }}
-          animate={{
-            x: [0, -25, 0],
-            y: [0, 35, 0],
-            scale: [1, 1.15, 1],
-            opacity: [0.4, 0.6, 0.4]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-          whileHover={{
-            scale: 1.3,
-            filter: "blur(45px)"
-          }}
-        />
-        
-        {/* Orange Glow: slow pulse/float, parallax with mouse */}
-        <motion.div
-          className="absolute w-[120vw] h-[120vw] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            x: `calc(${mousePosition.x - 50}vw * 0.12)`,
-            y: `calc(${mousePosition.y - 50}vh * 0.12)`,
-            background: "radial-gradient(circle, rgba(255,140,0,0.22) 0%, rgba(255,115,22,0.18) 40%, transparent 80%)",
-            filter: "blur(80px)",
-            mixBlendMode: "screen"
-          }}
-          animate={{
-            scale: [1, 1.08, 1],
-            opacity: [0.55, 0.7, 0.55]
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            repeatType: "mirror",
-            ease: "easeInOut"
-          }}
-        />
-        {/* White-to-Purple Glow: parallax with mouse, soft and immersive */}
-        <motion.div
-          className="absolute w-[140vw] h-[140vw] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{
-            x: `calc(${mousePosition.x - 50}vw * 0.08)`,
-            y: `calc(${mousePosition.y - 50}vh * 0.08)`,
-            background: "radial-gradient(circle, rgba(255,255,255,0.13) 0%, rgba(168,85,247,0.18) 60%, transparent 90%)",
-            filter: "blur(120px)",
-            mixBlendMode: "screen"
-          }}
-          animate={{
-            scale: [1, 1.04, 1],
-            opacity: [0.18, 0.28, 0.18]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            repeatType: "mirror",
-            ease: "easeInOut"
-          }}
-        />
-        {/* Subtle grid overlay for extra polish */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.07)_1px,transparent_0)] bg-[length:24px_24px] opacity-20" />
-      </div>
+  return(
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <EquityAnimatedBackground />
+      {/* Interactive Animated Background */}
+      <BackgroundVideo />
+      
+      {/* Navigation */}
+      <EquityNavigation />
 
-      {/* Hero Section */}
-      <motion.section 
-        style={{ y: heroParallax }}
-        className="relative pt-32 pb-16 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="inline-flex items-center gap-3 px-6 py-3 bg-white/5 backdrop-blur-md rounded-full border border-white/10 mb-8"
-            >
-              <Shield className="w-5 h-5 text-green-400" />
-              <span className="text-sm font-medium">Welcome to Your Investment Dashboard</span>
-            </motion.div>
-
-            <motion.h1 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6"
-            >
-              <span className="block text-white">Commercial Real Estate</span>
-              <span className="block bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                Made Simple
-              </span>
-            </motion.h1>
-
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
-            >
-              Start with ₹2,500. Own premium office buildings, data centers & warehouses. 
-              Earn monthly rental income from Day 1.
-            </motion.p>
-          </div>
-
-          {/* Quick Stats Cards */}
-          <motion.div 
-            style={{ y: cardsParallax }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
-          >
-            {quickStats.map((stat, index) => (
+      {/* Main Content */}
+      <div className="pt-16">
+        {/* Hero Section */}
+        <motion.section 
+          style={{ y: heroParallax }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="relative pt-8 pb-10 px-2 sm:px-4 md:px-6 lg:px-8"
+        >
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ 
-                  opacity: 1, 
-                  y: 0,
-                  boxShadow: [
-                    `0 0 20px ${
-                      stat.color.includes('green') ? 'rgba(34, 197, 94, 0.3)' :
-                      stat.color.includes('blue') ? 'rgba(59, 130, 246, 0.3)' :
-                      stat.color.includes('orange') ? 'rgba(251, 146, 60, 0.3)' :
-                      'rgba(168, 85, 247, 0.3)'
-                    }`,
-                    `0 0 40px ${
-                      stat.color.includes('green') ? 'rgba(34, 197, 94, 0.2)' :
-                      stat.color.includes('blue') ? 'rgba(59, 130, 246, 0.2)' :
-                      stat.color.includes('orange') ? 'rgba(251, 146, 60, 0.2)' :
-                      'rgba(168, 85, 247, 0.2)'
-                    }`,
-                    `0 0 20px ${
-                      stat.color.includes('green') ? 'rgba(34, 197, 94, 0.3)' :
-                      stat.color.includes('blue') ? 'rgba(59, 130, 246, 0.3)' :
-                      stat.color.includes('orange') ? 'rgba(251, 146, 60, 0.3)' :
-                      'rgba(168, 85, 247, 0.3)'
-                    }`
-                  ]
-                }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: 0.6 + index * 0.1,
-                  boxShadow: {
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.5
-                  }
-                }}
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-orange-400/30 transition-all duration-300 group relative overflow-hidden"
+                initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                className="inline-flex items-center gap-3 px-4 py-2 sm:px-6 sm:py-3 bg-purple-900/20 rounded-full border border-purple-400/30 mb-8 group cursor-pointer text-xs sm:text-sm"
               >
-                {/* Glowing border animation for quick stats */}
                 <motion.div
-                  className="absolute inset-0 rounded-2xl border-2 border-transparent"
-                  animate={{
-                    borderColor: [
-                      `${
-                        stat.color.includes('green') ? 'rgba(34, 197, 94, 0)' :
-                        stat.color.includes('blue') ? 'rgba(59, 130, 246, 0)' :
-                        stat.color.includes('orange') ? 'rgba(251, 146, 60, 0)' :
-                        'rgba(168, 85, 247, 0)'
-                      }`,
-                      `${
-                        stat.color.includes('green') ? 'rgba(34, 197, 94, 0.6)' :
-                        stat.color.includes('blue') ? 'rgba(59, 130, 246, 0.6)' :
-                        stat.color.includes('orange') ? 'rgba(251, 146, 60, 0.6)' :
-                        'rgba(168, 85, 247, 0.6)'
-                      }`,
-                      `${
-                        stat.color.includes('green') ? 'rgba(34, 197, 94, 0)' :
-                        stat.color.includes('blue') ? 'rgba(59, 130, 246, 0)' :
-                        stat.color.includes('orange') ? 'rgba(251, 146, 60, 0)' :
-                        'rgba(168, 85, 247, 0)'
-                      }`
-                    ]
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.5
-                  }}
-                />
-
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      className={`w-10 h-10 rounded-xl bg-gradient-to-r from-orange-500/20 to-red-500/20 flex items-center justify-center`}
-                    >
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                    </motion.div>
-                    <motion.span 
-                      className="text-xs font-medium text-green-400 bg-green-400/10 px-2 py-1 rounded-full"
-                      animate={{ opacity: [0.8, 1, 0.8] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
-                    >
-                      {stat.change}
-                    </motion.span>
-                  </div>
-                  <motion.h3 
-                    className="text-2xl font-bold text-white mb-1"
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: index * 0.4 }}
-                  >
-                    {stat.value}
-                  </motion.h3>
-                  <p className="text-sm text-gray-400">{stat.label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Portfolio Summary */}
-      <motion.section 
-        style={{ y: statsParallax }}
-        className="py-16 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-7xl mx-auto">
-          <PortfolioSummary portfolio={mockPortfolio} />
-        </div>
-      </motion.section>
-
-      {/* Investment Steps Section with Glowing Borders */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl font-bold text-white mb-4">Start Investing in 4 Simple Steps</h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Get started with commercial real estate investing in minutes
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {investmentSteps.map((step, index) => (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10, scale: 1.02 }}
-                className="group relative"
+                  initial={{ rotate: -180, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
               >
-                {/* Glowing border effect */}
-                <motion.div
-                  className={`absolute -inset-0.5 bg-gradient-to-r ${step.gradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                  animate={{
-                    boxShadow: [
-                      `0 0 20px ${step.borderGlow.includes('blue') ? 'rgba(59, 130, 246, 0.3)' : 
-                                  step.borderGlow.includes('green') ? 'rgba(34, 197, 94, 0.3)' :
-                                  step.borderGlow.includes('orange') ? 'rgba(251, 146, 60, 0.3)' :
-                                  'rgba(168, 85, 247, 0.3)'}`,
-                      `0 0 40px ${step.borderGlow.includes('blue') ? 'rgba(59, 130, 246, 0.2)' : 
-                                  step.borderGlow.includes('green') ? 'rgba(34, 197, 94, 0.2)' :
-                                  step.borderGlow.includes('orange') ? 'rgba(251, 146, 60, 0.2)' :
-                                  'rgba(168, 85, 247, 0.2)'}`,
-                      `0 0 20px ${step.borderGlow.includes('blue') ? 'rgba(59, 130, 246, 0.3)' : 
-                                  step.borderGlow.includes('green') ? 'rgba(34, 197, 94, 0.3)' :
-                                  step.borderGlow.includes('orange') ? 'rgba(251, 146, 60, 0.3)' :
-                                  'rgba(168, 85, 247, 0.3)'}`
-                    ]
-                  }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity, 
-                    repeatType: "reverse",
-                    ease: "easeInOut"
-                  }}
-                />
-
-                <div className="relative bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10 hover:border-white/20 transition-all duration-500 h-full">
-                  {/* Step number */}
-                  <motion.div
-                    className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                    whileHover={{ scale: 1.2, rotate: 360 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {step.id}
-                  </motion.div>
-
-                  {/* Time indicator */}
-                  <motion.div
-                    className="absolute top-4 right-4 text-xs text-orange-400 bg-orange-400/10 px-2 py-1 rounded-full font-medium"
-                    animate={{ opacity: [0.6, 1, 0.6] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {step.time}
-                  </motion.div>
-
-                  {/* Icon */}
-                  <motion.div
-                    className={`w-16 h-16 bg-gradient-to-r ${step.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:shadow-lg transition-all duration-300`}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    animate={{ 
-                      scale: [1, 1.05, 1],
-                      rotate: [0, 2, 0]
-                    }}
-                    transition={{ 
-                      duration: 3, 
-                      repeat: Infinity,
-                      delay: index * 0.5
-                    }}
-                  >
-                    <step.icon className="w-8 h-8 text-white" />
-                  </motion.div>
-
-                  {/* Content */}
-                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-orange-400 transition-colors duration-300">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300">
-                    {step.description}
-                  </p>
-
-                  {/* Completion indicator */}
-                  <motion.div
-                    className="flex items-center gap-2 mt-6 text-sm text-green-400"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    viewport={{ once: true }}
-                  >
-                    <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                    </motion.div>
-                    Easy & Secure
-                  </motion.div>
-
-                  {/* Animated bottom border */}
-                  <motion.div
-                    className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${step.gradient} rounded-b-3xl`}
-                    initial={{ width: "0%" }}
-                    whileInView={{ width: "100%" }}
-                    transition={{ duration: 1, delay: 0.3 + index * 0.2 }}
-                    viewport={{ once: true }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Call to action for steps */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Link href="/equity/property">
-              <Button 
-                size="lg"
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
-              >
-                <UserPlus className="w-5 h-5 mr-2" />
-                Start Your Journey Today
-                <motion.div
-                  className="ml-2"
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <ArrowUpRight className="w-5 h-5" />
+                  <Shield className="w-5 h-5 text-white group-hover:text-gray-200 transition-colors duration-300" />
                 </motion.div>
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+                <span className="text-sm font-medium text-white group-hover:text-gray-200 transition-colors duration-300">Welcome to Your Investment Dashboard</span>
+              </motion.div>
 
-      {/* Featured Investment Opportunity */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-white mb-4">Featured Investment</h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Hand-picked opportunity with verified returns and low risk
-            </p>
-          </motion.div>
+              <motion.h1 
+                initial={{ opacity: 0, y: 60, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
+                className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 group"
+              >
+                <motion.span 
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.8 }}
+                  className="block text-white transition-colors duration-300 group-hover:bg-gradient-to-r group-hover:from-purple-300 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent"
+                >
+                  Commercial Real Estate
+                </motion.span>
+                <motion.span 
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 1.0 }}
+                  className="block bg-gradient-to-r from-purple-300 to-purple-400 bg-clip-text text-transparent transition-colors duration-300 group-hover:bg-none group-hover:text-white"
+                >
+                  Made Simple
+                </motion.span>
+              </motion.h1>
 
-          <div className="max-w-2xl mx-auto">
+              <motion.p 
+                initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
+                className="text-base sm:text-lg md:text-xl text-white max-w-2xl sm:max-w-3xl mx-auto leading-relaxed px-2"
+              >
+                Start with ₹2,500. Own premium office buildings, data centers & warehouses. 
+                Earn monthly rental income from Day 1.
+              </motion.p>
+            </div>
+
+            {/* Quick Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 sm:mb-16 w-full">
+              {stats.map((stat, index) => {
+                // All cards use purple/blue theme
+                const borderColor = 'border-[#a78bfa] shadow-[0_0_24px_2px_#a78bfa55]';
+                const glowText = 'text-[#a78bfa] drop-shadow-[0_0_8px_#a78bfa99]';
+                const iconBg = 'from-[#a78bfa]/80 to-[#60a5fa]/60';
+                const chartStroke = '#a78bfa';
+                return (
+                  <motion.div
+                  key={index}
+                    initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.8, delay: index * 0.1 }}
+                    whileHover={{
+                      scale: 1.06,
+                      boxShadow: '0 0 40px 8px #a78bfa88',
+                      y: -10,
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative rounded-2xl p-6 min-w-[220px] max-w-xs bg-black/60 backdrop-blur-md border-2 ${borderColor} transition-all duration-300 flex flex-col gap-4 overflow-hidden group`}
+                    style={{ fontFamily: 'var(--font-sans, Inter, sans-serif)' }}
+                  >
+                    {/* Glow border overlay */}
+                    <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ boxShadow: 'inset 0 2px 16px #fff2' }} />
+                    <div className="flex items-center gap-3 z-10">
+                      <div className={`rounded-xl p-3 bg-gradient-to-br ${iconBg} shadow-inner`}>{React.createElement(stat.icon, { className: 'w-7 h-7' })}</div>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full bg-black/40 border border-[#B6FF3F] text-[#B6FF3F]`}>{stat.change}</span>
+                        </div>
+                    <div className="flex items-end gap-2 z-10">
+                      <span className={`text-3xl sm:text-4xl font-extrabold leading-tight ${glowText} font-mono`}>{stat.value}</span>
+                      {/* Mini growth chart indicator */}
+                      <svg width="40" height="16" viewBox="0 0 40 16" fill="none" className="ml-2">
+                        <polyline
+                          points="0,14 8,10 16,12 24,6 32,8 40,2"
+                          stroke="#B6FF3F"
+                          strokeWidth="2"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="opacity-80"
+                        />
+                      </svg>
+                    </div>
+                    <div className="text-sm text-gray-300 font-medium z-10">{stat.title}</div>
+                    {/* Glassmorphism/blur effect */}
+                    <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ backdropFilter: 'blur(8px)' }} />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Investment Steps Section with Glowing Borders */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
+              className="text-center mb-16"
             >
-              <PropertyCard property={featuredProperty} />
+              <h2 className="text-3xl font-bold text-white mb-4 underline decoration-[#a78bfa] underline-offset-4">Start Investing in 4 Simple Steps</h2>
+              <p className="text-lg text-white max-w-2xl mx-auto">
+                Get started with commercial real estate investing in minutes
+              </p>
+            </motion.div>
+
+            <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+              {[
+                {
+                  title: "Create Account",
+                  description: "Sign up with your mobile number and complete KYC verification in under 5 minutes.",
+                  icon: UserPlus,
+                  step: 1,
+                  time: "2 min"
+                },
+                {
+                  title: "Browse Properties",
+                  description: "Explore curated commercial real estate opportunities with detailed analytics.",
+                  icon: Building2,
+                  step: 2,
+                  time: "5 min"
+                },
+                {
+                  title: "Invest Securely",
+                  description: "Start with just ₹2,500 and purchase fractional ownership through secure payment.",
+                  icon: CreditCard,
+                  step: 3,
+                  time: "1 min"
+                },
+                {
+                  title: "Earn Returns",
+                  description: "Receive monthly rental income and track your portfolio growth in real-time.",
+                  icon: TrendingUp,
+                  step: 4,
+                  time: "Monthly"
+                }
+              ].map((step, idx) => (
+                <motion.div
+                  key={step.title}
+                  initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.7, delay: idx * 0.15 }}
+                  whileHover={{
+                    scale: 1.04,
+                    boxShadow: '0 0 32px 8px #a78bfa88',
+                    y: -8
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  className="relative flex-1 min-w-[220px] max-w-xs bg-black/70 backdrop-blur-lg border-2 border-[#a78bfa] rounded-2xl p-8 shadow-lg transition-all duration-300 group overflow-hidden flex flex-col items-center justify-between"
+                  style={{ fontFamily: 'var(--font-sans, Inter, sans-serif)' }}
+                >
+                  {/* Glowing step number */}
+                  <div className="absolute -top-4 -right-4 w-9 h-9 bg-[#a78bfa] text-black font-bold text-lg flex items-center justify-center rounded-full shadow-[0_0_16px_2px_#a78bfa99] border-2 border-white/30 z-20">
+                    {step.step}
+                  </div>
+                  {/* Time badge */}
+                  <div className="absolute top-4 right-4 text-xs text-[#a78bfa] bg-[#a78bfa]/10 px-2 py-1 rounded-full font-medium border border-[#a78bfa]/30 z-20">
+                    {step.time}
+                  </div>
+                  {/* Glowing icon */}
+                  <div className="mb-6 mt-2">
+                    <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#a78bfa]/80 to-[#60a5fa]/60 shadow-[0_0_24px_4px_#a78bfa55]">
+                      {step.icon && React.createElement(step.icon, { className: 'w-9 h-9 text-white drop-shadow-[0_0_8px_#a78bfa]' })}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3 text-center drop-shadow-[0_0_8px_#a78bfa99] group-hover:text-[#a78bfa] transition-colors duration-300">{step.title}</h3>
+                  <p className="text-white text-center mb-4 text-sm leading-relaxed opacity-90">
+                    {step.description}
+                  </p>
+                  <div className="flex-grow" />
+                  <div className="flex items-center gap-2 text-sm text-[#B6FF3F] font-semibold mb-0 mt-4">
+                    <CheckCircle className="w-5 h-5 text-[#B6FF3F] drop-shadow-[0_0_6px_#B6FF3F]" />
+                    <span className="drop-shadow-[0_0_6px_#B6FF3F]">Easy & Secure</span>
+                  </div>
+                  {/* Purple glow border overlay */}
+                  <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ boxShadow: '0 0 32px 4px #a78bfa33, inset 0 2px 16px #fff2' }} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-4xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-purple-900/30 to-green-900/30 rounded-3xl border border-purple-400 p-12 shadow-lg shadow-purple-400/40"
+            >
+              <Star className="w-12 h-12 text-purple-400 mx-auto mb-6" />
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Ready to Start Building Wealth?
+              </h2>
+              <p className="text-lg text-white mb-8 max-w-2xl mx-auto">
+                Join thousands of investors earning monthly income from premium commercial properties.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/equity/property">
+                  <Button 
+                    size="lg"
+                    className="bg-[#a78bfa] hover:bg-[#c4b5fd] text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group border-none"
+                  >
+                    <Building2 className="w-5 h-5 mr-2" />
+                    Start Investing
+                    <ArrowUpRight className="w-5 h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link href="/equity/portfolio">
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    className="border-white/20 text-white hover:bg-white/10 px-8 py-4 rounded-xl text-lg font-semibold backdrop-blur-md"
+                  >
+                    <Eye className="w-5 h-5 mr-2" />
+                    Explore Dashboard
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
           </div>
+        </section>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            viewport={{ once: true }}
-            className="text-center mt-8"
-          >
-            <Link href="/equity/property">
-              <Button 
-                size="lg"
-                variant="outline"
-                className="border-orange-400/50 text-orange-400 hover:bg-orange-400/10 px-8 py-3 rounded-xl font-semibold backdrop-blur-md group"
-              >
-                View All Properties
-                <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Performance Chart */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/5 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-white mb-4">Performance Analytics</h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Track your investment growth and rental income over time
-            </p>
-          </motion.div>
-          
-          <PerformanceChart />
-        </div>
-      </section>
-
-      {/* Key Features */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-white mb-4">Why Choose 100Gaj?</h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Professional real estate investing made accessible
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: DollarSign,
-                title: "Low Entry Point",
-                description: "Start investing with just ₹2,500 and build your portfolio gradually",
-                gradient: "from-green-500 to-emerald-500"
-              },
-              {
-                icon: Shield,
-                title: "SEBI Regulated",
-                description: "Fully compliant platform ensuring your investments are secure",
-                gradient: "from-blue-500 to-cyan-500"
-              },
-              {
-                icon: Clock,
-                title: "Monthly Income",
-                description: "Earn regular rental income deposited directly to your account",
-                gradient: "from-orange-500 to-red-500"
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-                animate={{
-                  boxShadow: [
-                    `0 0 20px ${
-                      feature.gradient.includes('green') ? 'rgba(34, 197, 94, 0.3)' :
-                      feature.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.3)' :
-                      'rgba(251, 146, 60, 0.3)'
-                    }`,
-                    `0 0 40px ${
-                      feature.gradient.includes('green') ? 'rgba(34, 197, 94, 0.2)' :
-                      feature.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.2)' :
-                      'rgba(251, 146, 60, 0.2)'
-                    }`,
-                    `0 0 20px ${
-                      feature.gradient.includes('green') ? 'rgba(34, 197, 94, 0.3)' :
-                      feature.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.3)' :
-                      'rgba(251, 146, 60, 0.3)'
-                    }`
-                  ]
-                }}
-                className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 hover:border-orange-400/30 transition-all duration-300 group text-center relative overflow-hidden"
-              >
-                {/* Glowing border animation for feature cards */}
-                <motion.div
-                  className="absolute inset-0 rounded-2xl border-2 border-transparent"
-                  animate={{
-                    borderColor: [
-                      `${
-                        feature.gradient.includes('green') ? 'rgba(34, 197, 94, 0)' :
-                        feature.gradient.includes('blue') ? 'rgba(59, 130, 246, 0)' :
-                        'rgba(251, 146, 60, 0)'
-                      }`,
-                      `${
-                        feature.gradient.includes('green') ? 'rgba(34, 197, 94, 0.6)' :
-                        feature.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.6)' :
-                        'rgba(251, 146, 60, 0.6)'
-                      }`,
-                      `${
-                        feature.gradient.includes('green') ? 'rgba(34, 197, 94, 0)' :
-                        feature.gradient.includes('blue') ? 'rgba(59, 130, 246, 0)' :
-                        'rgba(251, 146, 60, 0)'
-                      }`
-                    ]
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.7,
-                    boxShadow: {
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: index * 0.7
-                    }
-                  }}
-                />
-
-                <div className="relative z-10">
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 10 }}
-                    animate={{
-                      scale: [1, 1.05, 1],
-                      rotate: [0, 3, 0]
-                    }}
-                    transition={{ 
-                      duration: 4, 
-                      repeat: Infinity,
-                      delay: index * 0.5
-                    }}
-                    className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-lg transition-all duration-300`}
-                  >
-                    <feature.icon className="w-8 h-8 text-white" />
-                  </motion.div>
-                  <motion.h3 
-                    className="text-xl font-bold text-white mb-3 group-hover:text-orange-400 transition-colors"
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 3, repeat: Infinity, delay: index * 0.6 }}
-                  >
-                    {feature.title}
-                  </motion.h3>
-                  <p className="text-gray-400 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-r from-orange-500/10 to-red-500/10 backdrop-blur-md rounded-3xl border border-orange-400/20 p-12"
-          >
-            <Star className="w-12 h-12 text-orange-400 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Ready to Start Building Wealth?
-            </h2>
-            <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of investors earning monthly income from premium commercial properties.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/equity/property">
-                <Button 
-                  size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
-                >
-                  <Building2 className="w-5 h-5 mr-2" />
-                  Start Investing
-                  <ArrowUpRight className="w-5 h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link href="/equity/portfolio">
-                <Button 
-                  variant="outline"
-                  size="lg"
-                  className="border-white/20 text-white hover:bg-white/10 px-8 py-4 rounded-xl text-lg font-semibold backdrop-blur-md"
-                >
-                  <Eye className="w-5 h-5 mr-2" />
-                  Explore Dashboard
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+        <EquityFooter />
+      </div>
     </div>
   );
 }

@@ -5,6 +5,9 @@ import { BarChart3, TrendingUp, TrendingDown, DollarSign, Target, Calendar, Zap,
 import { Button } from "@/components/ui/button";
 import { PerformanceChart } from "../components";
 import { toast } from "sonner";
+import EquityAnimatedBackground from "../EquityAnimatedBackground";
+import BackgroundVideo from "../components/BackgroundVideo";
+import EquityNavigation from "../components/EquityNavigation";
 
 interface DashboardMetrics {
   totalPortfolioValue: number;
@@ -393,7 +396,7 @@ Platform: 100GAJ Equity Investment
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white text-lg">Loading analytics dashboard...</p>
         </div>
       </div>
@@ -402,566 +405,359 @@ Platform: 100GAJ Equity Investment
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(251, 146, 60, 0.10), transparent 70%)`,
-            opacity: 0.25,
-          }}
-        />
-        {/* Optional: Subtle grid overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] bg-[length:24px_24px] opacity-20" />
-      </div>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800">
+      {/* Animated Video Background */}
+      <BackgroundVideo />
+      {/* Animated SVG Background */}
+      <EquityAnimatedBackground />
+      
+      {/* Navigation */}
+      <EquityNavigation />
+
+      {/* Main Content */}
+      <div className="pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
+          {/* Header */}
+          <div className="mb-8">
+            <motion.h1 
+              className="text-4xl sm:text-5xl font-bold mb-4"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="text-[#a78bfa]">Analytics</span> <span className="text-white">Dashboard</span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-gray-300"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Advanced insights and predictive analytics for your portfolio
+            </motion.p>
+          </div>
+
+          {/* Action Buttons */}
+          <motion.div 
+            className="flex flex-wrap gap-4 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                Analytics
-                <span className="text-orange-500 ml-2">Dashboard</span>
-              </h1>
-              <p className="text-gray-300 text-lg">
-                Advanced insights and predictive analytics for your portfolio
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                {refreshing ? 'Refreshing...' : 'Refresh Data'}
-              </Button>
-              <Button
-                onClick={handleExportReport}
-                disabled={exporting}
-                variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-              >
-                <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-bounce' : ''}`} />
-                {exporting ? 'Generating...' : 'Export Report'}
-              </Button>
-              <Button
-                onClick={handleShareAnalysis}
-                disabled={sharing}
-                variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-              >
-                <Share2 className={`w-4 h-4 mr-2 ${sharing ? 'animate-pulse' : ''}`} />
-                {sharing ? 'Generating...' : 'Share Analysis'}
-              </Button>
-            </div>
+            <Button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="bg-[#23232a] hover:bg-[#2a2a32] text-white border border-[#3a3a42] transition-all duration-300 group"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
+            
+            <Button
+              onClick={handleExportReport}
+              disabled={exporting}
+              className="bg-[#23232a] hover:bg-[#2a2a32] text-white border border-[#3a3a42] transition-all duration-300 group"
+            >
+              <Download className={`w-4 h-4 mr-2 ${exporting ? 'animate-bounce' : 'group-hover:translate-y-[-2px] transition-transform duration-300'}`} />
+              {exporting ? 'Exporting...' : 'Export Report'}
+            </Button>
+            
+            <Button
+              onClick={handleShareAnalysis}
+              disabled={sharing}
+              className="bg-[#23232a] hover:bg-[#2a2a32] text-white border border-[#3a3a42] transition-all duration-300 group"
+            >
+              <Share2 className={`w-4 h-4 mr-2 ${sharing ? 'animate-pulse' : 'group-hover:scale-110 transition-transform duration-300'}`} />
+              {sharing ? 'Sharing...' : 'Share Analysis'}
+            </Button>
           </motion.div>
+
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 rounded-2xl w-full">
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="bg-black rounded-xl p-6 border border-[#a78bfa] relative overflow-hidden"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-purple-500/30 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-purple-300" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg sm:text-2xl font-bold text-white">
+                      ₹{metrics?.totalPortfolioValue.toLocaleString()}
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-400">Portfolio Value</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-purple-300">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+{metrics?.portfolioGrowth}% growth</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="bg-black rounded-xl p-6 border border-[#a78bfa] relative overflow-hidden"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-purple-500/30 flex items-center justify-center">
+                    <Target className="w-5 h-5 sm:w-6 sm:h-6 text-purple-300" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg sm:text-2xl font-bold text-white">
+                      {metrics?.averageYield.toFixed(1)}%
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-400">Average Yield</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-purple-300">
+                  <ArrowUpRight className="w-4 h-4" />
+                  <span>Above market average</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="bg-black rounded-xl p-6 border border-[#a78bfa] relative overflow-hidden"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-purple-500/30 flex items-center justify-center">
+                    <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-purple-300" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg sm:text-2xl font-bold text-white">
+                      {metrics?.riskScore.toFixed(1)}/10
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-400">Risk Score</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-purple-300">
+                  <Activity className="w-4 h-4" />
+                  <span>Moderate risk</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="bg-black rounded-xl p-6 border border-[#a78bfa] relative overflow-hidden"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-purple-500/30 flex items-center justify-center">
+                    <PieChart className="w-5 h-5 sm:w-6 sm:h-6 text-purple-300" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg sm:text-2xl font-bold text-white">
+                      {metrics?.diversificationScore.toFixed(1)}/10
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-400">Diversification</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-purple-300">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Well diversified</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Analysis Controls */}
+          <div className="bg-gray-900 rounded-xl p-4 sm:p-6 border border-gray-700 mb-8">
+            <div className="relative z-10">
+              <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {timeframes.map((timeframe) => (
+                    <button
+                      key={timeframe.value}
+                      onClick={() => setSelectedTimeframe(timeframe.value)}
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 border-2 ${
+                        selectedTimeframe === timeframe.value
+                          ? "bg-gradient-to-r from-white via-purple-400 to-purple-600 bg-clip-text text-transparent border-purple-400"
+                          : "bg-gray-700 text-gray-300 hover:bg-gray-600 border-transparent"
+                      }`}
+                    >
+                      {timeframe.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {analysisTypes.map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => setSelectedAnalysis(type.value)}
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 border-2 ${
+                        selectedAnalysis === type.value
+                          ? "bg-gradient-to-r from-white via-purple-400 to-purple-600 bg-clip-text text-transparent border-purple-400"
+                          : "bg-gray-700 text-gray-300 hover:bg-gray-600 border-transparent"
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Chart */}
+          <div className="mb-8 w-full">
+            <PerformanceChart />
+          </div>
+
+          {/* Market Insights */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Market Intelligence */}
+            <motion.div 
+              className="bg-gray-900 rounded-xl p-6 border border-gray-700 cursor-pointer group"
+              whileHover={{ 
+                scale: 1.02, 
+                boxShadow: "0 0 30px rgba(147, 51, 234, 0.3)",
+                borderColor: "rgb(147, 51, 234)"
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <motion.div 
+                    className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"
+                    whileHover={{ rotate: 10, scale: 1.1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Brain className="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors duration-300" />
+                  </motion.div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-blue-100 transition-colors duration-300">Market Intelligence</h3>
+                    <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors duration-300">AI-powered market insights</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {marketInsights.map((insight, index) => (
+                    <motion.div
+                      key={index}
+                      className={`p-4 rounded-lg border ${insight.title === 'REIT Regulations Update' ? 'bg-[#B6FF3F]/10 border-[#B6FF3F]/40' : getImpactColor(insight.impact)} relative overflow-hidden group/insight cursor-pointer`}
+                      whileHover={{ scale: 1.01, y: -2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold text-white group-hover:text-[#B6FF3F] transition-colors duration-300">{insight.title}</h4>
+                          <div className="text-xs px-2 py-1 bg-gray-800 rounded-full text-gray-400 group-hover:bg-gray-700 group-hover:text-gray-300 transition-colors duration-300">
+                            {insight.confidence}% confidence
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-300 mb-2 group-hover:text-gray-200 transition-colors duration-300">{insight.description}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded-full group-hover:bg-gray-600 transition-colors duration-300">
+                            {insight.category}
+                          </span>
+                          <span className={`text-xs capitalize ${insight.impact === 'positive' || insight.title === 'REIT Regulations Update' ? 'text-[#B6FF3F] font-bold' : insight.impact === 'negative' ? 'text-red-400' : 'text-yellow-400'} group-hover:scale-105 transition-transform duration-300`}>
+                            {insight.impact} impact
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Predictive Analysis */}
+            <motion.div 
+              className="bg-gray-900 rounded-xl p-6 border border-gray-700 cursor-pointer group"
+              whileHover={{ 
+                scale: 1.02, 
+                boxShadow: "0 0 30px rgba(147, 51, 234, 0.3)",
+                borderColor: "rgb(147, 51, 234)"
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <motion.div 
+                    className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center"
+                    whileHover={{ rotate: -10, scale: 1.1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Zap className="w-5 h-5 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" />
+                  </motion.div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-purple-100 transition-colors duration-300">Predictive Analytics</h3>
+                    <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors duration-300">Future performance forecasts</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {predictiveAnalysis.map((analysis, index) => (
+                    <motion.div
+                      key={index}
+                      className="p-4 bg-gray-800 rounded-lg border border-gray-600 relative overflow-hidden group/analysis cursor-pointer"
+                      whileHover={{ scale: 1.01, y: -2 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-white group-hover:text-[#B6FF3F] transition-colors duration-300">{analysis.period}</h4>
+                          <div className={`text-xs px-2 py-1 rounded-full ${getRiskColor(analysis.riskLevel)} group-hover:scale-105 transition-transform duration-300`}>
+                            {analysis.riskLevel} risk
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-3">
+                          <div>
+                            <div className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Expected Return</div>
+                            <div className="text-lg font-bold text-[#B6FF3F] drop-shadow-[0_0_6px_#B6FF3F] group-hover:text-[#B6FF3F] transition-colors duration-300">
+                              +{analysis.expectedReturn}%
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Confidence</div>
+                            <div className="text-lg font-bold text-white group-hover:text-[#B6FF3F] transition-colors duration-300">
+                              {analysis.confidence}%
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-300 group-hover:text-gray-200 transition-colors duration-300">{analysis.recommendation}</div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Market Sentiment */}
+          <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Current Market Sentiment</h3>
+                  <div className="flex items-center gap-3">
+                    <div className={`text-4xl font-bold ${getSentimentColor(metrics?.marketSentiment || "neutral")}`}>
+                      {metrics?.marketSentiment?.toUpperCase()}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className={`w-6 h-6 ${getSentimentColor(metrics?.marketSentiment || "neutral")}`} />
+                      <span className="text-gray-400">Overall trend positive for commercial real estate</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-400 mb-1">Market Confidence</div>
+                  <div className="text-3xl font-bold text-green-400">87%</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Key Metrics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <motion.div 
-            className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl p-6 border border-green-500/20 relative overflow-hidden group"
-            whileHover={{ scale: 1.02, y: -5 }}
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(34, 197, 94, 0.3)",
-                "0 0 40px rgba(34, 197, 94, 0.5)",
-                "0 0 20px rgba(34, 197, 94, 0.3)"
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              },
-              hover: {
-                type: "spring",
-                stiffness: 300
-              }
-            }}
-          >
-            {/* Glowing border animation */}
-            <motion.div
-              className="absolute inset-0 rounded-xl border-2 border-green-400/0"
-              animate={{
-                borderColor: [
-                  "rgba(34, 197, 94, 0)",
-                  "rgba(34, 197, 94, 0.6)",
-                  "rgba(34, 197, 94, 0)"
-                ]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <motion.div 
-                  className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <DollarSign className="w-6 h-6 text-green-400" />
-                </motion.div>
-                <div className="text-right">
-                  <motion.div 
-                    className="text-2xl font-bold text-white"
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    ₹{metrics?.totalPortfolioValue.toLocaleString()}
-                  </motion.div>
-                  <div className="text-sm text-gray-400">Portfolio Value</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-green-400">
-                <TrendingUp className="w-4 h-4" />
-                <span>+{metrics?.portfolioGrowth}% growth</span>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl p-6 border border-orange-500/20 relative overflow-hidden group"
-            whileHover={{ scale: 1.02, y: -5 }}
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(249, 115, 22, 0.3)",
-                "0 0 40px rgba(249, 115, 22, 0.5)",
-                "0 0 20px rgba(249, 115, 22, 0.3)"
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.5
-              },
-              hover: {
-                type: "spring",
-                stiffness: 300
-              }
-            }}
-          >
-            {/* Glowing border animation */}
-            <motion.div
-              className="absolute inset-0 rounded-xl border-2 border-orange-400/0"
-              animate={{
-                borderColor: [
-                  "rgba(249, 115, 22, 0)",
-                  "rgba(249, 115, 22, 0.6)",
-                  "rgba(249, 115, 22, 0)"
-                ]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.5
-              }}
-            />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <motion.div 
-                  className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <Target className="w-6 h-6 text-orange-400" />
-                </motion.div>
-                <div className="text-right">
-                  <motion.div 
-                    className="text-2xl font-bold text-white"
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                  >
-                    {metrics?.averageYield.toFixed(1)}%
-                  </motion.div>
-                  <div className="text-sm text-gray-400">Average Yield</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-orange-400">
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Above market average</span>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl p-6 border border-purple-500/20 relative overflow-hidden group"
-            whileHover={{ scale: 1.02, y: -5 }}
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(147, 51, 234, 0.3)",
-                "0 0 40px rgba(147, 51, 234, 0.5)",
-                "0 0 20px rgba(147, 51, 234, 0.3)"
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              },
-              hover: {
-                type: "spring",
-                stiffness: 300
-              }
-            }}
-          >
-            {/* Glowing border animation */}
-            <motion.div
-              className="absolute inset-0 rounded-xl border-2 border-purple-400/0"
-              animate={{
-                borderColor: [
-                  "rgba(147, 51, 234, 0)",
-                  "rgba(147, 51, 234, 0.6)",
-                  "rgba(147, 51, 234, 0)"
-                ]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              }}
-            />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <motion.div 
-                  className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <Brain className="w-6 h-6 text-purple-400" />
-                </motion.div>
-                <div className="text-right">
-                  <motion.div 
-                    className="text-2xl font-bold text-white"
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                  >
-                    {metrics?.riskScore.toFixed(1)}/10
-                  </motion.div>
-                  <div className="text-sm text-gray-400">Risk Score</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-purple-400">
-                <Activity className="w-4 h-4" />
-                <span>Moderate risk</span>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl p-6 border border-blue-500/20 relative overflow-hidden group"
-            whileHover={{ scale: 1.02, y: -5 }}
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(59, 130, 246, 0.3)",
-                "0 0 40px rgba(59, 130, 246, 0.5)",
-                "0 0 20px rgba(59, 130, 246, 0.3)"
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1.5
-              },
-              hover: {
-                type: "spring",
-                stiffness: 300
-              }
-            }}
-          >
-            {/* Glowing border animation */}
-            <motion.div
-              className="absolute inset-0 rounded-xl border-2 border-blue-400/0"
-              animate={{
-                borderColor: [
-                  "rgba(59, 130, 246, 0)",
-                  "rgba(59, 130, 246, 0.6)",
-                  "rgba(59, 130, 246, 0)"
-                ]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1.5
-              }}
-            />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <motion.div 
-                  className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <PieChart className="w-6 h-6 text-blue-400" />
-                </motion.div>
-                <div className="text-right">
-                  <motion.div 
-                    className="text-2xl font-bold text-white"
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
-                  >
-                    {metrics?.diversificationScore.toFixed(1)}/10
-                  </motion.div>
-                  <div className="text-sm text-gray-400">Diversification</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-blue-400">
-                <CheckCircle className="w-4 h-4" />
-                <span>Well diversified</span>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Analysis Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gray-900 rounded-xl p-6 border border-gray-700 mb-8"
-          whileHover={{ scale: 1.01 }}
-        >
-          <div className="relative z-10">
-            <div className="flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex flex-wrap gap-2">
-                {timeframes.map((timeframe) => (
-                  <motion.button
-                    key={timeframe.value}
-                    onClick={() => setSelectedTimeframe(timeframe.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      selectedTimeframe === timeframe.value
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {timeframe.label}
-                  </motion.button>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {analysisTypes.map((type) => (
-                  <motion.button
-                    key={type.value}
-                    onClick={() => setSelectedAnalysis(type.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      selectedAnalysis === type.value
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {type.label}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Performance Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
-          <PerformanceChart />
-        </motion.div>
-
-        {/* Market Insights */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"
-        >
-          {/* Market Intelligence */}
-          <motion.div 
-            className="bg-gray-900 rounded-xl p-6 border border-gray-700"
-            whileHover={{ scale: 1.01, y: -3 }}
-          >
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <motion.div 
-                  className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <Brain className="w-5 h-5 text-blue-400" />
-                </motion.div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Market Intelligence</h3>
-                  <p className="text-gray-400 text-sm">AI-powered market insights</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {marketInsights.map((insight, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className={`p-4 rounded-lg border ${getImpactColor(insight.impact)} relative overflow-hidden group/insight`}
-                    whileHover={{ scale: 1.02, x: 5 }}
-                  >
-                    <div className="relative z-10">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-white">{insight.title}</h4>
-                        <div className="text-xs px-2 py-1 bg-gray-800 rounded-full text-gray-400">
-                          {insight.confidence}% confidence
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-300 mb-2">{insight.description}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 bg-gray-700 text-gray-300 rounded-full">
-                          {insight.category}
-                        </span>
-                        <span className={`text-xs capitalize ${insight.impact === 'positive' ? 'text-green-400' : insight.impact === 'negative' ? 'text-red-400' : 'text-yellow-400'}`}>
-                          {insight.impact} impact
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Predictive Analysis */}
-          <motion.div 
-            className="bg-gray-900 rounded-xl p-6 border border-gray-700"
-            whileHover={{ scale: 1.01, y: -3 }}
-          >
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <motion.div 
-                  className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <Zap className="w-5 h-5 text-purple-400" />
-                </motion.div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Predictive Analytics</h3>
-                  <p className="text-gray-400 text-sm">Future performance forecasts</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {predictiveAnalysis.map((analysis, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                    className="p-4 bg-gray-800 rounded-lg border border-gray-600 relative overflow-hidden group/analysis"
-                    whileHover={{ scale: 1.02, x: -5 }}
-                  >
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-white">{analysis.period}</h4>
-                        <div className={`text-xs px-2 py-1 rounded-full ${getRiskColor(analysis.riskLevel)}`}>
-                          {analysis.riskLevel} risk
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 mb-3">
-                        <div>
-                          <div className="text-sm text-gray-400">Expected Return</div>
-                          <motion.div 
-                            className="text-lg font-bold text-green-400"
-                            animate={{ scale: [1, 1.02, 1] }}
-                            transition={{ duration: 2, repeat: Infinity, delay: index * 0.5 }}
-                          >
-                            +{analysis.expectedReturn}%
-                          </motion.div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-gray-400">Confidence</div>
-                          <motion.div 
-                            className="text-lg font-bold text-white"
-                            animate={{ scale: [1, 1.02, 1] }}
-                            transition={{ duration: 2, repeat: Infinity, delay: index * 0.5 + 0.5 }}
-                          >
-                            {analysis.confidence}%
-                          </motion.div>
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-300">{analysis.recommendation}</div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Market Sentiment */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-gray-900 rounded-xl p-6 border border-gray-700"
-          whileHover={{ scale: 1.01 }}
-        >
-          <div className="relative z-10">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-2">Current Market Sentiment</h3>
-                <div className="flex items-center gap-3">
-                  <motion.div 
-                    className={`text-4xl font-bold ${getSentimentColor(metrics?.marketSentiment || "neutral")}`}
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  >
-                    {metrics?.marketSentiment?.toUpperCase()}
-                  </motion.div>
-                  <motion.div 
-                    className="flex items-center gap-1"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    <TrendingUp className={`w-6 h-6 ${getSentimentColor(metrics?.marketSentiment || "neutral")}`} />
-                    <span className="text-gray-400">Overall trend positive for commercial real estate</span>
-                  </motion.div>
-                </div>
-              </div>
-              <motion.div 
-                className="text-right"
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <div className="text-sm text-gray-400 mb-1">Market Confidence</div>
-                <div className="text-3xl font-bold text-green-400">87%</div>
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </div>
   );
