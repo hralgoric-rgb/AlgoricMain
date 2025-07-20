@@ -1442,8 +1442,8 @@ const ProjectDetailPage = () => {
               >
                 <h3 className="text-lg font-semibold text-black mb-4">Developer</h3>
                 <div className="space-y-2">
-                  <p className="font-medium text-black">{project.developer.name}</p>
-                  <p className="text-gray-600 text-sm">{project.developer.email}</p>
+                  <p className="font-medium text-black">{project.developerContact.name}</p>
+                  <p className="text-gray-600 text-sm">{project.developerContact.email}</p>
                 </div>
               </motion.div>
 

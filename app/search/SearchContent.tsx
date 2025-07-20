@@ -1858,17 +1858,7 @@ const SearchPage = () => {
                                 </span>
                               </div>
                             )}
-                            <button
-                              className="absolute bottom-2 right-2 h-8 w-8 flex items-center justify-center bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleFavoriteToggle(item._id, item.type);
-                              }}
-                            >
-                              <FaHeart
-                                className={`h-4 w-4 ${isFavorite(item._id, item.type) ? "text-orange-500" : "text-gray-400 hover:text-orange-500"}`}
-                              />
-                            </button>
+                            
                           </div>
                           <div className="p-4 md:w-3/5 flex flex-col">
                             <div className="mb-auto">
