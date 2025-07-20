@@ -13,6 +13,7 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
     const user = await User.findById(userId)
       .populate({
         path: 'favorites.builders',
+        model: 'User',
         match: { isBuilder: true },
         select: 'name image builderInfo.companyName builderInfo.rating builderInfo.completedProjects builderInfo.ongoingProjects builderInfo.established builderInfo.specializations'
       });
@@ -47,9 +48,9 @@ export const GET = withAuth(async (request: NextRequest, userId: string) => {
       favorites: formattedBuilders,
       success: true
     });
-  } catch (_error) {
+  } catch (_error:any) {
     return NextResponse.json(
-      { error: 'An error occurred while fetching favorite builders' },
+      { error: `An error occurred while fetching favorite builders: ${_error.message}` },
       { status: 500 }
     );
   }
@@ -113,4 +114,4 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       { status: 500 }
     );
   }
-}); 
+});
