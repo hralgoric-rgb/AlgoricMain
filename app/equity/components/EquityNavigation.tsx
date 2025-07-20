@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function EquityNavigation() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
   const navItems = [
@@ -17,117 +17,100 @@ export default function EquityNavigation() {
   ];
 
   return (
-    <motion.div 
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/5"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Simplified Logo */}
-          <Link href="/equity" className="flex items-center gap-3 group">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center"
-            >
-              <Building2 className="w-5 h-5 text-white" />
-            </motion.div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-white group-hover:text-orange-400 transition-colors duration-300">
-                100Gaj
-              </span>
-              <span className="text-xs text-gray-400 font-medium">Equity Platform</span>
+    <>
+      {/* Horizontal Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-[#a78bfa]/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-[#a78bfa] rounded-lg flex items-center justify-center mr-3">
+                <Building2 className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-lg">100Gaj</span>
+                <span className="text-gray-300 text-xs">Equity Platform</span>
+              </div>
             </div>
-          </Link>
 
-          {/* Clean Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-2">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <motion.div key={item.href} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            {/* Desktop Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
                   <Link
+                    key={item.href}
                     href={item.href}
-                    className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      isActive
-                        ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                        : "text-gray-300 hover:text-white hover:bg-white/5"
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      isActive 
+                        ? 'bg-[#a78bfa] text-white' 
+                        : 'text-gray-300 hover:text-white hover:bg-[#a78bfa]/20 hover:border hover:border-[#a78bfa]/30'
                     }`}
                   >
                     <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                    
-                    {/* Subtle active indicator */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute inset-0 bg-orange-500/10 rounded-lg"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
-                    )}
+                    <span className="font-medium">{item.label}</span>
                   </Link>
-                </motion.div>
-              );
-            })}
-          </nav>
-
-          {/* Mobile menu button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300"
-          >
-            <motion.div
-              animate={{ rotate: isOpen ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </motion.div>
-          </motion.button>
-        </div>
-
-        {/* Clean Mobile Navigation */}
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden py-4 border-t border-white/5"
-          >
-            <nav className="flex flex-col gap-2">
-              {navItems.map((item, index) => {
-                const isActive = pathname === item.href;
-                return (
-                  <motion.div
-                    key={item.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                  >
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
-                        isActive
-                          ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                          : "text-gray-300 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </motion.div>
                 );
               })}
-            </nav>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button 
+                className="text-white p-2"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                aria-label="Toggle menu"
+              >
+                {mobileOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-black/95 backdrop-blur-sm border-t border-[#a78bfa]/30"
+          >
+            <div className="px-4 py-4 space-y-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                      isActive 
+                        ? 'bg-[#a78bfa]/10 text-[#a78bfa] border border-[#a78bfa]/30' 
+                        : 'text-gray-300 hover:text-white hover:bg-[#a78bfa]/10'
+                    }`}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </motion.div>
         )}
-      </div>
-    </motion.div>
+      </nav>
+
+      {/* Overlay for mobile menu */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu overlay"
+        />
+      )}
+    </>
   );
 }
