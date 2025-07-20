@@ -499,10 +499,9 @@ export default function AgentsPage() {
                 >
                   {/* Agent Image */}
                   <div className="h-80 relative overflow-hidden hover:scale-105 transition-transform duration-500">
-                    <Image
+                    <img
                       src={agent.image || "/placeholder-agent.png"}
                       alt={agent.name}
-                      fill
                       className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 to-transparent"></div>

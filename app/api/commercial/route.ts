@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import CommercialProperties from "@/app/models/CommercialProperty";
 import connectDB from "@/app/lib/mongodb";
@@ -72,3 +73,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

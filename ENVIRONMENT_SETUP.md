@@ -32,10 +32,9 @@ NODE_ENV=development
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Optional: PhonePe Payment Gateway
-PHONEPE_MERCHANT_ID=your-merchant-id
-PHONEPE_SALT_KEY=your-salt-key
-PHONEPE_SALT_INDEX=1
+# Razorpay Payment Gateway (REQUIRED for equity platform)
+RAZORPAY_KEY_ID=rzp_test_your_key_id
+RAZORPAY_KEY_SECRET=your_key_secret
 ```
 
 ## 📋 **Step-by-Step Setup:**

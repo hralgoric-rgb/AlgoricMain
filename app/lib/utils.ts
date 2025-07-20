@@ -56,6 +56,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
     },
   });
 
+  
   // Send email
   const info = await transporter.sendMail({
     from: `"100GAJ Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,

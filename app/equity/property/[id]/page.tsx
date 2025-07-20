@@ -5,46 +5,9 @@ import { ArrowLeft, MapPin, TrendingUp, Shield, Star, Users, Calendar, DollarSig
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-
-interface Property {
-  id: string;
-  name: string;
-  type: string;
-  location: string;
-  totalShares: number;
-  availableShares: number;
-  pricePerShare: number;
-  currentYield: number;
-  predictedAppreciation: number;
-  riskLevel: "Low" | "Medium" | "High";
-  image: string;
-  description: string;
-  rentalIncome: number;
-  occupancyRate: number;
-  totalValue: number;
-  aiScore: number;
-  features: string[];
-  detailedDescription: string;
-  keyTenants: string[];
-  propertyManager: string;
-  yearBuilt: number;
-  totalArea: number;
-  parkingSpaces: number;
-  amenities: string[];
-  financials: {
-    grossIncome: number;
-    operatingExpenses: number;
-    netIncome: number;
-    capRate: number;
-    cashOnCashReturn: number;
-  };
-  marketAnalysis: {
-    comparableProperties: number;
-    marketGrowth: number;
-    demandSupply: string;
-    futureProjects: string[];
-  };
-}
+import BuySharesModal from "@/app/commercial/components/BuySharesModal";
+import { CommercialProperty } from "@/app/data/commercialProperties";
+import { toast } from "sonner";
 
 interface PropertyDetailPageProps {
   params: Promise<{
@@ -54,7 +17,7 @@ interface PropertyDetailPageProps {
 
 export default function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const router = useRouter();
-  const [property, setProperty] = useState<Property | null>(null);
+  const [property, setProperty] = useState<CommercialProperty | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedShares, setSelectedShares] = useState(1);
   const [showBuyModal, setShowBuyModal] = useState(false);
@@ -70,72 +33,93 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
     resolveParams();
   }, [params]);
 
-  // Mock data - replace with actual API call
-  const mockProperty: Property = {
-    id: propertyId,
-    name: "Cyber Hub Office Complex",
-    type: "Office Building",
+  // Mock data - convert to CommercialProperty format
+  const createMockProperty = (id: string): CommercialProperty => ({
+    _id: id,
+    title: "Cyber Hub Office Complex",
+    description: "Premium Grade A office space in Cyber Hub with multinational tenants",
     location: "Gurgaon, Haryana",
+    address: {
+      street: "DLF Cyber City, Phase 2",
+      city: "Gurgaon",
+      state: "Haryana",
+      zipCode: "122002",
+      coordinates: [77.0855, 28.4949],
+    },
+    images: ["/images/office-complex.jpg", "/canada.jpeg", "/airpirt.jpeg"],
+    propertyType: "Office",
+    totalArea: 250000,
+    builtYear: 2018,
+    developer: {
+      name: "DLF Limited",
+      rating: 4.8,
+      projectsCompleted: 250,
+    },
+    totalPropertyValue: 25000000,
     totalShares: 10000,
     availableShares: 3500,
     pricePerShare: 2500,
-    currentYield: 8.5,
-    predictedAppreciation: 15.2,
-    riskLevel: "Medium",
-    image: "/images/office-complex.jpg",
-    description: "Premium Grade A office space in Cyber Hub with multinational tenants",
-    rentalIncome: 850000,
-    occupancyRate: 95,
-    totalValue: 25000000,
-    aiScore: 92,
-    features: ["Prime Location", "High Occupancy", "A+ Tenants", "Modern Facilities", "24/7 Security", "Backup Power"],
-    detailedDescription: "This premium Grade A office complex is strategically located in the heart of Cyber Hub, Gurgaon. The property features state-of-the-art infrastructure with modern amenities and is home to several multinational corporations. With its prime location and excellent connectivity, this property offers stable rental income and strong appreciation potential.",
-    keyTenants: ["Microsoft India", "Accenture", "Deloitte", "EY", "KPMG"],
-    propertyManager: "CBRE India",
-    yearBuilt: 2018,
-    totalArea: 250000,
-    parkingSpaces: 500,
-    amenities: ["Central AC", "High Speed Elevators", "Food Court", "Gymnasium", "Conference Rooms", "Parking"],
-    financials: {
-      grossIncome: 1200000,
-      operatingExpenses: 350000,
-      netIncome: 850000,
-      capRate: 3.4,
-      cashOnCashReturn: 8.5
-    },
-    marketAnalysis: {
-      comparableProperties: 12,
-      marketGrowth: 15.2,
-      demandSupply: "High Demand, Limited Supply",
-      futureProjects: ["Metro Extension", "New IT Parks", "Commercial Developments"]
-    }
-  };
+    minInvestment: 2500,
+    currentROI: 8.5,
+    rentalYield: 8.5,
+    appreciationRate: 15.2,
+    currentOccupancy: 95,
+    monthlyRental: 850000,
+    spvId: `SPV_${id}`,
+    spvName: "Cyber Hub Office SPV",
+    status: "active",
+    featured: true,
+    amenities: [
+      "Central AC",
+      "High Speed Elevators", 
+      "Food Court",
+      "Gymnasium",
+      "Conference Rooms",
+      "Parking"
+    ],
+    nearbyLandmarks: [
+      "Cyber Hub",
+      "DLF Mall", 
+      "MG Road Metro",
+      "Cyber City Metro"
+    ],
+    documents: [
+      {
+        name: "Property Title Deed",
+        url: "/documents/title-deed.pdf",
+        type: "legal",
+      },
+      {
+        name: "Financial Statements", 
+        url: "/documents/financial.pdf",
+        type: "financial",
+      },
+    ],
+    createdAt: "2024-01-15T00:00:00Z",
+    updatedAt: "2024-03-01T00:00:00Z",
+  });
 
   useEffect(() => {
     // Simulate API call
     if (!propertyId) return;
     
     const timer = setTimeout(() => {
-      const updatedMockProperty = {
-        ...mockProperty,
-        id: propertyId
-      };
-      setProperty(updatedMockProperty);
+      const mockProperty = createMockProperty(propertyId);
+      setProperty(mockProperty);
       setIsLoading(false);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [propertyId, mockProperty]);
+  }, [propertyId]);
 
   const handleBuyShares = () => {
     setShowBuyModal(true);
   };
 
-  const handleConfirmPurchase = () => {
-    // Handle purchase logic here
-    console.log(`Purchasing ${selectedShares} shares`);
+  const handlePurchaseSuccess = () => {
+    toast.success("Shares purchased successfully!");
     setShowBuyModal(false);
-    // Show success message or redirect
+    // You can add additional success logic here like refreshing data
   };
 
   const getTotalInvestment = () => {
@@ -145,26 +129,15 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
 
   const getExpectedMonthlyIncome = () => {
     if (!property) return 0;
-    return Math.round((getTotalInvestment() * property.currentYield) / 100 / 12);
-  };
-
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case "Low": return "text-green-400 bg-green-500/10";
-      case "Medium": return "text-yellow-400 bg-yellow-500/10";
-      case "High": return "text-red-400 bg-red-500/10";
-      default: return "text-gray-400 bg-gray-500/10";
-    }
+    return Math.round((getTotalInvestment() * property.currentROI) / 100 / 12);
   };
 
   const getPropertyTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
-      case "office building":
       case "office": return Briefcase;
       case "warehouse": return Warehouse;
       case "retail": return Store;
-      case "data center": return Server;
-      case "co-working": return UserPlus;
+      case "mixed use": return Server;
       case "industrial": return Coffee;
       default: return Building2;
     }
@@ -196,44 +169,62 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
     );
   }
 
-  const PropertyIcon = getPropertyTypeIcon(property.type);
+  const PropertyIcon = getPropertyTypeIcon(property.propertyType);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800">
+      <div className="bg-gradient-to-b from-gray-900 to-black border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/equity">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Properties
-                </Button>
-              </Link>
-              <div className="text-sm text-gray-400">
-                Property Details
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              onClick={() => router.back()}
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <PropertyIcon className="w-6 h-6 text-orange-500" />
+                <h1 className="text-3xl font-bold text-white">{property.title}</h1>
+              </div>
+              <div className="flex items-center gap-4 text-gray-400">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  <span>{property.location}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>{property.currentROI}% ROI</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Shield className="w-4 h-4" />
+                  <span>AI Score: 92/100</span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFavorite(!isFavorite)}
-                className={`border-gray-600 hover:bg-gray-800 ${isFavorite ? 'text-red-400' : 'text-gray-300'}`}
+                className={`border-gray-600 ${isFavorite ? 'text-red-400 border-red-400' : 'text-gray-300'} hover:bg-gray-800`}
               >
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
+                {isFavorite ? 'Saved' : 'Save'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
               </Button>
             </div>
           </div>
@@ -243,120 +234,107 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Property Header */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Property Images */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
+              className="relative"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">{property.name}</h1>
-                  <div className="flex items-center gap-4 text-gray-400 mb-4">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{property.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <PropertyIcon className="w-4 h-4" />
-                      <span>{property.type}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`px-3 py-1 rounded-full text-sm font-bold ${getRiskColor(property.riskLevel)} mb-2`}>
-                    <Shield className="w-4 h-4 inline mr-1" />
-                    {property.riskLevel} Risk
-                  </div>
-                  <div className="text-2xl font-bold text-orange-400">
-                    AI Score: {property.aiScore}
-                  </div>
-                </div>
-              </div>
-
-              {/* Property Image */}
-              <div className="relative h-96 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border border-gray-800">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
-                <div className="w-full h-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-                  <PropertyIcon className="w-24 h-24 text-orange-500/50" />
-                </div>
-                
-                {/* Overlays */}
-                <div className="absolute top-6 left-6 z-20">
-                  <div className="bg-black/70 backdrop-blur-sm rounded-lg p-3">
-                    <div className="text-sm text-gray-400 mb-1">Property Value</div>
-                    <div className="text-xl font-bold text-white">₹{property.totalValue.toLocaleString()}</div>
-                  </div>
-                </div>
-                
-                <div className="absolute top-6 right-6 z-20">
-                  <div className="bg-black/70 backdrop-blur-sm rounded-lg p-3 text-center">
-                    <div className="text-sm text-gray-400 mb-1">Occupancy Rate</div>
-                    <div className="text-xl font-bold text-green-400">{property.occupancyRate}%</div>
+              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-800">
+                <img
+                  src={property.images[0] || "/images/placeholder-property.jpg"}
+                  alt={property.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-4 right-4">
+                  <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
+                    <span className="text-white text-sm font-semibold">
+                      {property.availableShares.toLocaleString()} shares available
+                    </span>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Key Metrics */}
+            {/* Property Overview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800"
+            >
+              <h2 className="text-2xl font-bold text-white mb-4">Property Overview</h2>
+              <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                {property.description}
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Building2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-white font-semibold">{property.totalArea.toLocaleString()} sq ft</div>
+                  <div className="text-gray-400 text-sm">Total Area</div>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-white font-semibold">{property.builtYear}</div>
+                  <div className="text-gray-400 text-sm">Year Built</div>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-white font-semibold">{property.currentOccupancy}%</div>
+                  <div className="text-gray-400 text-sm">Occupancy</div>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="text-white font-semibold">{property.currentROI}%</div>
+                  <div className="text-gray-400 text-sm">Annual ROI</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Key Features & Amenities */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
             >
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-gray-800">
-                <div className="text-2xl font-bold text-orange-500 mb-1">{property.currentYield}%</div>
-                <div className="text-sm text-gray-400">Current Yield</div>
-              </div>
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-gray-800">
-                <div className="text-2xl font-bold text-green-400 mb-1">+{property.predictedAppreciation}%</div>
-                <div className="text-sm text-gray-400">Predicted Growth</div>
-              </div>
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-gray-800">
-                <div className="text-2xl font-bold text-blue-400 mb-1">{property.totalArea.toLocaleString()}</div>
-                <div className="text-sm text-gray-400">Total Area (sq ft)</div>
-              </div>
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-gray-800">
-                <div className="text-2xl font-bold text-purple-400 mb-1">{property.yearBuilt}</div>
-                <div className="text-sm text-gray-400">Year Built</div>
-              </div>
-            </motion.div>
-
-            {/* Description */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8"
-            >
-              <h2 className="text-xl font-bold text-white mb-4">Property Overview</h2>
-              <p className="text-gray-300 mb-6 leading-relaxed">{property.detailedDescription}</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Key Features</h3>
-                  <div className="space-y-2">
-                    {property.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 text-gray-300">
-                        <CheckCircle className="w-4 h-4 text-green-400" />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
+              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  Key Features
+                </h3>
+                <div className="space-y-3">
+                  {["Prime Location", "High Occupancy", "A+ Tenants", "Modern Facilities", "24/7 Security", "Backup Power"].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-400 rounded-full" />
+                      <span className="text-gray-300">{feature}</span>
+                    </div>
+                  ))}
                 </div>
-                
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Amenities</h3>
-                  <div className="space-y-2">
-                    {property.amenities.map((amenity, index) => (
-                      <div key={index} className="flex items-center gap-2 text-gray-300">
-                        <CheckCircle className="w-4 h-4 text-orange-400" />
-                        <span>{amenity}</span>
-                      </div>
-                    ))}
-                  </div>
+              </div>
+
+              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Star className="w-5 h-5 text-orange-400" />
+                  Amenities
+                </h3>
+                <div className="space-y-3">
+                  {property.amenities.map((amenity, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-orange-400 rounded-full" />
+                      <span className="text-gray-300">{amenity}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -365,14 +343,14 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8"
+              transition={{ delay: 0.3 }}
+              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
             >
-              <h2 className="text-xl font-bold text-white mb-4">Key Tenants</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {property.keyTenants.map((tenant, index) => (
-                  <div key={index} className="bg-black/40 rounded-lg p-3 text-center">
-                    <div className="text-white font-semibold">{tenant}</div>
+              <h3 className="text-lg font-bold text-white mb-4">Key Tenants</h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {["Microsoft India", "Accenture", "Deloitte", "EY", "KPMG"].map((tenant, index) => (
+                  <div key={index} className="text-center p-4 bg-black/40 rounded-lg">
+                    <div className="text-white font-semibold text-lg">{tenant}</div>
                   </div>
                 ))}
               </div>
@@ -382,34 +360,26 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
               className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
             >
-              <h2 className="text-xl font-bold text-white mb-4">Financial Analysis</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Gross Income</span>
-                    <span className="text-white font-semibold">₹{property.financials.grossIncome.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Operating Expenses</span>
-                    <span className="text-white font-semibold">₹{property.financials.operatingExpenses.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Net Income</span>
-                    <span className="text-green-400 font-semibold">₹{property.financials.netIncome.toLocaleString()}</span>
-                  </div>
+              <h3 className="text-lg font-bold text-white mb-4">Financial Analysis</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-400">₹12L</div>
+                  <div className="text-gray-400">Gross Income</div>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Cap Rate</span>
-                    <span className="text-white font-semibold">{property.financials.capRate}%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Cash-on-Cash Return</span>
-                    <span className="text-orange-400 font-semibold">{property.financials.cashOnCashReturn}%</span>
-                  </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-400">₹3.5L</div>
+                  <div className="text-gray-400">Operating Expenses</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">₹8.5L</div>
+                  <div className="text-gray-400">Net Income</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-400">3.4%</div>
+                  <div className="text-gray-400">Cap Rate</div>
                 </div>
               </div>
             </motion.div>
@@ -510,16 +480,16 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Market Growth</span>
-                    <span className="text-green-400 font-semibold">+{property.marketAnalysis.marketGrowth}%</span>
+                    <span className="text-green-400 font-semibold">+{property.appreciationRate}%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Comparable Properties</span>
-                    <span className="text-white font-semibold">{property.marketAnalysis.comparableProperties}</span>
+                    <span className="text-white font-semibold">12</span>
                   </div>
                   <div>
                     <div className="text-gray-400 mb-2">Market Conditions</div>
                     <div className="text-sm text-green-400 font-semibold">
-                      {property.marketAnalysis.demandSupply}
+                      High Demand, Limited Supply
                     </div>
                   </div>
                 </div>
@@ -538,7 +508,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-white font-semibold">{property.propertyManager}</div>
+                    <div className="text-white font-semibold">CBRE India</div>
                     <div className="text-sm text-gray-400">Professional Management</div>
                   </div>
                 </div>
@@ -551,54 +521,13 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
         </div>
       </div>
 
-      {/* Buy Shares Modal */}
-      {showBuyModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-gray-900 rounded-2xl p-6 max-w-md w-full mx-4 border border-gray-800"
-          >
-            <h3 className="text-xl font-bold text-white mb-6">Confirm Purchase</h3>
-            
-            <div className="space-y-4 mb-6">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Property</span>
-                <span className="text-white font-semibold">{property.name}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Shares</span>
-                <span className="text-white font-semibold">{selectedShares}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Price per Share</span>
-                <span className="text-white font-semibold">₹{property.pricePerShare.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center border-t border-gray-800 pt-4">
-                <span className="text-gray-400">Total Amount</span>
-                <span className="text-xl font-bold text-orange-400">₹{getTotalInvestment().toLocaleString()}</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={() => setShowBuyModal(false)}
-                variant="outline"
-                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmPurchase}
-                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Confirm Purchase
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      {/* Buy Shares Modal with Razorpay Integration */}
+      <BuySharesModal
+        property={property}
+        isOpen={showBuyModal}
+        onClose={() => setShowBuyModal(false)}
+        onSuccess={handlePurchaseSuccess}
+      />
     </div>
   );
 }
