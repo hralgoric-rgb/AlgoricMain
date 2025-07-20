@@ -147,7 +147,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white text-lg">Loading property details...</p>
         </div>
       </div>
@@ -189,8 +189,10 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
             
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <PropertyIcon className="w-6 h-6 text-orange-500" />
-                <h1 className="text-3xl font-bold text-white">{property.title}</h1>
+                <PropertyIcon className="w-6 h-6 text-purple-500" />
+                <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-white via-[#a78bfa] to-white bg-clip-text text-transparent">
+                  {property.title}
+                </h1>
               </div>
               <div className="flex items-center gap-4 text-gray-400">
                 <div className="flex items-center gap-1">
@@ -271,28 +273,28 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white font-semibold">{property.totalArea.toLocaleString()} sq ft</div>
                   <div className="text-gray-400 text-sm">Total Area</div>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white font-semibold">{property.builtYear}</div>
                   <div className="text-gray-400 text-sm">Year Built</div>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white font-semibold">{property.currentOccupancy}%</div>
                   <div className="text-gray-400 text-sm">Occupancy</div>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Target className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-white font-semibold">{property.currentROI}%</div>
@@ -310,13 +312,13 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
             >
               <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <CheckCircle className="w-5 h-5" style={{ color: '#B6FF3F' }} />
                   Key Features
                 </h3>
                 <div className="space-y-3">
                   {["Prime Location", "High Occupancy", "A+ Tenants", "Modern Facilities", "24/7 Security", "Backup Power"].map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-400 rounded-full" />
+                      <div className="w-2 h-2 rounded-full bg-[#B6FF3F]" />
                       <span className="text-gray-300">{feature}</span>
                     </div>
                   ))}
@@ -325,13 +327,13 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
 
               <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Star className="w-5 h-5 text-orange-400" />
+                  <Star className="w-5 h-5 text-purple-500" />
                   Amenities
                 </h3>
                 <div className="space-y-3">
                   {property.amenities.map((amenity, index) => (
                     <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-orange-400 rounded-full" />
+                      <div className="w-2 h-2 rounded-full bg-[#a78bfa]" />
                       <span className="text-gray-300">{amenity}</span>
                     </div>
                   ))}
@@ -349,8 +351,8 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               <h3 className="text-lg font-bold text-white mb-4">Key Tenants</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {["Microsoft India", "Accenture", "Deloitte", "EY", "KPMG"].map((tenant, index) => (
-                  <div key={index} className="text-center p-4 bg-black/40 rounded-lg">
-                    <div className="text-white font-semibold text-lg">{tenant}</div>
+                  <div key={index} className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200 cursor-pointer hover:bg-gray-800">
+                    <div className="font-semibold text-lg text-white">{tenant}</div>
                   </div>
                 ))}
               </div>
@@ -366,7 +368,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               <h3 className="text-lg font-bold text-white mb-4">Financial Analysis</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">₹12L</div>
+                  <div className="text-2xl font-bold" style={{ color: '#B6FF3F' }}>₹12L</div>
                   <div className="text-gray-400">Gross Income</div>
                 </div>
                 <div className="text-center">
@@ -378,7 +380,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                   <div className="text-gray-400">Net Income</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-400">3.4%</div>
+                  <div className="text-2xl font-bold" style={{ color: '#a78bfa' }}>3.4%</div>
                   <div className="text-gray-400">Cap Rate</div>
                 </div>
               </div>
@@ -413,7 +415,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                   {/* Progress Bar */}
                   <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
                     <div 
-                      className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full"
+                      className="h-2 rounded-full bg-[#B6FF3F]"
                       style={{ width: `${(property.availableShares / property.totalShares) * 100}%` }}
                     />
                   </div>
@@ -454,7 +456,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">Expected Monthly Income</span>
-                      <span className="text-lg font-semibold text-green-400">₹{getExpectedMonthlyIncome().toLocaleString()}</span>
+                      <span className="text-lg font-semibold" style={{ color: '#B6FF3F' }}>₹{getExpectedMonthlyIncome().toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -462,7 +464,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 {/* Buy Button */}
                 <Button
                   onClick={handleBuyShares}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
+                  className="w-full bg-[#d1ff4a] hover:bg-[#b6e944] text-black font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Buy Equity Shares
@@ -480,7 +482,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Market Growth</span>
-                    <span className="text-green-400 font-semibold">+{property.appreciationRate}%</span>
+                    <span className="font-semibold" style={{ color: '#B6FF3F' }}>+{property.appreciationRate}%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Comparable Properties</span>
@@ -488,7 +490,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
                   </div>
                   <div>
                     <div className="text-gray-400 mb-2">Market Conditions</div>
-                    <div className="text-sm text-green-400 font-semibold">
+                    <div className="text-sm font-semibold" style={{ color: '#B6FF3F' }}>
                       High Demand, Limited Supply
                     </div>
                   </div>
@@ -504,8 +506,8 @@ export default function PropertyDetailPage({ params }: PropertyDetailPageProps) 
               >
                 <h3 className="text-lg font-bold text-white mb-4">Property Management</h3>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-400 rounded-full flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-violet-100" />
                   </div>
                   <div>
                     <div className="text-white font-semibold">CBRE India</div>
