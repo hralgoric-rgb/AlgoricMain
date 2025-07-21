@@ -72,7 +72,7 @@ const testProjectDetailPage = async () => {
   // Test 2: Test Delhi Area Analyzer API integration
   console.log("\n2. Testing Delhi Area Analyzer API integration...");
   try {
-    const response = await fetch('https://delhi-area-analyzer.onrender.com/api/location/Dwarka');
+    const response = await fetch('https://ml-models-vu7b.onrender.com/api/location/Dwarka');
     if (response.ok) {
       const areaData = await response.json();
       console.log("✅ Delhi Area Analyzer API is accessible");

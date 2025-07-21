@@ -331,7 +331,7 @@ const ProjectDetailPage = () => {
     try {
       setAreaDataLoading(true);
       const response = await fetch(
-        `https://delhi-area-analyzer.onrender.com/api/location/${encodeURIComponent(locality)}`
+        `https://ml-models-vu7b.onrender.com/api/location/${encodeURIComponent(locality)}`
       );
 
       if (response.ok) {
