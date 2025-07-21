@@ -123,7 +123,7 @@ export default function SellProperty() {
     
     if (type === 'builder') {
       // Check if user is a verified builder
-      if (!userProfile || !userProfile.isBuilder || !userProfile.builderInfo?.verified) {
+      if (!userProfile || !userProfile.isBuilder) {
         toast.error("You need to be a verified builder to post projects. Please complete your builder verification first!");
         setTimeout(() => {
           router.push("/verification");

@@ -1397,7 +1397,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   Interested in this property?
                 </h3>
 
-                {!session?.user ? (
+                {!checkAuthStatus ? (
                   <div className="text-center py-8">
                     <div className="mb-4">
                       <svg
