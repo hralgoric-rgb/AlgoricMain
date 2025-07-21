@@ -1326,15 +1326,9 @@ export default function UserProfile() {
                                         size="sm"
                                         variant="outline"
                                         className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                                        onClick={() => router.push(`/projects/${project._id}`)}
                                       >
                                         View
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-gray-600 text-gray-400 hover:bg-gray-700"
-                                      >
-                                        Edit
                                       </Button>
                                     </div>
                                   </div>

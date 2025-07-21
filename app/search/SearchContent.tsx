@@ -310,6 +310,18 @@ interface FilterState {
   mapBounds?: MapBounds;
 }
 
+// Separate interface for project filters
+interface ProjectFilterState {
+  priceRange: [number, number];
+  projectType: string[];
+  projectStage: string[];
+  constructionStatus: string[];
+  unitTypes: string[];
+  area: [number, number];
+  possessionYear: string[];
+  mapBounds?: MapBounds;
+}
+
 // Interface for articles
 interface Article {
   id: string;
@@ -341,6 +353,7 @@ const SearchPage = () => {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [filterTab, setFilterTab] = useState<'properties' | 'projects'>('properties');
   const [viewMode, setViewMode] = useState<'list' | 'map' | 'split'>('list');
   const [selectedFilters, setSelectedFilters] = useState<FilterState>({
     priceRange: [0, 100000000],
@@ -349,6 +362,15 @@ const SearchPage = () => {
     beds: [],
     baths: [],
     area: [0, 10000],
+  });
+  const [selectedProjectFilters, setSelectedProjectFilters] = useState<ProjectFilterState>({
+    priceRange: [0, 100000000],
+    projectType: [],
+    projectStage: [],
+    constructionStatus: [],
+    unitTypes: [],
+    area: [0, 10000],
+    possessionYear: [],
   });
   const [mapCenter, setMapCenter] = useState({ lat: 28.7041, lng: 77.1025 }); // Delhi coordinates
   const [zoom, setZoom] = useState(12);
@@ -380,6 +402,52 @@ const SearchPage = () => {
     "Villa",
     "Townhouse",
   ];
+  
+  // Project specific filter options
+  const projectTypes = [
+    "Residential",
+    "Commercial",
+    "Mixed Use",
+    "Villa Project",
+    "Apartment Complex",
+    "Shopping Mall",
+    "Office Complex",
+  ];
+  
+  const projectStages = [
+    "New Launch",
+    "Pre Launch",
+    "Under Construction",
+    "Ready to Move",
+    "Completed",
+  ];
+  
+  const constructionStatuses = [
+    "Planning",
+    "Foundation",
+    "Structure",
+    "Finishing",
+    "Completed",
+  ];
+  
+  const unitTypeOptions = [
+    "1 BHK",
+    "2 BHK", 
+    "3 BHK",
+    "4 BHK",
+    "5+ BHK",
+    "Studio",
+    "Penthouse",
+  ];
+  
+  const possessionYears = [
+    "2024",
+    "2025",
+    "2026",
+    "2027",
+    "2028+",
+  ];
+  
   const bedOptions = [1, 2, 3, 4, 5, 6];
 
   // Fetch initial data on component mount
@@ -843,6 +911,13 @@ const SearchPage = () => {
     }));
   };
 
+  const handleProjectFilterChange = (filterType: keyof ProjectFilterState, value: any) => {
+    setSelectedProjectFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+  };
+
   const handleMapBoundsChange = (bounds: MapBounds) => {
     setMapBounds(bounds);
     // searchPropertiesInMapBounds();
@@ -945,26 +1020,105 @@ const SearchPage = () => {
         }
       }
 
-      // For projects - simpler filtering since they have different structure
+      // For projects - use separate project filters
       if (item.type === 'project') {
-        // Property type filter can apply to project types
+        // Project type filter
         if (
-          selectedFilters.propertyType.length > 0 &&
+          selectedProjectFilters.projectType.length > 0 &&
           item.projectType &&
-          !selectedFilters.propertyType.some(
+          !selectedProjectFilters.projectType.some(
             (type) => item.projectType && item.projectType.toLowerCase().includes(type.toLowerCase())
           )
         ) {
           return false;
         }
 
-        // Projects are generally for sale, so filter by status if it's rent-only
+        // Project stage filter
         if (
-          selectedFilters.status.length > 0 &&
-          selectedFilters.status.includes("rent") &&
-          !selectedFilters.status.includes("sale")
+          selectedProjectFilters.projectStage.length > 0 &&
+          item.projectStage &&
+          !selectedProjectFilters.projectStage.includes(item.projectStage)
         ) {
           return false;
+        }
+
+        // Construction status filter
+        if (
+          selectedProjectFilters.constructionStatus.length > 0 &&
+          item.constructionStatus &&
+          !selectedProjectFilters.constructionStatus.includes(item.constructionStatus)
+        ) {
+          return false;
+        }
+
+        // Unit types filter (check if project has any of the selected unit types)
+        if (
+          selectedProjectFilters.unitTypes.length > 0 &&
+          item.unitTypes &&
+          Array.isArray(item.unitTypes)
+        ) {
+          const hasMatchingUnitType = item.unitTypes.some((unitType: any) => {
+            return selectedProjectFilters.unitTypes.some(selectedType => {
+              const unitTypeStr = unitType.type || '';
+              return unitTypeStr.toLowerCase().includes(selectedType.toLowerCase().replace(' bhk', ''));
+            });
+          });
+          if (!hasMatchingUnitType) {
+            return false;
+          }
+        }
+
+        // Possession year filter
+        if (
+          selectedProjectFilters.possessionYear.length > 0 &&
+          item.possessionDate
+        ) {
+          const possessionYear = new Date(item.possessionDate).getFullYear().toString();
+          const hasMatchingYear = selectedProjectFilters.possessionYear.some(year => {
+            if (year === '2028+') {
+              return parseInt(possessionYear) >= 2028;
+            }
+            return possessionYear === year;
+          });
+          if (!hasMatchingYear) {
+            return false;
+          }
+        }
+
+        // Area filter for projects (check unit types area ranges)
+        if (item.unitTypes && Array.isArray(item.unitTypes)) {
+          const hasMatchingArea = item.unitTypes.some((unitType: any) => {
+            const minArea = unitType.sizeRange?.min || 0;
+            const maxArea = unitType.sizeRange?.max || 0;
+            return (
+              minArea >= selectedProjectFilters.area[0] && 
+              maxArea <= selectedProjectFilters.area[1]
+            ) || (
+              maxArea >= selectedProjectFilters.area[0] && 
+              minArea <= selectedProjectFilters.area[1]
+            );
+          });
+          if (!hasMatchingArea) {
+            return false;
+          }
+        }
+
+        // Price filter for projects (check unit types price ranges)
+        if (item.unitTypes && Array.isArray(item.unitTypes)) {
+          const hasMatchingPrice = item.unitTypes.some((unitType: any) => {
+            const minPrice = (unitType.priceRange?.min || 0) * 100000; // Convert lacs to rupees
+            const maxPrice = (unitType.priceRange?.max || 0) * 100000;
+            return (
+              minPrice >= selectedProjectFilters.priceRange[0] && 
+              maxPrice <= selectedProjectFilters.priceRange[1]
+            ) || (
+              maxPrice >= selectedProjectFilters.priceRange[0] && 
+              minPrice <= selectedProjectFilters.priceRange[1]
+            );
+          });
+          if (!hasMatchingPrice) {
+            return false;
+          }
         }
       }
 
@@ -980,7 +1134,7 @@ const SearchPage = () => {
       return allProperties.find(prop => prop._id === item._id);
     }).filter(Boolean) as Property[];
     setFilteredProperties(legacyProperties);
-  }, [allSearchItems, searchQuery, selectedFilters, showingType, allProperties]);
+  }, [allSearchItems, searchQuery, selectedFilters, selectedProjectFilters, showingType, allProperties]);
 
   // Move useEffect to the end of the component
   useEffect(() => {
@@ -991,7 +1145,7 @@ const SearchPage = () => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [selectedFilters, searchQuery, showingType, filterSearchItems]);
+  }, [selectedFilters, selectedProjectFilters, searchQuery, showingType, filterSearchItems]);
 
   // Make a separate useEffect for data changes
   useEffect(() => {
@@ -1029,6 +1183,15 @@ const SearchPage = () => {
       beds: [],
       baths: [],
       area: [0, 10000],
+    });
+    setSelectedProjectFilters({
+      priceRange: [0, 100000000],
+      projectType: [],
+      projectStage: [],
+      constructionStatus: [],
+      unitTypes: [],
+      area: [0, 10000],
+      possessionYear: [],
     });
     setSearchQuery("");
   };
@@ -1330,92 +1493,186 @@ const SearchPage = () => {
           </div>
 
           {/* Active Filters */}
-          {(selectedFilters.propertyType.length > 0 ||
+          {(((selectedFilters.propertyType.length > 0 ||
             selectedFilters.beds.length > 0 ||
             selectedFilters.priceRange[0] > 0 ||
             selectedFilters.priceRange[1] < 100000000 ||
             selectedFilters.area[0] > 0 ||
             selectedFilters.area[1] < 10000 ||
-            selectedFilters.status.length > 0) && (
+            selectedFilters.status.length > 0) && (showingType === 'properties' || showingType === 'all')) ||
+           ((selectedProjectFilters.projectType.length > 0 ||
+            selectedProjectFilters.projectStage.length > 0 ||
+            selectedProjectFilters.constructionStatus.length > 0 ||
+            selectedProjectFilters.unitTypes.length > 0 ||
+            selectedProjectFilters.possessionYear.length > 0 ||
+            selectedProjectFilters.priceRange[0] > 0 ||
+            selectedProjectFilters.priceRange[1] < 100000000 ||
+            selectedProjectFilters.area[0] > 0 ||
+            selectedProjectFilters.area[1] < 10000) && (showingType === 'projects' || showingType === 'all'))) && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-xs text-gray-400">Active filters:</span>
 
-              {selectedFilters.status.includes("sale") && (
-                <button
-                  onClick={() => {
-                    const newStatus = selectedFilters.status.filter(
-                      (s) => s !== "sale",
-                    );
-                    handleFilterChange("status", newStatus);
-                  }}
-                  className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
-                >
-                  For Sale <FaTimes className="h-2 w-2" />
-                </button>
+              {/* Property Filters */}
+              {(showingType === 'properties' || showingType === 'all') && (
+                <>
+                  {selectedFilters.status.includes("sale") && (
+                    <button
+                      onClick={() => {
+                        const newStatus = selectedFilters.status.filter((s) => s !== "sale");
+                        handleFilterChange("status", newStatus);
+                      }}
+                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
+                    >
+                      For Sale <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+
+                  {selectedFilters.status.includes("rent") && (
+                    <button
+                      onClick={() => {
+                        const newStatus = selectedFilters.status.filter((s) => s !== "rent");
+                        handleFilterChange("status", newStatus);
+                      }}
+                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
+                    >
+                      For Rent <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+
+                  {selectedFilters.propertyType.map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        const newTypes = selectedFilters.propertyType.filter((t) => t !== type);
+                        handleFilterChange("propertyType", newTypes);
+                      }}
+                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
+                    >
+                      {type} <FaTimes className="h-2 w-2" />
+                    </button>
+                  ))}
+
+                  {selectedFilters.beds.length > 0 && (
+                    <button
+                      onClick={() => handleFilterChange("beds", [])}
+                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
+                    >
+                      {selectedFilters.beds.join(", ")} BHK <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+
+                  {(selectedFilters.priceRange[0] > 0 ||
+                    selectedFilters.priceRange[1] < 100000000) && (
+                    <button
+                      onClick={() => handleFilterChange("priceRange", [0, 100000000])}
+                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
+                    >
+                      Property ₹{selectedFilters.priceRange[0] / 100000}L - ₹
+                      {selectedFilters.priceRange[1] / 100000}L <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+
+                  {(selectedFilters.area[0] > 0 || selectedFilters.area[1] < 10000) && (
+                    <button
+                      onClick={() => handleFilterChange("area", [0, 10000])}
+                      className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
+                    >
+                      Property {selectedFilters.area[0]}-{selectedFilters.area[1]} sqft{" "}
+                      <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+                </>
               )}
 
-              {selectedFilters.status.includes("rent") && (
-                <button
-                  onClick={() => {
-                    const newStatus = selectedFilters.status.filter(
-                      (s) => s !== "rent",
-                    );
-                    handleFilterChange("status", newStatus);
-                  }}
-                  className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
-                >
-                  For Rent <FaTimes className="h-2 w-2" />
-                </button>
-              )}
+              {/* Project Filters */}
+              {(showingType === 'projects' || showingType === 'all') && (
+                <>
+                  {selectedProjectFilters.projectType.map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        const newTypes = selectedProjectFilters.projectType.filter((t) => t !== type);
+                        handleProjectFilterChange("projectType", newTypes);
+                      }}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      {type} <FaTimes className="h-2 w-2" />
+                    </button>
+                  ))}
 
-              {selectedFilters.propertyType.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => {
-                    const newTypes = selectedFilters.propertyType.filter(
-                      (t) => t !== type,
-                    );
-                    handleFilterChange("propertyType", newTypes);
-                  }}
-                  className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
-                >
-                  {type} <FaTimes className="h-2 w-2" />
-                </button>
-              ))}
+                  {selectedProjectFilters.projectStage.map((stage) => (
+                    <button
+                      key={stage}
+                      onClick={() => {
+                        const newStages = selectedProjectFilters.projectStage.filter((s) => s !== stage);
+                        handleProjectFilterChange("projectStage", newStages);
+                      }}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      {stage} <FaTimes className="h-2 w-2" />
+                    </button>
+                  ))}
 
-              {selectedFilters.beds.length > 0 && (
-                <button
-                  onClick={() => handleFilterChange("beds", [])}
-                  className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
-                >
-                  {selectedFilters.beds.join(", ")} BHK{" "}
-                  <FaTimes className="h-2 w-2" />
-                </button>
-              )}
+                  {selectedProjectFilters.constructionStatus.map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => {
+                        const newStatuses = selectedProjectFilters.constructionStatus.filter((s) => s !== status);
+                        handleProjectFilterChange("constructionStatus", newStatuses);
+                      }}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      {status} <FaTimes className="h-2 w-2" />
+                    </button>
+                  ))}
 
-              {(selectedFilters.priceRange[0] > 0 ||
-                selectedFilters.priceRange[1] < 100000000) && (
-                <button
-                  onClick={() =>
-                    handleFilterChange("priceRange", [0, 100000000])
-                  }
-                  className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
-                >
-                  ₹{selectedFilters.priceRange[0] / 100000}L - ₹
-                  {selectedFilters.priceRange[1] / 100000}L{" "}
-                  <FaTimes className="h-2 w-2" />
-                </button>
-              )}
+                  {selectedProjectFilters.unitTypes.map((unit) => (
+                    <button
+                      key={unit}
+                      onClick={() => {
+                        const newUnits = selectedProjectFilters.unitTypes.filter((u) => u !== unit);
+                        handleProjectFilterChange("unitTypes", newUnits);
+                      }}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      {unit} <FaTimes className="h-2 w-2" />
+                    </button>
+                  ))}
 
-              {(selectedFilters.area[0] > 0 ||
-                selectedFilters.area[1] < 10000) && (
-                <button
-                  onClick={() => handleFilterChange("area", [0, 10000])}
-                  className="px-2 py-1 bg-gray-800 text-white text-xs rounded-md flex items-center gap-1 border border-gray-700"
-                >
-                  {selectedFilters.area[0]}-{selectedFilters.area[1]} sqft{" "}
-                  <FaTimes className="h-2 w-2" />
-                </button>
+                  {selectedProjectFilters.possessionYear.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => {
+                        const newYears = selectedProjectFilters.possessionYear.filter((y) => y !== year);
+                        handleProjectFilterChange("possessionYear", newYears);
+                      }}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      {year} <FaTimes className="h-2 w-2" />
+                    </button>
+                  ))}
+
+                  {(selectedProjectFilters.priceRange[0] > 0 ||
+                    selectedProjectFilters.priceRange[1] < 100000000) && (
+                    <button
+                      onClick={() => handleProjectFilterChange("priceRange", [0, 100000000])}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      Project ₹{selectedProjectFilters.priceRange[0] / 100000}L - ₹
+                      {selectedProjectFilters.priceRange[1] / 100000}L <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+
+                  {(selectedProjectFilters.area[0] > 0 || selectedProjectFilters.area[1] < 10000) && (
+                    <button
+                      onClick={() => handleProjectFilterChange("area", [0, 10000])}
+                      className="px-2 py-1 bg-blue-800 text-white text-xs rounded-md flex items-center gap-1 border border-blue-700"
+                    >
+                      Project {selectedProjectFilters.area[0]}-{selectedProjectFilters.area[1]} sqft{" "}
+                      <FaTimes className="h-2 w-2" />
+                    </button>
+                  )}
+                </>
               )}
 
               <button
@@ -1429,7 +1686,7 @@ const SearchPage = () => {
         </div>
       </div>
 
-      {/* Filters Modal - Simple Design */}
+      {/* Filters Modal - Separated by Properties/Projects */}
       <AnimatePresence>
         {showFilters && (
           <div
@@ -1444,154 +1701,348 @@ const SearchPage = () => {
               transition={{ type: "tween", duration: 0.3 }}
               onClick={(_e) => _e.stopPropagation()}
             >
-              <div className="sticky top-0 bg-gradient-to-r from-orange-600 to-orange-500 z-10 flex items-center justify-between p-4 border-b border-gray-700">
-                <h2 className="text-lg font-medium text-white">Filters</h2>
-                <button
-                  className="p-1 rounded-full hover:bg-gray-700"
-                  onClick={() => setShowFilters(false)}
-                >
-                  <FaTimes className="h-4 w-4 text-white" />
-                </button>
+              <div className="sticky top-0 bg-gradient-to-r from-orange-600 to-orange-500 z-10 border-b border-gray-700">
+                <div className="flex items-center justify-between p-4 pb-0">
+                  <h2 className="text-lg font-medium text-white">Filters</h2>
+                  <button
+                    className="p-1 rounded-full hover:bg-gray-700"
+                    onClick={() => setShowFilters(false)}
+                  >
+                    <FaTimes className="h-4 w-4 text-white" />
+                  </button>
+                </div>
+                
+                {/* Filter Tabs */}
+                <div className="flex bg-black/20 rounded-lg mx-4 mt-3 mb-4 p-1">
+                  <button
+                    onClick={() => setFilterTab('properties')}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                      filterTab === 'properties'
+                        ? 'bg-white text-orange-600'
+                        : 'text-white hover:text-gray-200'
+                    }`}
+                  >
+                    Properties
+                  </button>
+                  <button
+                    onClick={() => setFilterTab('projects')}
+                    className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                      filterTab === 'projects'
+                        ? 'bg-white text-orange-600'
+                        : 'text-white hover:text-gray-200'
+                    }`}
+                  >
+                    Projects
+                  </button>
+                </div>
               </div>
 
               <div className="p-4 space-y-6">
-                {/* Property Status */}
-                <div>
-                  <h3 className="font-medium mb-3 text-white">Status</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => {
-                        const newStatus = selectedFilters.status.includes(
-                          "sale",
-                        )
-                          ? selectedFilters.status.filter((s) => s !== "sale")
-                          : [...selectedFilters.status, "sale"];
-                        handleFilterChange("status", newStatus);
-                      }}
-                      className={`px-4 py-2 rounded-md text-sm ${
-                        selectedFilters.status.includes("sale")
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                      }`}
-                    >
-                      For Sale
-                    </button>
-                    <button
-                      onClick={() => {
-                        const newStatus = selectedFilters.status.includes(
-                          "rent",
-                        )
-                          ? selectedFilters.status.filter((s) => s !== "rent")
-                          : [...selectedFilters.status, "rent"];
-                        handleFilterChange("status", newStatus);
-                      }}
-                      className={`px-4 py-2 rounded-md text-sm ${
-                        selectedFilters.status.includes("rent")
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                      }`}
-                    >
-                      For Rent
-                    </button>
-                  </div>
-                </div>
+                {/* Property Filters Tab */}
+                {filterTab === 'properties' && (
+                  <>
+                    {/* Property Status */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Status</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => {
+                            const newStatus = selectedFilters.status.includes("sale")
+                              ? selectedFilters.status.filter((s) => s !== "sale")
+                              : [...selectedFilters.status, "sale"];
+                            handleFilterChange("status", newStatus);
+                          }}
+                          className={`px-4 py-2 rounded-md text-sm ${
+                            selectedFilters.status.includes("sale")
+                              ? "bg-orange-500 text-white"
+                              : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                          }`}
+                        >
+                          For Sale
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newStatus = selectedFilters.status.includes("rent")
+                              ? selectedFilters.status.filter((s) => s !== "rent")
+                              : [...selectedFilters.status, "rent"];
+                            handleFilterChange("status", newStatus);
+                          }}
+                          className={`px-4 py-2 rounded-md text-sm ${
+                            selectedFilters.status.includes("rent")
+                              ? "bg-orange-500 text-white"
+                              : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                          }`}
+                        >
+                          For Rent
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Property Type */}
-                <div>
-                  <h3 className="font-medium mb-3 text-white">Property Type</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {propertyTypes.map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          const newTypes =
-                            selectedFilters.propertyType.includes(type)
-                              ? selectedFilters.propertyType.filter(
-                                  (t) => t !== type,
-                                )
-                              : [...selectedFilters.propertyType, type];
-                          handleFilterChange("propertyType", newTypes);
-                        }}
-                        className={`px-3 py-2 rounded-md text-sm ${
-                          selectedFilters.propertyType.includes(type)
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {/* Property Type */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Property Type</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {propertyTypes.map((type) => (
+                          <button
+                            key={type}
+                            onClick={() => {
+                              const newTypes = selectedFilters.propertyType.includes(type)
+                                ? selectedFilters.propertyType.filter((t) => t !== type)
+                                : [...selectedFilters.propertyType, type];
+                              handleFilterChange("propertyType", newTypes);
+                            }}
+                            className={`px-3 py-2 rounded-md text-sm ${
+                              selectedFilters.propertyType.includes(type)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* BHK Configuration */}
-                <div>
-                  <h3 className="font-medium mb-3 text-white">Bedrooms</h3>
-                  <div className="flex gap-1">
-                    {bedOptions.map((bed) => (
-                      <button
-                        key={bed}
-                        onClick={() => {
-                          const newBeds = selectedFilters.beds.includes(bed)
-                            ? selectedFilters.beds.filter((b) => b !== bed)
-                            : [...selectedFilters.beds, bed];
-                          handleFilterChange("beds", newBeds);
-                        }}
-                        className={`flex-1 py-2 rounded-md text-sm ${
-                          selectedFilters.beds.includes(bed)
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                        }`}
-                      >
-                        {bed} BHK
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {/* BHK Configuration */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Bedrooms</h3>
+                      <div className="flex gap-1">
+                        {bedOptions.map((bed) => (
+                          <button
+                            key={bed}
+                            onClick={() => {
+                              const newBeds = selectedFilters.beds.includes(bed)
+                                ? selectedFilters.beds.filter((b) => b !== bed)
+                                : [...selectedFilters.beds, bed];
+                              handleFilterChange("beds", newBeds);
+                            }}
+                            className={`flex-1 py-2 rounded-md text-sm ${
+                              selectedFilters.beds.includes(bed)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {bed} BHK
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Price Range */}
-                <div>
-                  <h3 className="font-medium mb-3 text-white">Price Range</h3>
-                  <div className="space-y-2">
-                    {priceRanges.map((range, index) => (
-                      <button
-                        key={index}
-                        onClick={() =>
-                          handleFilterChange("priceRange", range.value)
-                        }
-                        className={`w-full px-4 py-2 rounded-md text-left text-sm ${
-                          selectedFilters.priceRange[0] === range.value[0] &&
-                          selectedFilters.priceRange[1] === range.value[1]
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                        }`}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {/* Property Price Range */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Price Range</h3>
+                      <div className="space-y-2">
+                        {priceRanges.map((range, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleFilterChange("priceRange", range.value)}
+                            className={`w-full px-4 py-2 rounded-md text-left text-sm ${
+                              selectedFilters.priceRange[0] === range.value[0] &&
+                              selectedFilters.priceRange[1] === range.value[1]
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {range.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Area Range */}
-                <div>
-                  <h3 className="font-medium mb-3 text-white">Area (sqft)</h3>
-                  <div className="space-y-2">
-                    {areaRanges.map((range, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleFilterChange("area", range.value)}
-                        className={`w-full px-4 py-2 rounded-md text-left text-sm ${
-                          selectedFilters.area[0] === range.value[0] &&
-                          selectedFilters.area[1] === range.value[1]
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
-                        }`}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                    {/* Property Area Range */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Area (sqft)</h3>
+                      <div className="space-y-2">
+                        {areaRanges.map((range, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleFilterChange("area", range.value)}
+                            className={`w-full px-4 py-2 rounded-md text-left text-sm ${
+                              selectedFilters.area[0] === range.value[0] &&
+                              selectedFilters.area[1] === range.value[1]
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {range.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Project Filters Tab */}
+                {filterTab === 'projects' && (
+                  <>
+                    {/* Project Type */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Project Type</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {projectTypes.map((type) => (
+                          <button
+                            key={type}
+                            onClick={() => {
+                              const newTypes = selectedProjectFilters.projectType.includes(type)
+                                ? selectedProjectFilters.projectType.filter((t) => t !== type)
+                                : [...selectedProjectFilters.projectType, type];
+                              handleProjectFilterChange("projectType", newTypes);
+                            }}
+                            className={`px-3 py-2 rounded-md text-sm ${
+                              selectedProjectFilters.projectType.includes(type)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Project Stage */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Project Stage</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {projectStages.map((stage) => (
+                          <button
+                            key={stage}
+                            onClick={() => {
+                              const newStages = selectedProjectFilters.projectStage.includes(stage)
+                                ? selectedProjectFilters.projectStage.filter((s) => s !== stage)
+                                : [...selectedProjectFilters.projectStage, stage];
+                              handleProjectFilterChange("projectStage", newStages);
+                            }}
+                            className={`px-3 py-2 rounded-md text-sm ${
+                              selectedProjectFilters.projectStage.includes(stage)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {stage}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Construction Status */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Construction Status</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {constructionStatuses.map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => {
+                              const newStatuses = selectedProjectFilters.constructionStatus.includes(status)
+                                ? selectedProjectFilters.constructionStatus.filter((s) => s !== status)
+                                : [...selectedProjectFilters.constructionStatus, status];
+                              handleProjectFilterChange("constructionStatus", newStatuses);
+                            }}
+                            className={`px-3 py-2 rounded-md text-sm ${
+                              selectedProjectFilters.constructionStatus.includes(status)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {status}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Unit Types */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Unit Types</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {unitTypeOptions.map((unit) => (
+                          <button
+                            key={unit}
+                            onClick={() => {
+                              const newUnitTypes = selectedProjectFilters.unitTypes.includes(unit)
+                                ? selectedProjectFilters.unitTypes.filter((u) => u !== unit)
+                                : [...selectedProjectFilters.unitTypes, unit];
+                              handleProjectFilterChange("unitTypes", newUnitTypes);
+                            }}
+                            className={`px-3 py-2 rounded-md text-sm ${
+                              selectedProjectFilters.unitTypes.includes(unit)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {unit}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Possession Year */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Possession Year</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {possessionYears.map((year) => (
+                          <button
+                            key={year}
+                            onClick={() => {
+                              const newYears = selectedProjectFilters.possessionYear.includes(year)
+                                ? selectedProjectFilters.possessionYear.filter((y) => y !== year)
+                                : [...selectedProjectFilters.possessionYear, year];
+                              handleProjectFilterChange("possessionYear", newYears);
+                            }}
+                            className={`px-3 py-2 rounded-md text-sm ${
+                              selectedProjectFilters.possessionYear.includes(year)
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {year}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Project Price Range */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Price Range</h3>
+                      <div className="space-y-2">
+                        {priceRanges.map((range, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleProjectFilterChange("priceRange", range.value)}
+                            className={`w-full px-4 py-2 rounded-md text-left text-sm ${
+                              selectedProjectFilters.priceRange[0] === range.value[0] &&
+                              selectedProjectFilters.priceRange[1] === range.value[1]
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {range.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Project Area Range */}
+                    <div>
+                      <h3 className="font-medium mb-3 text-white">Area (sqft)</h3>
+                      <div className="space-y-2">
+                        {areaRanges.map((range, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleProjectFilterChange("area", range.value)}
+                            className={`w-full px-4 py-2 rounded-md text-left text-sm ${
+                              selectedProjectFilters.area[0] === range.value[0] &&
+                              selectedProjectFilters.area[1] === range.value[1]
+                                ? "bg-orange-500 text-white"
+                                : "bg-gray-800 text-white hover:bg-gray-700 border border-gray-700"
+                            }`}
+                          >
+                            {range.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="sticky bottom-0 bg-black p-4 border-t border-gray-700 flex gap-3">

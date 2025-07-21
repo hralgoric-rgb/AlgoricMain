@@ -14,7 +14,7 @@ interface UserTypeModalProps {
 export default function UserTypeModal({ isOpen, onClose, onSelectUserType, userProfile }: UserTypeModalProps) {
   if (!isOpen) return null;
 
-  const isVerifiedBuilder = userProfile?.isBuilder && userProfile?.builderInfo?.verified;
+  const isVerifiedBuilder = userProfile?.isBuilder;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -26,7 +26,7 @@ export default function UserTypeModal({ isOpen, onClose, onSelectUserType, userP
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-full text-black bg-gray-100 "
         >
           <X className="w-5 h-5" />
         </button>
