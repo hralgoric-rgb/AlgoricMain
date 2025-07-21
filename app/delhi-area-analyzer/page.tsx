@@ -84,7 +84,7 @@ export default function DelhiAreaAnalyzer() {
 
     try {
       const response = await fetch(
-        `https://delhi-area-analyzer.onrender.com/api/location/${encodeURIComponent(locationName)}`,
+        `https://ml-models-vu7b.onrender.com/api/location/${encodeURIComponent(locationName)}`,
       );
 
       if (!response.ok) {
