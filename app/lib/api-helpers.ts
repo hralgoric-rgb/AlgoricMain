@@ -104,7 +104,7 @@ export const FavoritesAPI = {
   getLocalities: () => apiRequest("/favorites/localities"),
 
   addProperty: (id: string) =>
-    apiRequest("/favorites/properties", {
+    apiRequest("/favorites", {
       method: "POST",
       body: JSON.stringify({ propertyId: id }),
     }),

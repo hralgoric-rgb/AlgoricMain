@@ -636,7 +636,7 @@ const SearchPage = () => {
       type: 'project',
       location: `${project.locality}, ${project.city}`,
       coordinates: [project.coordinates.longitude, project.coordinates.latitude],
-      price: `${(minPrice)} Lacs - ₹${(maxPrice)} Lacs`,
+      price: minPrice * 100000, // Convert lacs to rupees for consistent filtering
       area: `${minArea}-${maxArea} sqft`,
       images: project.projectImages,
       projectType: project.projectType,
@@ -746,6 +746,8 @@ const SearchPage = () => {
 
         // If we got results from API, use them
         if (apiProperties.length > 0 || apiProjects.length > 0) {
+          console.log('Using API results:', { propertiesCount: apiProperties.length, projectsCount: apiProjects.length });
+          
           // Convert to search items
           const searchItems = [
             ...apiProperties.map(propertyToSearchItem),
@@ -762,6 +764,7 @@ const SearchPage = () => {
             return lat <= north && lat >= south && lng <= east && lng >= west;
           });
 
+          console.log('Items in bounds from API:', itemsInBounds.length);
           setFilteredSearchItems(itemsInBounds);
           
           // Update legacy properties for backward compatibility
@@ -771,6 +774,7 @@ const SearchPage = () => {
           }).filter(Boolean) as Property[];
           setFilteredProperties(legacyProperties);
         } else {
+          console.log('No API results, falling back to client-side filtering');
           // Fallback to client-side filtering
           fallbackToClientFiltering();
         }
@@ -862,10 +866,146 @@ const SearchPage = () => {
     return true;
   };
 
+  // Helper function to check if a project matches current filters
+  const isProjectMatchingFilters = (item: SearchItem) => {
+    if (item.type !== 'project') return false;
+
+    // Search query filter
+    if (searchQuery && searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        item.title.toLowerCase().includes(query) ||
+        (item.location && item.location.toLowerCase().includes(query)) ||
+        (item.projectType && item.projectType.toLowerCase().includes(query));
+
+      if (!matchesSearch) return false;
+    }
+
+    // Project type filter
+    if (
+      selectedProjectFilters.projectType.length > 0 &&
+      item.projectType &&
+      !selectedProjectFilters.projectType.some(
+        (type) => item.projectType && item.projectType.toLowerCase().includes(type.toLowerCase())
+      )
+    ) {
+      return false;
+    }
+
+    // Project stage filter
+    if (
+      selectedProjectFilters.projectStage.length > 0 &&
+      item.projectStage &&
+      !selectedProjectFilters.projectStage.includes(item.projectStage)
+    ) {
+      return false;
+    }
+
+    // Construction status filter
+    if (
+      selectedProjectFilters.constructionStatus.length > 0 &&
+      item.constructionStatus &&
+      !selectedProjectFilters.constructionStatus.includes(item.constructionStatus)
+    ) {
+      return false;
+    }
+
+    // Unit types filter (check if project has any of the selected unit types)
+    if (
+      selectedProjectFilters.unitTypes.length > 0 &&
+      item.unitTypes &&
+      Array.isArray(item.unitTypes)
+    ) {
+      const hasMatchingUnitType = item.unitTypes.some((unitType: any) => {
+        return selectedProjectFilters.unitTypes.some(selectedType => {
+          const unitTypeStr = unitType.type || '';
+          return unitTypeStr.toLowerCase().includes(selectedType.toLowerCase().replace(' bhk', ''));
+        });
+      });
+      if (!hasMatchingUnitType) {
+        return false;
+      }
+    }
+
+    // Possession year filter
+    if (
+      selectedProjectFilters.possessionYear.length > 0 &&
+      item.possessionDate
+    ) {
+      const possessionYear = new Date(item.possessionDate).getFullYear().toString();
+      const hasMatchingYear = selectedProjectFilters.possessionYear.some(year => {
+        if (year === '2028+') {
+          return parseInt(possessionYear) >= 2028;
+        }
+        return possessionYear === year;
+      });
+      if (!hasMatchingYear) {
+        return false;
+      }
+    }
+
+    // Area filter for projects (check unit types area ranges)
+    if (
+      selectedProjectFilters.area[0] > 0 ||
+      selectedProjectFilters.area[1] < 10000
+    ) {
+      if (item.unitTypes && Array.isArray(item.unitTypes)) {
+        const hasMatchingArea = item.unitTypes.some((unitType: any) => {
+          const minArea = unitType.sizeRange?.min || 0;
+          const maxArea = unitType.sizeRange?.max || 0;
+          return (
+            minArea >= selectedProjectFilters.area[0] && 
+            maxArea <= selectedProjectFilters.area[1]
+          ) || (
+            maxArea >= selectedProjectFilters.area[0] && 
+            minArea <= selectedProjectFilters.area[1]
+          );
+        });
+        if (!hasMatchingArea) {
+          return false;
+        }
+      }
+    }
+
+    // Price range filter for projects (check unit types price ranges)
+    if (
+      selectedProjectFilters.priceRange[0] > 0 ||
+      selectedProjectFilters.priceRange[1] < 100000000
+    ) {
+      if (item.unitTypes && Array.isArray(item.unitTypes)) {
+        const hasMatchingPrice = item.unitTypes.some((unitType: any) => {
+          const minPrice = (unitType.priceRange?.min || 0) * 100000; // Convert lacs to rupees
+          const maxPrice = (unitType.priceRange?.max || 0) * 100000;
+          return (
+            minPrice >= selectedProjectFilters.priceRange[0] && 
+            maxPrice <= selectedProjectFilters.priceRange[1]
+          ) || (
+            maxPrice >= selectedProjectFilters.priceRange[0] && 
+            minPrice <= selectedProjectFilters.priceRange[1]
+          );
+        });
+        if (!hasMatchingPrice) {
+          return false;
+        }
+      } else if (typeof item.price === 'number') {
+        // Fallback to simple price check if unitTypes is not available
+        if (
+          item.price < selectedProjectFilters.priceRange[0] ||
+          item.price > selectedProjectFilters.priceRange[1]
+        ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
   // Fallback function for client-side filtering with map bounds
   const fallbackToClientFiltering = () => {
     if (!mapBounds) return;
 
+    console.log('Fallback filtering started');
     const { north, south, east, west } = mapBounds;
 
     // Filter from all search items (properties + projects)
@@ -878,16 +1018,28 @@ const SearchPage = () => {
       // Check if the item is within map bounds
       const isInBounds = lat <= north && lat >= south && lng <= east && lng >= west;
 
+      if (!isInBounds) return false;
+
       // Apply additional filters for properties
-      if (item.type === 'property' && isInBounds) {
+      if (item.type === 'property') {
         const property = allProperties.find(p => p._id === item._id);
-        return property ? isPropertyMatchingFilters(property) : false;
+        const matches = property ? isPropertyMatchingFilters(property) : false;
+        if (matches) console.log('Property matches:', item.title);
+        return matches;
       }
 
-      // For projects, just check bounds (simpler filtering)
-      return isInBounds;
+      // Apply additional filters for projects
+      if (item.type === 'project') {
+        const matches = isProjectMatchingFilters(item);
+        if (matches) console.log('Project matches:', item.title);
+        return matches;
+      }
+
+      return false;
     });
 
+    console.log(`Fallback result: ${itemsInBounds.length} items found (${itemsInBounds.filter(i => i.type === 'property').length} properties, ${itemsInBounds.filter(i => i.type === 'project').length} projects)`);
+    
     setFilteredSearchItems(itemsInBounds);
     
     // Update legacy properties for backward compatibility
@@ -2154,7 +2306,7 @@ const SearchPage = () => {
             viewMode === 'list' ? "hidden" : "block"
           } ${
             viewMode === 'split' ? "md:flex-1" : "flex-1"
-          } h-full overflow-hidden`}
+          } h-full overflow-hidden relative`}
           style={{ 
             display: (viewMode === 'map' || (viewMode === 'split' && window.innerWidth >= 768)) ? 'block' : 'none' 
           }}
@@ -2164,19 +2316,36 @@ const SearchPage = () => {
               center={mapCenter}
               zoom={zoom}
               onMapLoad={setMapInstance}
-              properties={filteredSearchItems.map((item) => ({
-                id: item._id,
-                coordinates: item.coordinates && item.coordinates.length === 2
-                  ? {
-                      lat: item.coordinates[1],
-                      lng: item.coordinates[0],
-                    }
-                  : { lat: 28.7041, lng: 77.1025 }, // Default to Delhi if no coordinates
-                title: item.title,
-                price: typeof item.price === "string" ? item.price : `₹${item.price.toLocaleString()}`,
-                type: (item.type === 'property' ? item.propertyType : item.projectType) || 'Unknown',
-                isNew: newlyAddedProperties.has(item._id), // Mark as new if in our tracked set
-              }))}
+              properties={filteredSearchItems.map((item) => {
+                // Format price display based on item type
+                let priceDisplay;
+                if (item.type === 'property') {
+                  priceDisplay = typeof item.price === "string" ? item.price : `₹${item.price.toLocaleString()}`;
+                } else {
+                  // For projects, show the range in lacs
+                  if (item.unitTypes && Array.isArray(item.unitTypes)) {
+                    const minPrice = Math.min(...item.unitTypes.map((u: any) => u.priceRange.min));
+                    const maxPrice = Math.max(...item.unitTypes.map((u: any) => u.priceRange.max));
+                    priceDisplay = `₹${minPrice}-${maxPrice} Lacs`;
+                  } else {
+                    priceDisplay = typeof item.price === "string" ? item.price : `₹${(item.price / 100000).toFixed(1)} Lacs`;
+                  }
+                }
+
+                return {
+                  id: item._id,
+                  coordinates: item.coordinates && item.coordinates.length === 2
+                    ? {
+                        lat: item.coordinates[1],
+                        lng: item.coordinates[0],
+                      }
+                    : { lat: 28.7041, lng: 77.1025 }, // Default to Delhi if no coordinates
+                  title: item.title,
+                  price: priceDisplay,
+                  type: (item.type === 'property' ? item.propertyType : item.projectType) || 'Unknown',
+                  isNew: newlyAddedProperties.has(item._id), // Mark as new if in our tracked set
+                };
+              })}
               onMarkerClick={(propertyId) => {
                 const element = document.getElementById(`property-${propertyId}`);
                 if (element) {
@@ -2186,18 +2355,51 @@ const SearchPage = () => {
               onBoundsChanged={handleMapBoundsChange}
               // mapStyle="dark" // Set the map style to dark
             />
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center z-10">
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 items-center z-[100]">
               <button
                 onClick={() => {
                   if (mapBounds) {
-                    searchPropertiesInMapBounds();
+                    // Simple map bounds search - just filter by location and showing type
+                    const { north, south, east, west } = mapBounds;
+                    
+                    // Filter all search items by map bounds only
+                    const itemsInBounds = allSearchItems.filter((item) => {
+                      if (!item.coordinates || item.coordinates.length !== 2) return false;
+
+                      const lat = item.coordinates[1];
+                      const lng = item.coordinates[0];
+                      
+                      // Check if item is within map bounds
+                      const isInBounds = lat <= north && lat >= south && lng <= east && lng >= west;
+                      
+                      // Filter by showing type
+                      if (showingType === 'properties') {
+                        return isInBounds && item.type === 'property';
+                      } else if (showingType === 'projects') {
+                        return isInBounds && item.type === 'project';
+                      } else {
+                        return isInBounds; // Show all types
+                      }
+                    });
+
+                    console.log(`Search this area found: ${itemsInBounds.length} items (${itemsInBounds.filter(i => i.type === 'property').length} properties, ${itemsInBounds.filter(i => i.type === 'project').length} projects)`);
+                    
+                    setFilteredSearchItems(itemsInBounds);
+                    
+                    // Update legacy properties for backward compatibility
+                    const propertiesOnly = itemsInBounds.filter(item => item.type === 'property');
+                    const legacyProperties = propertiesOnly.map(item => {
+                      return allProperties.find(prop => prop._id === item._id);
+                    }).filter(Boolean) as Property[];
+                    setFilteredProperties(legacyProperties);
+                    
                     // On mobile, switch to list view after search
                     if (window.innerWidth < 768) {
                       setViewMode('list');
                     }
                   }
                 }}
-                className="bg-orange-500 text-white px-3 py-2 rounded-md shadow-lg hover:bg-orange-600 transition-colors font-medium text-sm"
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow-xl hover:bg-orange-600 transition-colors font-medium text-sm border-2 border-white/20 backdrop-blur-sm"
               >
                 Search this area
               </button>
@@ -2206,9 +2408,9 @@ const SearchPage = () => {
               {viewMode === 'map' && (
                 <button
                   onClick={() => setViewMode('list')}
-                  className="md:hidden bg-black/80 backdrop-blur-sm text-white px-3 py-1 rounded-md text-xs font-medium border border-gray-600"
+                  className="md:hidden bg-black/90 backdrop-blur-sm text-white px-3 py-1 rounded-md text-xs font-medium border border-gray-600 shadow-lg"
                 >
-                  View List
+                  📋 View List
                 </button>
               )}
             </div>
@@ -2370,7 +2572,17 @@ const SearchPage = () => {
                             <div className="mt-3 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <span className="text-lg font-bold text-white">
-                                  ₹{item.price ? item.price.toLocaleString() : "N/A"}
+                                  {item.type === 'property' 
+                                    ? `₹${item.price ? item.price.toLocaleString() : "N/A"}`
+                                    : (item.unitTypes && Array.isArray(item.unitTypes)
+                                        ? (() => {
+                                            const minPrice = Math.min(...item.unitTypes.map((u: any) => u.priceRange.min));
+                                            const maxPrice = Math.max(...item.unitTypes.map((u: any) => u.priceRange.max));
+                                            return `₹${minPrice}-${maxPrice} Lacs`;
+                                          })()
+                                        : `₹${item.price ? (Number(item.price) / 100000).toFixed(1) : "N/A"} Lacs`
+                                      )
+                                  }
                                 </span>
                                 {item.type === 'property' && item.listingType === "rent" && (
                                   <span className="text-xs text-white/60">/month</span>
