@@ -17,6 +17,7 @@ import {
   FaWhatsapp,
   FaArrowLeft,
   FaHeart,
+  FaRegHeart,
   FaShare,
   FaEye,
   FaCertificate,
@@ -35,7 +36,7 @@ import {
 import { IoLocationOutline } from "react-icons/io5";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
-import { useFavorites } from "../../contexts/FavoritesContext";
+import { FavoritesAPI } from "../../lib/api-helpers";
 import { PropertyNewsWhiteSection } from "../../../components/ui/property-news-white";
 
 // Decorative components
@@ -159,7 +160,6 @@ interface Project {
 const ProjectDetailPage = () => {
   const params = useParams();
   const router = useRouter();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -177,6 +177,10 @@ const ProjectDetailPage = () => {
   const [contactFormSubmitting, setContactFormSubmitting] = useState(false);
   const [areaData, setAreaData] = useState<AreaData | null>(null);
   const [areaDataLoading, setAreaDataLoading] = useState(false);
+
+  // Favorites state
+  const [favorites, setFavorites] = useState<Project[]>([]);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const projectId = params.id as string;
 
@@ -266,6 +270,72 @@ const ProjectDetailPage = () => {
     };
   }, []);
 
+  // Fetch favorites when token is available
+  const fetchFavorites = async () => {
+    if (token) {
+      try {
+        const projectsData = await FavoritesAPI.getProjects();
+        setFavorites(projectsData.favorites);
+
+        // Check if current project is in favorites
+        if (
+          project &&
+          projectsData.favorites.some((fav: Project) => fav._id === project._id)
+        ) {
+          setIsFavorited(true);
+        } else {
+          setIsFavorited(false);
+        }
+      } catch (_error) {
+        toast.error("Failed to fetch favorites");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchFavorites();
+    }
+  }, [token]);
+
+  // Update isFavorited when project or favorites change
+  useEffect(() => {
+    if (project && favorites.length > 0) {
+      setIsFavorited(favorites.some((fav) => fav._id === project._id));
+    }
+  }, [project, favorites]);
+
+  // Toggle favorite functionality
+  const toggleFavorite = async (projectId: string) => {
+    if (!token) {
+      toast.error("Please login to add favorites");
+      return;
+    }
+
+    try {
+      // Optimistically update UI first for responsive feedback
+      setIsFavorited((prev) => !prev);
+
+      if (isFavorited) {
+        // Remove from favorites
+        await FavoritesAPI.removeProject(projectId);
+        toast.success("Project removed from favorites");
+        // Update local state
+        setFavorites(favorites.filter((project) => project._id !== projectId));
+      } else {
+        // Add to favorites
+        await FavoritesAPI.addProject(projectId);
+        toast.success("Project added to favorites");
+        // Refresh favorites to get the updated list
+        fetchFavorites();
+      }
+    } catch (_error) {
+      // Revert UI state if operation fails
+      setIsFavorited((prev) => !prev);
+      toast.error("Failed to update favorites");
+    }
+  };
+
   // Fetch project details
   useEffect(() => {
     const fetchProject = async () => {
@@ -304,6 +374,13 @@ const ProjectDetailPage = () => {
       fetchProject();
     }
   }, [projectId, router]);
+
+  // Fetch favorites when user becomes authenticated
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      fetchFavorites();
+    }
+  }, [isAuthenticated, token]);
 
   // Increment view count
   const incrementViewCount = async () => {
@@ -486,12 +563,11 @@ const ProjectDetailPage = () => {
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
       toast.error("Please login to add to favorites");
-      
       return;
     }
 
     try {
-      await toggleFavorite(projectId, "project");
+      await toggleFavorite(projectId);
     } catch (error) {
       console.error("Error toggling project favorite:", error);
     }
@@ -666,12 +742,13 @@ const ProjectDetailPage = () => {
               <button
                 onClick={handleToggleFavorite}
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-md hover:bg-white/30 transition-colors"
+                aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
               >
-                <FaHeart
-                  className={`h-4 w-4 ${
-                    isFavorite(projectId, "project") ? "text-red-500" : "text-white"
-                  }`}
-                />
+                {isFavorited ? (
+                  <FaHeart className="h-4 w-4 text-red-500" />
+                ) : (
+                  <FaRegHeart className="h-4 w-4 text-white" />
+                )}
                 <span>Save</span>
               </button>
               <button

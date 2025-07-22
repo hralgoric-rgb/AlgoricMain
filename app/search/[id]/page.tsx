@@ -7,6 +7,7 @@ import {
   FaRulerCombined,
   FaMapMarkerAlt,
   FaHeart,
+  FaRegHeart,
   FaCar,
   FaCalendarAlt,
   FaShoppingBag,
@@ -30,6 +31,7 @@ import { toast } from "sonner";
 import Navbar from "@/app/components/navbar";
 import { LocalityAnalysis } from "@/components/ui/locality-analysis";
 import { PropertyNewsWhiteSection } from "@/components/ui/property-news-white";
+import { FavoritesAPI } from "@/app/lib/api-helpers";
 
 // Decorative components matching other pages
 // const HouseIcon = () => (
@@ -183,6 +185,11 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     tenure: 20
   });
 
+  // Favorites state
+  const [token, setToken] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Property[]>([]);
+  const [isFavorited, setIsFavorited] = useState(false);
+
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -313,6 +320,83 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     resolveParams();
   }, [params]);
 
+  // Get token from sessionStorage
+  useEffect(() => {
+    // Only run this on the client side
+    if (typeof window !== "undefined") {
+      const authToken = sessionStorage.getItem("authToken");
+      if (authToken) {
+        setToken(authToken);
+      }
+    }
+  }, []);
+
+  // Fetch favorites when token is available
+  const fetchFavorites = async () => {
+    if (token) {
+      try {
+        const propertiesData = await FavoritesAPI.getProperties();
+        setFavorites(propertiesData.favorites);
+
+        // Check if current property is in favorites
+        if (
+          property &&
+          propertiesData.favorites.some((fav: Property) => fav._id === property._id)
+        ) {
+          setIsFavorited(true);
+        } else {
+          setIsFavorited(false);
+        }
+      } catch (_error) {
+        toast.error("Failed to fetch favorites");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchFavorites();
+    }
+  }, [token]);
+
+  // Update isFavorited when property or favorites change
+  useEffect(() => {
+    if (property && favorites.length > 0) {
+      setIsFavorited(favorites.some((fav) => fav._id === property._id));
+    }
+  }, [property, favorites]);
+
+  // Toggle favorite functionality
+  const toggleFavorite = async (propertyId: string) => {
+    if (!token) {
+      toast.error("Please login to add favorites");
+      return;
+    }
+
+    try {
+      // Optimistically update UI first for responsive feedback
+      setIsFavorited((prev) => !prev);
+
+      if (isFavorited) {
+        // Remove from favorites
+        await FavoritesAPI.removeProperty(propertyId);
+        toast.success("Property removed from favorites");
+        // Update local state
+        setFavorites(favorites.filter((property) => property._id !== propertyId));
+      } else {
+        // Add to favorites
+        await FavoritesAPI.addProperty(propertyId);
+        toast.success("Property added to favorites");
+        // Refresh favorites to get the updated list
+        fetchFavorites();
+      }
+    } catch (_error) {
+      // Revert UI state if operation fails
+      setIsFavorited((prev) => !prev);
+      toast.error("Failed to update favorites");
+    }
+  };
+
   // Check authentication status on component mount and storage changes
   useEffect(() => {
     checkAuthStatus();
@@ -353,10 +437,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       // Fetch similar properties (same area, property type, etc.)
       fetchSimilarProperties(response.data);
 
-      // Check if property is in user's favorites
-      if (isAuthenticated) {
-        checkFavoriteStatus();
-      }
     } catch (_err) {
 
       setError("Failed to load property details. Please try again later.");
@@ -372,8 +452,12 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     if (isAuthenticated) {
       setShowContactDetails(true);
+      // Also fetch favorites when user becomes authenticated
+      if (token) {
+        fetchFavorites();
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   const fetchSimilarProperties = async (currentProperty: Property) => {
     try {
@@ -491,6 +575,18 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     }
   };
 
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success("Link copied to clipboard");
+      })
+      .catch(() => {
+        toast.error("Failed to copy link");
+      });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -515,17 +611,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     );
   }
 
-  const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        toast.success("Link copied to clipboard");
-      })
-      .catch(() => {
-        toast.error("Failed to copy link");
-      });
-  };
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
@@ -622,10 +707,15 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
               <div className="flex gap-3">
                 <button
+                  onClick={() => toggleFavorite(property._id)}
                   className="h-10 w-10 flex items-center justify-center bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full shadow-sm transition-colors"
-                  aria-label="Add to favorites"
+                  aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
                 >
-                  <FaHeart className="h-5 w-5 text-white hover:text-orange-500" />
+                  {isFavorited ? (
+                    <FaHeart className="h-5 w-5 text-red-500" />
+                  ) : (
+                    <FaRegHeart className="h-5 w-5 text-white hover:text-orange-500" />
+                  )}
                 </button>
 
                 <button
