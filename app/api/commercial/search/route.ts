@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import CommercialProperties from "@/app/models/CommercialProperty";
 import connectDB from "@/app/lib/mongodb";
 import { Types } from "mongoose";
+import CommercialProperty from "@/app/models/CommercialProperty";
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     console.log(searchParams);
-    const type = searchParams.get("type");
+    const propertyType = searchParams.get("propertyType");
     const currentYield = searchParams.get("currentYield");
     const riskLevel = searchParams.get("riskLevel");
     const name = searchParams.get("name");
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const state = searchParams.get("state");
     const query: any = {};
 
-    if (type) query.type = type;
+    if (propertyType) query.propertyType = propertyType;
     if (city) query["location.city"] = city;
     if (state) query["location.state"] = state;
     if (riskLevel) query.riskLevel = riskLevel;
@@ -32,9 +32,9 @@ export async function GET(req: NextRequest) {
       if (maxPrice) query.pricePerShare.$lte = Number(maxPrice);
     }
 
-    const rawProperties = await CommercialProperties.find(query, {
-      name: 1,
-      type: 1,
+    const rawProperties = await CommercialProperty.find(query, {
+      title: 1,
+      propertyType: 1,
       location: 1,
       totalShares: 1,
       availableShares: 1,
@@ -42,10 +42,10 @@ export async function GET(req: NextRequest) {
       currentYield: 1,
       predictedAppreciation: 1,
       riskLevel: 1,
-      image: 1,
+      images: 1,
       description: 1,
-      rentalIncome: 1,
-      occupancyRate: 1,
+      monthlyRental: 1,
+      currentOccupancy: 1,
       totalValue: 1,
       features: 1,
     }).lean();

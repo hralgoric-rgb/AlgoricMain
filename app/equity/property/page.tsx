@@ -22,22 +22,19 @@ import EquityAnimatedBackground from "../EquityAnimatedBackground";
 
 interface Property {
   id: string;
-  name: string;
-  type: string;
-  location: {
-    city: string;
-    state: string;
-  };
+  title: string;
+  propertyType: string;
+  location: string;
   totalShares: number;
   availableShares: number;
   pricePerShare: number;
   currentYield: number;
   predictedAppreciation: number;
   riskLevel: "Low" | "Medium" | "High";
-  image: string;
+  images: string[];
   description: string;
-  rentalIncome: number;
-  occupancyRate: number;
+  monthlyRental: number;
+  currentOccupancy: number;
   totalValue: number;
   aiScore: number;
   features: string[];
@@ -55,17 +52,17 @@ export default function PropertyListingPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [yieldRange, setYieldRange] = useState<[number, number]>([0, 15]);
-
+  console.log("Properties:   ", properties);
   const router = useRouter();
 
   const propertyTypes = [
     { value: "all", label: "All Types", icon: Building2 },
-    { value: "Office Building", label: "Office Buildings", icon: Briefcase },
+    { value: "Office", label: "Office Buildings", icon: Briefcase },
     { value: "Warehouse", label: "Warehouses", icon: Warehouse },
     { value: "Retail", label: "Retail", icon: Store },
     { value: "Data Center", label: "Data Centers", icon: Server },
-    { value: "co-working", label: "Co-working", icon: UserPlus },
-    { value: "industrial", label: "Industrial", icon: Coffee },
+    { value: "Co-working", label: "Co-working", icon: UserPlus },
+    { value: "Industrial", label: "Industrial", icon: Coffee },
   ];
 
   const riskLevels = [
@@ -80,7 +77,7 @@ export default function PropertyListingPage() {
     { value: "yield", label: "Current Yield" },
     { value: "appreciation", label: "Predicted Growth" },
     { value: "price", label: "Price per Share" },
-    { value: "occupancy", label: "Occupancy Rate" },
+    { value: "currentOccupancy", label: "Occupancy Rate" },
   ];
 
   useEffect(() => {
@@ -108,7 +105,7 @@ export default function PropertyListingPage() {
       const params = new URLSearchParams();
 
       if (debouncedSearchTerm) params.set("name", debouncedSearchTerm);
-      if (selectedType !== "all") params.set("type", selectedType);
+      if (selectedType !== "all") params.set("propertyType", selectedType);
       if (selectedRisk !== "all") params.set("riskLevel", selectedRisk);
       if (priceRange[0] > 0) params.set("minPrice", String(priceRange[0]));
       if (priceRange[1] < 10000) params.set("maxPrice", String(priceRange[1]));
@@ -141,6 +138,8 @@ export default function PropertyListingPage() {
     return () => controller.abort();
   }, [debouncedSearchTerm, selectedType, selectedRisk, priceRange, yieldRange]);
 
+  console.log("Proeprfvkbnk", properties);
+
   useEffect(() => {
     if (!properties.length) return;
 
@@ -155,7 +154,7 @@ export default function PropertyListingPage() {
         case "price":
           return a.pricePerShare - b.pricePerShare;
         case "occupancy":
-          return b.occupancyRate - a.occupancyRate;
+          return b.currentOccupancy - a.currentOccupancy;
         default:
           return 0;
       }

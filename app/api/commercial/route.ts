@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import CommercialProperties from "@/app/models/CommercialProperty";
 import connectDB from "@/app/lib/mongodb";
@@ -13,17 +12,16 @@ export async function GET() {
       {
         name: 1,
         type: 1,
-        "location.city": 1,
-        "location.state": 1,
+        location: 1,
         totalShares: 1,
         availableShares: 1,
         pricePerShare: 1,
         currentYield: 1,
         predictedAppreciation: 1,
         riskLevel: 1,
-        image: 1,
+        images: 1,
         description: 1,
-        rentalIncome: 1,
+        monthlyRental: 1,
         totalArea: 1,
         occupancyRate: 1,
         totalValue: 1,
@@ -73,4 +71,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
