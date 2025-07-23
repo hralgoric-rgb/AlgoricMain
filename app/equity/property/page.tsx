@@ -52,7 +52,6 @@ export default function PropertyListingPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [yieldRange, setYieldRange] = useState<[number, number]>([0, 15]);
-  console.log("Properties:   ", properties);
   const router = useRouter();
 
   const propertyTypes = [
@@ -82,7 +81,7 @@ export default function PropertyListingPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const nameFromURL = params.get("name") || "";
+    const nameFromURL = params.get("title") || "";
     setSearchTerm(nameFromURL); // sets input box
     setDebouncedSearchTerm(nameFromURL); // triggers fetch immediately
   }, []);
@@ -90,7 +89,7 @@ export default function PropertyListingPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 2000); // Delay 2 seconds
+    }, 1000); // Delay 2 seconds
 
     return () => {
       clearTimeout(handler);
@@ -104,7 +103,7 @@ export default function PropertyListingPage() {
 
       const params = new URLSearchParams();
 
-      if (debouncedSearchTerm) params.set("name", debouncedSearchTerm);
+      if (debouncedSearchTerm) params.set("title", debouncedSearchTerm);
       if (selectedType !== "all") params.set("propertyType", selectedType);
       if (selectedRisk !== "all") params.set("riskLevel", selectedRisk);
       if (priceRange[0] > 0) params.set("minPrice", String(priceRange[0]));
@@ -119,6 +118,7 @@ export default function PropertyListingPage() {
         const res = await fetch(`/api/commercial/search?${params.toString()}`, {
           signal: controller.signal,
         });
+
         const data = await res.json();
         if (data.success) {
           setProperties(data.data);
@@ -137,8 +137,6 @@ export default function PropertyListingPage() {
 
     return () => controller.abort();
   }, [debouncedSearchTerm, selectedType, selectedRisk, priceRange, yieldRange]);
-
-  console.log("Proeprfvkbnk", properties);
 
   useEffect(() => {
     if (!properties.length) return;
