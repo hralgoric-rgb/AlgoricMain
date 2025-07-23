@@ -9,7 +9,7 @@ export const GET = requireLandlord(async (
   request: NextRequest,
   context: { userId: string; userRole: string; userEmail: string }
 ) => {
-  const { userId, userRole, userEmail } = context;
+  const { userId } = context;
   try {
     
     await dbConnect();
@@ -24,11 +24,17 @@ export const GET = requireLandlord(async (
       );
     }
 
-    return NextResponse.json(property, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      message: 'Properties fetched successfully',
+      count: property.length,
+      properties: property
+    }, { status: 200 });
   } catch (_error) {
 
     return NextResponse.json(
-      { error: 'An error occurred while fetching the properties' },
+      { success: false,
+        error: 'An error occurred while fetching the properties' },
       { status: 500 }
     );
   }

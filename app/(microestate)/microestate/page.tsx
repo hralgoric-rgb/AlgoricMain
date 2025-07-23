@@ -90,6 +90,40 @@ function Page() {
         }
     ];
 
+    // Define color classes for each card - all using orange theme
+    const cardColors = [
+      {
+        border: 'border-orange-400/60',
+        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
+        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+      },
+      {
+        border: 'border-orange-400/60',
+        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
+        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+      },
+      {
+        border: 'border-orange-400/60',
+        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
+        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+      },
+      {
+        border: 'border-orange-400/60',
+        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
+        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+      },
+      {
+        border: 'border-orange-400/60',
+        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
+        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+      },
+      {
+        border: 'border-orange-400/60',
+        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
+        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+      },
+    ];
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#181c24] to-[#101014] relative overflow-hidden">
             <FloatingCircles />
@@ -204,18 +238,26 @@ function Page() {
             <section ref={featuresRef} className="py-20">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        {features.map((feature, idx) => (
-                            <div
-                                key={feature.title}
-                                className="feature-card min-h-[260px] min-w-[320px] flex-1 bg-[#23232a] bg-opacity-80 rounded-2xl shadow-lg border border-orange-500/10 p-8 flex flex-col items-center text-center backdrop-blur-md transition-all duration-300 overflow-hidden hover:scale-105 hover:-translate-y-2 hover:border-orange-400 hover:shadow-orange-400/30"
-                            >
-                                <div className="w-14 h-14 flex items-center justify-center rounded-full mb-6 bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg">
-                                            <feature.icon className="w-8 h-8 text-white" />
+                        {features.map((feature, idx) => {
+                            const color = cardColors[idx % cardColors.length];
+                            // All cards now use the same orange hover effect
+                            const hoverShadow = 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.7)] hover:border-orange-400';
+                            return (
+                                <div
+                                    key={feature.title}
+                                    className={`feature-card min-h-[260px] min-w-[320px] flex-1 bg-white/10 backdrop-blur-lg border-2 ${color.border} rounded-2xl shadow-xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 group ${hoverShadow}`}
+                                >
+                                    {/* Icon in colored circle, now inside the card and not clipped */}
+                                    <div className="mb-6 -mt-12 z-10">
+                                        <div className={`w-16 h-16 flex items-center justify-center rounded-full ${color.bg} shadow-lg border-4 border-white/30`}>
+                                            <feature.icon className="text-white text-3xl" />
+                                        </div>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">{feature.title}</h3>
+                                    <p className="text-gray-200 text-base font-medium">{feature.description}</p>
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                                <p className="text-gray-300">{feature.description}</p>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </section>

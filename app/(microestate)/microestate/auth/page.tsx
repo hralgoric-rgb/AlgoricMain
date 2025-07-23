@@ -20,29 +20,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FaGoogle } from "react-icons/fa";
 import axios from "axios";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import GoogleLoginButton from "../../_components/GoogleLoginButton";
 import Link from "next/link";
+import { useAuth } from "../../Context/AuthProvider";
 
 const Login = () => {
   const router = useRouter();
+  const { login } = useAuth();
   const [currentView, setCurrentView] = useState<"main" | "forgot-password">(
     "main"
   );
-  // Remove activeTab and all signup logic
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "tenant",
+    role: "tenant", // Add role field with default
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [passwordStrength, setPasswordStrength] = useState<0 | 1 | 2 | 3 | 4>(
-    0
-  );
 
   const loginFields = [
     {
@@ -62,39 +59,19 @@ const Login = () => {
       required: true,
       hasToggle: true,
     },
+    {
+      id: "role",
+      label: "Login As",
+      type: "select",
+      placeholder: "Select your role",
+      value: formData.role,
+      required: true,
+      options: [
+        { value: "tenant", label: "Tenant" },
+        { value: "landlord", label: "Landlord" },
+      ],
+    },
   ];
-
-  useEffect(() => {
-    if (!formData.password) {
-      setPasswordStrength(0);
-      return;
-    }
-
-    let strength = 0;
-    if (formData.password.length >= 8) strength++;
-    if (/[A-Z]/.test(formData.password)) strength++;
-    if (/[a-z]/.test(formData.password)) strength++;
-    if (/\d/.test(formData.password)) strength++;
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) strength++;
-
-    setPasswordStrength(Math.min(4, strength) as 0 | 1 | 2 | 3 | 4);
-  }, [formData.password]);
-
-  const getPasswordStrengthColor = (level: number) => {
-    const colors = [
-      "bg-red-500",
-      "bg-orange-500",
-      "bg-yellow-500",
-      "bg-green-400",
-      "bg-green-500",
-    ];
-    return colors[level] || "bg-gray-600";
-  };
-
-  const getPasswordStrengthLabel = (level: number) => {
-    const labels = ["Very weak", "Weak", "Medium", "Strong", "Very strong"];
-    return labels[level] || "";
-  };
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -112,24 +89,41 @@ const Login = () => {
       setLoading(true);
       setError(null);
 
-      const response = await signIn("credentials", {
+      const response = await axios.post("/microestate/api/auth/login", {
         email: formData.email,
         password: formData.password,
-        redirect: false,
+        role: formData.role, // Include role in login request
       });
 
-      if (response?.error) {
-        setError(response.error);
-      } else {
+      if (response.data.success) {
         setSuccess("Logged in successfully!");
-      }
+        
+        // Login the user with the new auth system
+        login({
+          id: response.data.user.id,
+          email: response.data.user.email,
+          name: response.data.user.name,
+          role: response.data.user.role,
+          emailVerified: response.data.user.emailVerified,
+        });
 
-      if (response?.ok) {
-        router.push("/microestate");
+        // Redirect based on role
+        setTimeout(() => {
+          if (response.data.user.role === 'landlord') {
+            router.push("/microestate/landlord");
+          } else if (response.data.user.role === 'tenant') {
+            router.push("/microestate/tenant");
+          } else {
+            router.push("/microestate");
+          }
+        }, 1000);
+      } else {
+        setError(response.data.error || "Login failed");
       }
-    } catch (error) {
-      setError("An error occurred during login");
+    } catch (error: any) {
       console.error("Login error:", error);
+      const errorMessage = error.response?.data?.error || "An error occurred during login";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -191,15 +185,29 @@ const Login = () => {
         {field.label}
       </Label>
       <div className="relative">
-        <Input
-          type={
-            field.hasToggle ? (showPassword ? "text" : "password") : field.type
-          }
-          value={field.value}
-          onChange={(e) => handleInputChange(field.id, e.target.value)}
-          placeholder={field.placeholder}
-          className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
-        />
+        {field.type === "select" ? (
+          <select
+            value={field.value}
+            onChange={(e) => handleInputChange(field.id, e.target.value)}
+            className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
+          >
+            {field.options?.map((option: any) => (
+              <option key={option.value} value={option.value} className="bg-gray-800 text-white">
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <Input
+            type={
+              field.hasToggle ? (showPassword ? "text" : "password") : field.type
+            }
+            value={field.value}
+            onChange={(e) => handleInputChange(field.id, e.target.value)}
+            placeholder={field.placeholder}
+            className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
+          />
+        )}
         {field.hasToggle && (
           <Button
             type="button"

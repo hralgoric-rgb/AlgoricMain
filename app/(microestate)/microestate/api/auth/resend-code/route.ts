@@ -39,11 +39,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-
     const verificationCode = generateVerificationCode();
     const verificationTokenExpiry = new Date();
     verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
-
 
     user.verificationToken = verificationCode;
     user.verificationTokenExpiry = verificationTokenExpiry;

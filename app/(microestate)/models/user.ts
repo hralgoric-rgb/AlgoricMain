@@ -1,6 +1,5 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
 // TypeScript interface for User document
 export interface IUser extends Document {
@@ -9,22 +8,16 @@ export interface IUser extends Document {
   email: string;
   password: string;
   phone: string;
-  address: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
   role: "landlord" | "tenant";
   profileImage?: string;
+  emailVerified?: Date;
+  verificationToken?: string;
+  verificationTokenExpiry?: Date;
   qr?: string;
   createdAt: Date;
   updatedAt: Date;
-  
   // Instance methods
   comparePassword(candidatePassword: string): Promise<boolean>;
-  generateAuthToken(): string;
 }
 
 // TypeScript interface for User model (static methods)
@@ -32,7 +25,7 @@ export interface IUserModel extends Model<IUser> {
   // Add any static methods here if needed
 }
 
-// User Schema (Base for both Landlord and Tenant)
+// User Schema
 const userSchema = new Schema<IUser>(
   {
     firstName: {
@@ -67,32 +60,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: [true, "Phone number is required"],
       validate: {
-        validator: function(v: string) {
+        validator: function (v: string) {
           return /^\+?[\d\s\-\(\)]+$/.test(v);
         },
         message: "Please enter a valid phone number",
-      },
-    },
-    address: {
-      street: {
-        type: String,
-        trim: true,
-      },
-      city: {
-        type: String,
-        trim: true,
-      },
-      state: {
-        type: String,
-        trim: true,
-      },
-      zipCode: {
-        type: String,
-        trim: true,
-      },
-      country: {
-        type: String,
-        trim: true,
       },
     },
     role: {
@@ -106,6 +77,15 @@ const userSchema = new Schema<IUser>(
     profileImage: {
       type: String,
     },
+    emailVerified: {
+      type: Date,
+    },
+    verificationToken: {
+      type: String,
+    },
+    verificationTokenExpiry: {
+      type: Date,
+    },
     qr: {
       type: String,
     },
@@ -118,7 +98,6 @@ const userSchema = new Schema<IUser>(
 // Password hashing middleware
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
-  
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -139,27 +118,7 @@ userSchema.methods.comparePassword = async function (
   }
 };
 
-// JWT token generation
-userSchema.methods.generateAuthToken = function (): string {
-  const jwtSecret = process.env.JWT_SECRET;
-  
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET environment variable is not set");
-  }
-  
-  return jwt.sign(
-    { 
-      _id: this._id, 
-      email: this.email, 
-      role: this.role ,
-      name: this.firstName
-    },
-    jwtSecret,
-    { expiresIn: "3d" }
-  );
-};
-
-
-const User: IUserModel = mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
+// Create and export the model
+const User: IUserModel = mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema);
 
 export default User;
