@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const address   = form.get("address")?.toString();
     const role      = form.get("role")?.toString() as "landlord" | "tenant";
     const profileImageFile = form.get("profileImage") as File | null;
-    const qrFile           = form.get("qr")           as File | null;
+    const qrFile           = form?.get("qr")           as File | null;
 
 
     if (!email || !password || !firstName || !lastName || !phone || !address) {

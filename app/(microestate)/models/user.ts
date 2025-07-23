@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 
 // TypeScript interface for User document
 export interface IUser extends Document {
-  name: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -11,12 +10,9 @@ export interface IUser extends Document {
   phone: string;
   role: "landlord" | "tenant";
   profileImage?: string;
-<<<<<<< HEAD
-=======
   emailVerified?: Date;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
->>>>>>> 9dca84369a29efa2e3c8e210491d7409fd7c2459
   qr?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -32,11 +28,6 @@ export interface IUserModel extends Model<IUser> {
 // User Schema
 const userSchema = new Schema<IUser>(
   {
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-      trim: true,
-    },
     firstName: {
       type: String,
       required: [true, "First name is required"],
@@ -86,8 +77,6 @@ const userSchema = new Schema<IUser>(
     profileImage: {
       type: String,
     },
-<<<<<<< HEAD
-=======
     emailVerified: {
       type: Date,
     },
@@ -97,7 +86,6 @@ const userSchema = new Schema<IUser>(
     verificationTokenExpiry: {
       type: Date,
     },
->>>>>>> 9dca84369a29efa2e3c8e210491d7409fd7c2459
     qr: {
       type: String,
     },
@@ -130,34 +118,7 @@ userSchema.methods.comparePassword = async function (
   }
 };
 
-<<<<<<< HEAD
-// JWT token generation
-userSchema.methods.generateAuthToken = function (): string {
-  const jwtSecret = process.env.JWT_SECRET;
-  
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET environment variable is not set");
-  }
-  
-  return jwt.sign(
-    { 
-      _id: this._id, 
-      email: this.email, 
-      role: this.role ,
-      name: this.firstName
-    },
-    jwtSecret,
-    { expiresIn: "3d" }
-  );
-};
-
-
-const User: IUserModel = mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
-
-export default User;
-=======
 // Create and export the model
 const User: IUserModel = mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema);
 
 export default User;
->>>>>>> 9dca84369a29efa2e3c8e210491d7409fd7c2459
