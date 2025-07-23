@@ -46,7 +46,7 @@ interface ApiErrorResponse {
 // Next.js 13 App Router Middleware
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   try {
-    const authToken = request.cookies.get("microauthToken")?.value;
+    const authToken = request.cookies.get("microauth")?.value;
     console.log("Auth Token:", authToken);
     const url = new URL(request.url);
 

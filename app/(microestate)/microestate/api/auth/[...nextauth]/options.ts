@@ -20,11 +20,18 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        const user = await User.findOne({ email: credentials.email }).select("+password").lean();
-        if (!user) throw new Error("Invalid credentials");
+        const user = await User.findOne({ 
+          email: credentials.email.toLowerCase().trim() 
+        }).select("+password").lean();
+        
+        if (!user) {
+          throw new Error("Invalid email or password");
+        }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) throw new Error("Invalid credentials");
+        if (!isValid) {
+          throw new Error("Invalid email or password");
+        }
 
         return {
           id: user._id.toString(),
@@ -32,17 +39,19 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: user.role,
           image: user.profileImage || null,
-          _id: user._id.toString(), // Add this for token
+          _id: user._id.toString(),
         };
       },
     }),
   ],
+  
   callbacks: {
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
         token._id = user._id || user.id;
         token.name = user.name;
         token.role = user.role;
+        token.email = user.email;
       }
       return token;
     },
@@ -50,31 +59,35 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user._id = token._id;
         session.user.role = token.role;
+        session.user.email = token.email;
       }
       return session;
     },
   },
+  
   pages: {
-    signIn: "/microestate/auth/login", // Update this path
+    signIn: "/microestate/auth/login",
     error: "/microestate/auth/login",
   },
+  
   session: {
     strategy: "jwt",
     maxAge: 3 * 24 * 60 * 60, // 3 days
   },
+  
   secret: process.env.NEXTAUTH_SECRET,
 
   // Complete cookies configuration to override ALL default cookie names
   cookies: {
-  sessionToken: {
-    name: "microauthToken",
-    options: {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 3 * 24 * 60 * 60,
-    },
-  },
-},
-};
+    sessionToken: {
+      name: "microauth", // Change this to match your signup route
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 3 * 24 * 60 * 60,
+      },
+    }
+  }
+}

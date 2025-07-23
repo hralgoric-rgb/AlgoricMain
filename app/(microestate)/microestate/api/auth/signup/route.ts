@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
 
     let qrCodeUrl: string | undefined;
     if (role === "landlord") {
-      if (!qrFile) {
-        return NextResponse.json({ error: "QR code file is required for landlords." }, { status: 400 });
-      }
-      qrCodeUrl = await uploadToImageKit(qrFile);
+      // if (!qrFile) {
+      //   return NextResponse.json({ error: "QR code file is required for landlords." }, { status: 400 });
+      // }
+      if(qrFile) qrCodeUrl = await uploadToImageKit(qrFile);
     }
 
     let profileImageUrl: string | undefined;
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       email,
       password,
       role,
-      isVerified: false,
+      emailVerified: false,
       verificationToken: verificationCode,
       verificationTokenExpiry,
       ...(profileImageUrl && { profileImage: profileImageUrl }),
@@ -115,13 +115,15 @@ export async function POST(request: NextRequest) {
     );
 
      // Set the same cookie that NextAuth would set
-    response.cookies.set("microauthToken", sessionToken, {
+    response.cookies.set("microauth", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 3 * 24 * 60 * 60, // 3 days
       path: "/",
     });
+
+    return response;
   } catch (error: any) {
     console.error("Registration Error:", error);
     console.error("Error details:", {
