@@ -78,6 +78,9 @@ export default function LandlordRegisterPage() {
       submitData.append("password", formData.password);
       submitData.append("role", "landlord");
 
+     localStorage.setItem("pendingEmail", formData.email.toLowerCase().trim());
+    
+
       // Add files if selected
       if (profilePic) {
         submitData.append("profileImage", profilePic);

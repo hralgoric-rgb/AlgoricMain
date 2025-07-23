@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     const profileImageFile = form.get("profileImage") as File | null;
     const qrFile           = form?.get("qr")           as File | null;
 
+  
    if (!email || !password || !firstName || !lastName || !phone) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }

@@ -79,6 +79,7 @@ const userSchema = new Schema<IUser>(
     },
     emailVerified: {
       type: Boolean,
+      default: false,
     },
     verificationToken: {
       type: String,
@@ -119,6 +120,6 @@ userSchema.methods.comparePassword = async function (
 };
 
 // Create and export the model
-const User: IUserModel = mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema);
+const User: IUserModel = mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
 
 export default User;
