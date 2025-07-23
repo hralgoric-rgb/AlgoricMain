@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 
 // TypeScript interface for User document
 export interface IUser extends Document {
-  name: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -11,7 +10,7 @@ export interface IUser extends Document {
   phone: string;
   role: "landlord" | "tenant";
   profileImage?: string;
-  emailVerified?: Date;
+  emailVerified?: boolean;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
   qr?: string;
@@ -29,11 +28,6 @@ export interface IUserModel extends Model<IUser> {
 // User Schema
 const userSchema = new Schema<IUser>(
   {
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-      trim: true,
-    },
     firstName: {
       type: String,
       required: [true, "First name is required"],
@@ -84,7 +78,7 @@ const userSchema = new Schema<IUser>(
       type: String,
     },
     emailVerified: {
-      type: Date,
+      type: Boolean,
     },
     verificationToken: {
       type: String,

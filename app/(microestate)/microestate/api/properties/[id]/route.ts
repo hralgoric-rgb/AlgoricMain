@@ -17,7 +17,7 @@ export const GET = requireLandlord(async (
   try {
     const { id } = await params;
 
-    if (!isValidObjectId(id)) {
+    if (!isValidObjectId(userId)) {
       return NextResponse.json(
         { error: 'Invalid property ID format' },
         { status: 400 }

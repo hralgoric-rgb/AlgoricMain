@@ -1,4 +1,5 @@
 import dbConnect from "@/app/(microestate)/lib/db";
+import { uploadToImageKit } from "@/app/(microestate)/lib/ImageUpload";
 import User from "@/app/(microestate)/models/user";
 import {
   generateVerificationCode,
@@ -6,98 +7,75 @@ import {
   sendEmail,
 } from "@/app/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("Starting registration process...");
-    
-    // Check if MongoDB URI is available
-    if (!process.env.MONGODB_URI) {
-      console.error("MONGODB_URI environment variable is not set");
-      return NextResponse.json(
-        { error: "Database configuration error" },
-        { status: 500 }
-      );
-    }
     
     await dbConnect();
-    console.log("Database connected successfully");
     
-    const { email, password, firstName, role, lastName, phone } = await request.json();
+    const form = await request.formData();
+    const email     = form.get("email")?.toString().trim();
+    const password  = form.get("password")?.toString();
+    const firstName = form.get("firstName")?.toString().trim();
+    const lastName  = form.get("lastName")?.toString().trim();
+    const phone     = form.get("phone")?.toString();
+    const address   = form.get("address")?.toString();
+    const role      = form.get("role")?.toString() as "landlord" | "tenant";
+    const profileImageFile = form.get("profileImage") as File | null;
+    const qrFile           = form?.get("qr")           as File | null;
 
-    console.log("Received registration data:", { email, firstName, lastName, phone, role });
-
-    if (!email || !password || !firstName.trim() || !lastName.trim() || !phone) {
-      console.log("Validation failed - missing required fields");
-      return NextResponse.json(
-        {
-          error: "Name, email, and password, First name, lastname, phone no are required",
-        },
-        { status: 400 }
-      );
+   if (!email || !password || !firstName || !lastName || !phone || !address) {
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
-
+    
     if (password.length < 8) {
-      console.log("Validation failed - password too short");
-      return NextResponse.json(
-        {
-          error: "Password must be at least 8 characters long",
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
 
-    console.log("Checking if user already exists...");
-    const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
-      // If user exists but is not verified, allow re-registration
-      if (!existingUser.emailVerified) {
-        console.log("User exists but not verified, allowing re-registration");
-        // Delete the unverified user to allow fresh registration
-        await User.findByIdAndDelete(existingUser._id);
-        console.log("Deleted unverified user to allow re-registration");
-      } else {
-        console.log("User already exists and is verified:", email);
-        return NextResponse.json(
-          {
-            error: "User already exists",
-          },
-          { status: 400 }
-        );
+    if (await User.findOne({ email })) {
+      return NextResponse.json({ error: "User already exists." }, { status: 400 });
+    }
+
+    let qrCodeUrl: string | undefined;
+    if (role === "landlord") {
+      if (!qrFile) {
+        return NextResponse.json({ error: "QR code file is required for landlords." }, { status: 400 });
       }
+      qrCodeUrl = await uploadToImageKit(qrFile);
     }
 
-    console.log("Creating new user...");
+    let profileImageUrl: string | undefined;
+    if (profileImageFile) {
+      profileImageUrl = await uploadToImageKit(profileImageFile);
+    }
+
+
     // Generate verification code first
     const verificationCode = generateVerificationCode();
     const verificationTokenExpiry = new Date();
     verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
 
-    // Create new user with the correct schema
-    const userData = {
-      name: `${firstName} ${lastName}`,
-      firstName: firstName,
-      lastName: lastName,
-      email,
-      password, // Password is now passed directly
+     const newUser = new User({
+      firstName,
+      lastName,
       phone,
-      role: role || "tenant", // Use the provided role or default to "tenant"
+      email,
+      password,
+      role,
+      isVerified: false,
       verificationToken: verificationCode,
-      verificationTokenExpiry: verificationTokenExpiry,
-    };
-    
-    console.log("User data to save:", userData);
-    
-    const newUser = new User(userData) as typeof User.prototype;
+      verificationTokenExpiry,
+      ...(profileImageUrl && { profileImage: profileImageUrl }),
+      ...(qrCodeUrl       && { qrCode: qrCodeUrl }),
+    }) as typeof User.prototype;
 
-    console.log("Saving user to database...");
     await newUser.save();
-    console.log("User saved successfully:", newUser._id);
+
 
     // Try to send verification email, but don't fail the registration if email fails
     try {
-      console.log("Attempting to send verification email...");
       const emailTemplate = getVerificationEmailTemplate(verificationCode);
       await sendEmail(email, "Verify your email address", emailTemplate);
       console.log("Verification email sent successfully");
@@ -125,19 +103,19 @@ export async function POST(request: NextRequest) {
     const sessionToken = jwt.sign(tokenPayload, jwtSecret);
 
     
-
-    console.log("Registration completed successfully");
     const response=  NextResponse.json(
       {
         success: true,
         message: "User registered successfully. Please check your email for verification code.",
         userId: newUser._id,
+        profileImageUrl,
+        qrCodeUrl
       },
       { status: 201 }
     );
 
      // Set the same cookie that NextAuth would set
-    response.cookies.set("microauth", sessionToken, {
+    response.cookies.set("microauthToken", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

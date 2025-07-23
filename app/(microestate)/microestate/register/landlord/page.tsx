@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 export default function LandlordRegisterPage() {
   const [profilePic, setProfilePic] = useState<File | null>(null);
+
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -16,6 +17,7 @@ export default function LandlordRegisterPage() {
     phone: "",
     password: "",
     repeatPassword: "",
+    address: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,15 +59,17 @@ export default function LandlordRegisterPage() {
         phone: formData.phone,
         password: formData.password,
         role: "landlord",
+        address: formData.address
       });
 
-      const response = await axios.post("/microestate/api/signup", {
+      const response = await axios.post("/microestate/api/auth/signup", {
         email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
         phone: formData.phone,
         password: formData.password,
         role: "landlord",
+        address: formData.address
       });
       
       console.log("Registration response:", response.data);
