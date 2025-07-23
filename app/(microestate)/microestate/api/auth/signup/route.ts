@@ -20,12 +20,11 @@ export async function POST(request: NextRequest) {
     const firstName = form.get("firstName")?.toString().trim();
     const lastName  = form.get("lastName")?.toString().trim();
     const phone     = form.get("phone")?.toString();
-    const address   = form.get("address")?.toString();
     const role      = form.get("role")?.toString() as "landlord" | "tenant";
     const profileImageFile = form.get("profileImage") as File | null;
     const qrFile           = form?.get("qr")           as File | null;
 
-   if (!email || !password || !firstName || !lastName || !phone || !address) {
+   if (!email || !password || !firstName || !lastName || !phone) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
     
