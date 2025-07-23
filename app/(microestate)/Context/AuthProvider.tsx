@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react"
 import React, { createContext, useContext, useState, useEffect } from "react"
+import { useRouter, usePathname } from 'next/navigation';
 
 interface User {
   id: string;
@@ -36,9 +37,11 @@ export default function AuthProvider({
 }: {children: React.ReactNode}) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
+  // Recalculate auth state on mount and on route change
   useEffect(() => {
-    // Check for stored user data on mount
     const storedUser = localStorage.getItem('microestate_user');
     if (storedUser) {
       try {
@@ -47,10 +50,13 @@ export default function AuthProvider({
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         localStorage.removeItem('microestate_user');
+        setUser(null);
       }
+    } else {
+      setUser(null);
     }
     setLoading(false);
-  }, []);
+  }, [pathname]);
 
   const login = (userData: User) => {
     setUser(userData);
@@ -60,6 +66,11 @@ export default function AuthProvider({
   const logout = () => {
     setUser(null);
     localStorage.removeItem('microestate_user');
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('authToken');
+      document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      router.replace('/microestate');
+    }
   };
 
   const isAuthenticated = !!user;

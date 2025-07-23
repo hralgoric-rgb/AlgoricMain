@@ -13,16 +13,16 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ 
   children, 
   allowedRoles = ['landlord', 'tenant', 'user'], 
-  redirectTo = "/microestate" 
+  redirectTo = "/microestate/auth" 
 }: ProtectedRouteProps) {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
-      // If not authenticated, redirect to home
+      // If not authenticated, redirect to login/register
       if (!isAuthenticated) {
-        router.push("/microestate");
+        router.push("/microestate/auth");
         return;
       }
 

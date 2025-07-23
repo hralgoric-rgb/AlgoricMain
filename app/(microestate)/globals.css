@@ -1,0 +1,12 @@
+html, body {
+  overflow-x: hidden !important;
+}
+
+body::-webkit-scrollbar {
+  height: 0 !important;
+}
+
+/* Optionally, for main containers */
+.main, .container, .min-h-screen, .flex, .w-full {
+  overflow-x: hidden !important;
+} 

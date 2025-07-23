@@ -112,7 +112,7 @@ const Login = () => {
           if (response.data.user.role === 'landlord') {
             router.push("/microestate/landlord");
           } else if (response.data.user.role === 'tenant') {
-            router.push("/microestate/tenant");
+            router.push("/microestate/tenant/dashboard");
           } else {
             router.push("/microestate");
           }

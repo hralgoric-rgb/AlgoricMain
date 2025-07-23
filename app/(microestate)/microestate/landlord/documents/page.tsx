@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FileText, Upload, Download, Trash2, Edit, Calendar, Plus } from 'lucide-react';
+import { FileText, Upload, Download, Trash2, Edit, Calendar, Plus, Zap, FileDown, FileSignature } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Background from '../../../_components/Background';
 import ProtectedRoute from '../../../_components/ProtectedRoute';
@@ -48,10 +48,10 @@ export default function DocumentsPage() {
           <section className="mb-8 animate-fadeIn">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Documents</h1>
+                <h1 className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-orange-500 via-white to-orange-400 bg-clip-text text-transparent">Documents</h1>
                 <p className="text-gray-400">Upload and manage your legal documents</p>
               </div>
-              <Button onClick={handleUpload} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
+              <Button onClick={handleUpload} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
                 <Plus className="w-4 h-4 mr-2" />
                 Upload Document
               </Button>
@@ -59,34 +59,41 @@ export default function DocumentsPage() {
           </section>
 
           {/* Documents List */}
-          <section className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6 animate-fadeIn">
+          <section className="bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-6 animate-fadeIn">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {documents.map(doc => (
-                <div key={doc.id} className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6 flex flex-col gap-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="w-8 h-8 text-orange-400" />
-                    <div>
-                      <div className="text-white font-semibold">{doc.name}</div>
-                      <div className="text-xs text-gray-400 capitalize">{doc.type}</div>
+              {documents.map(doc => {
+                let icon = <FileText className="w-8 h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />;
+                if (doc.type === 'agreement') icon = <FileSignature className="w-8 h-8 text-orange-500 bg-clip-text" />;
+                else if (doc.type === 'utility') icon = <Zap className="w-8 h-8 text-yellow-400 bg-clip-text" />;
+                else if (doc.type === 'tax') icon = <FileDown className="w-8 h-8 text-blue-400 bg-clip-text" />;
+                // Add more types as needed
+                return (
+                  <div key={doc.id} className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6 flex flex-col gap-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      {icon}
+                      <div>
+                        <div className="text-white font-semibold">{doc.name}</div>
+                        <div className="text-xs text-gray-400 capitalize">{doc.type}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <Calendar className="w-4 h-4" /> Uploaded: {doc.uploaded}
+                      {doc.expires && <><span className="mx-2">|</span><Calendar className="w-4 h-4" /> Expires: {doc.expires}</>}
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" variant="outline" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white" onClick={() => handleDownload(doc)}>
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white" onClick={() => handleReplace(doc)}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => handleDelete(doc)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <Calendar className="w-4 h-4" /> Uploaded: {doc.uploaded}
-                    {doc.expires && <><span className="mx-2">|</span><Calendar className="w-4 h-4" /> Expires: {doc.expires}</>}
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <Button size="sm" variant="outline" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white" onClick={() => handleDownload(doc)}>
-                      <Download className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white" onClick={() => handleReplace(doc)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => handleDelete(doc)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {documents.length === 0 && (
@@ -94,7 +101,7 @@ export default function DocumentsPage() {
                 <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-300 mb-2">No documents found</h3>
                 <p className="text-gray-400 mb-6">Upload your first document</p>
-                <Button onClick={handleUpload} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3">
+                <Button onClick={handleUpload} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl px-6 py-3">
                   <Plus className="w-4 h-4 mr-2" />
                   Upload Document
                 </Button>
