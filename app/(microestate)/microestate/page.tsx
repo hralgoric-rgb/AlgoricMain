@@ -90,51 +90,49 @@ function Page() {
         }
     ];
 
-    // Define color classes for each card - all using orange theme
+    // Define color classes for each card - all using dark orange-red gradient
     const cardColors = [
       {
-        border: 'border-orange-400/60',
-        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
-        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+        border: 'border-orange-600/60',
+        shadow: 'hover:shadow-[0_0_32px_8px_rgba(234,88,12,0.35)]',
+        bg: 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-700',
       },
       {
-        border: 'border-orange-400/60',
-        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
-        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+        border: 'border-orange-600/60',
+        shadow: 'hover:shadow-[0_0_32px_8px_rgba(234,88,12,0.35)]',
+        bg: 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-700',
       },
       {
-        border: 'border-orange-400/60',
-        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
-        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+        border: 'border-orange-600/60',
+        shadow: 'hover:shadow-[0_0_32px_8px_rgba(234,88,12,0.35)]',
+        bg: 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-700',
       },
       {
-        border: 'border-orange-400/60',
-        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
-        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+        border: 'border-orange-600/60',
+        shadow: 'hover:shadow-[0_0_32px_8px_rgba(234,88,12,0.35)]',
+        bg: 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-700',
       },
       {
-        border: 'border-orange-400/60',
-        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
-        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+        border: 'border-orange-600/60',
+        shadow: 'hover:shadow-[0_0_32px_8px_rgba(234,88,12,0.35)]',
+        bg: 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-700',
       },
       {
-        border: 'border-orange-400/60',
-        shadow: 'hover:shadow-[0_0_24px_4px_rgba(251,146,60,0.5)]',
-        bg: 'bg-gradient-to-br from-orange-400 to-orange-500',
+        border: 'border-orange-600/60',
+        shadow: 'hover:shadow-[0_0_32px_8px_rgba(234,88,12,0.35)]',
+        bg: 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-700',
       },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#181c24] to-[#101014] relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-dark relative overflow-hidden">
             <FloatingCircles />
 
             {/* Hero Section */}
             <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 bg-transparent">
                 <ParticleBackground />
 
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
-                </div>
+    
 
                 <div className="container mx-auto px-6 text-center relative z-10">
                     <div className="max-w-5xl mx-auto">
@@ -142,10 +140,10 @@ function Page() {
                             <h1 className="hero-title text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
                                 Elevate Your{" "}
                                 <span className="relative">
-                                    <span className="bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">
+                                    <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 bg-clip-text text-transparent">
                                         Real Estate
                                     </span>
-                                    <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 to-red-500 rounded-full opacity-60"></div>
+                                    <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 rounded-full opacity-90"></div>
                                 </span>{" "}
                                 Experience
                             </h1>
@@ -165,15 +163,14 @@ function Page() {
                             <div className="relative flex-1 group">
                                 <Input
                                     placeholder="Enter your email address"
-                                    className="w-full h-14 bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-2 border-orange-500/20 backdrop-blur-md text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-500 px-6 rounded-2xl shadow-xl hover:shadow-orange-500/20 focus:shadow-orange-500/30 text-lg group-hover:border-orange-500/40"
+    className="w-full h-14 bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-2 border-orange-500/20 backdrop-blur-md text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-500 px-6 rounded-2xl shadow-xl focus:shadow-orange-500/30 text-lg"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-2xl"></div>
-                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500 opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-sm pointer-events-none"></div>
+  {/* Removed all hover background effect layers */}
                             </div>
 
+
                             <Button
-                                className="relative h-14 bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white font-bold px-8 rounded-2xl shadow-xl hover:shadow-orange-500/40 transition-all duration-500 transform hover:-translate-y-1 hover:scale-105 border border-orange-500/30 overflow-hidden group"
+                                className="relative h-14 bg-gradient-to-r from-primary-orange to-primary-red hover:from-primary-orange hover:to-primary-red text-white font-bold px-8 rounded-2xl shadow-xl hover:shadow-orange-500/40 transition-all duration-500 transform hover:-translate-y-1 hover:scale-105 border border-orange-500/30 overflow-hidden group"
                                 onClick={()=>{}}
                             >
                                 <span className="relative z-10 flex items-center gap-2 text-lg">
@@ -195,7 +192,7 @@ function Page() {
                                 variant="outline"
                                 size="lg"
                                 onClick={()=>{}}
-                                className="group relative w-full sm:w-auto border-2 border-orange-500/40 text-orange-500 px-10 py-7 rounded-2xl font-bold text-lg transition-all duration-700 overflow-hidden backdrop-blur-sm shadow-lg hover:shadow-orange-500/30 transform hover:-translate-y-2 hover:scale-105"
+                                className="group relative w-full sm:w-auto border-2 border-primary-orange/40 text-primary-orange px-10 py-7 rounded-2xl font-bold text-lg transition-all duration-700 overflow-hidden backdrop-blur-sm shadow-lg hover:shadow-primary-orange/30 transform hover:-translate-y-2 hover:scale-105"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-left rounded-2xl"></div>
                                 <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
@@ -213,7 +210,7 @@ function Page() {
                                 variant="outline"
                                 size="lg"
                                 onClick={()=>{}}
-                                className="group relative w-full sm:w-auto border-2 border-orange-400/40 text-orange-400 px-10 py-7 rounded-2xl font-bold text-lg transition-all duration-700 overflow-hidden backdrop-blur-sm shadow-lg hover:shadow-orange-400/30 transform hover:-translate-y-2 hover:scale-105"
+                                className="group relative w-full sm:w-auto border-2 border-primary-orange/40 text-primary-orange px-10 py-7 rounded-2xl font-bold text-lg transition-all duration-700 overflow-hidden backdrop-blur-sm shadow-lg hover:shadow-primary-orange/30 transform hover:-translate-y-2 hover:scale-105"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-right rounded-2xl"></div>
 
@@ -245,7 +242,7 @@ function Page() {
                             return (
                                 <div
                                     key={feature.title}
-                                    className={`feature-card min-h-[260px] min-w-[320px] flex-1 bg-white/10 backdrop-blur-lg border-2 ${color.border} rounded-2xl shadow-xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 group ${hoverShadow}`}
+                                    className={`feature-card min-h-[260px] min-w-[320px] flex-1 border-2 ${color.border} rounded-2xl shadow-xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 group ${color.shadow}`}
                                 >
                                     {/* Icon in colored circle, now inside the card and not clipped */}
                                     <div className="mb-6 -mt-12 z-10">

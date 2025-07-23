@@ -51,16 +51,16 @@ export default function TenantsPage() {
     <ProtectedRoute allowedRoles={['landlord']}>
       <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
         <Background />
-        <div className="container mx-auto py-10 mt-24 relative z-10">
+        <div className="container mx-auto py-4 mt-8 relative z-10">
           {/* Header */}
           <section className="mb-8 animate-fadeIn">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Tenants</h1>
+                <h1 className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-orange-500 via-white to-orange-400 bg-clip-text text-transparent">Tenants</h1>
                 <p className="text-gray-400">Manage your tenants and their properties</p>
               </div>
               <Link href="/microestate/landlord/tenants/add">
-                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
+                <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
                   Add Tenant
                 </Button>
               </Link>
@@ -68,11 +68,11 @@ export default function TenantsPage() {
 
             {/* Property Filter */}
             <div className="flex gap-4 items-center mb-6">
-              <Filter className="w-5 h-5 text-orange-500" />
+              <Filter className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
               <select
                 value={propertyFilter}
                 onChange={e => setPropertyFilter(e.target.value)}
-                className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:outline-none focus:border-orange-500 transition-colors"
+                className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:outline-none focus:border-transparent transition-colors"
               >
                 <option value="all">All Properties</option>
                 {properties.map(p => (
@@ -83,7 +83,7 @@ export default function TenantsPage() {
           </section>
 
           {/* Tenants Table */}
-          <section className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6 animate-fadeIn">
+          <section className="bg-glass border border-transparent transition-colors hover:border-transparent">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -99,11 +99,13 @@ export default function TenantsPage() {
                     <tr key={tenant.id} className="border-b border-[#2a2a2f] hover:bg-[#1a1a1f] transition-colors">
                       <td className="py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
                             {tenant.avatar ? (
                               <img src={tenant.avatar} alt={tenant.name} className="w-10 h-10 rounded-full object-cover" />
                             ) : (
-                              <User className="w-6 h-6 text-white" />
+                              <span className="text-white font-bold text-xl select-none">
+                                {tenant.name.charAt(0).toUpperCase()}
+                              </span>
                             )}
                           </div>
                           <div>
@@ -126,8 +128,8 @@ export default function TenantsPage() {
                       </td>
                       <td className="py-4">
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
-                            <Eye className="w-4 h-4" />
+                          <Button size="sm" variant="outline" className="border-transparent transition-colors hover:border-transparent">
+                            <Eye className="w-4 h-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
                           </Button>
                           <Button size="sm" variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
                             <MessageCircle className="w-4 h-4" />
@@ -149,7 +151,7 @@ export default function TenantsPage() {
                 <h3 className="text-xl font-semibold text-gray-300 mb-2">No tenants found</h3>
                 <p className="text-gray-400 mb-6">Try adjusting your filter or add a new tenant</p>
                 <Link href="/microestate/landlord/tenants/add">
-                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3">
+                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-3">
                     Add Tenant
                   </Button>
                 </Link>

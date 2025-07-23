@@ -82,11 +82,11 @@ export default function EmailsPage() {
 
             {/* Filters */}
             <div className="flex gap-4 items-center mb-6">
-              <Filter className="w-5 h-5 text-orange-500" />
+              <Filter className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
               <select
                 value={tenantFilter}
                 onChange={e => setTenantFilter(e.target.value)}
-                className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:outline-none focus:border-orange-500 transition-colors"
+                className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:outline-none focus:border-transparent transition-colors"
               >
                 <option value="all">All Tenants</option>
                 {tenants.map(t => (
@@ -97,13 +97,13 @@ export default function EmailsPage() {
                 type="date"
                 value={dateFilter}
                 onChange={e => setDateFilter(e.target.value)}
-                className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:outline-none focus:border-orange-500 transition-colors"
+                className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:outline-none focus:border-transparent transition-colors"
               />
             </div>
           </section>
 
           {/* Emails Table */}
-          <section className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6 animate-fadeIn">
+          <section className="bg-glass border border-transparent rounded-2xl p-6 animate-fadeIn">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -127,7 +127,7 @@ export default function EmailsPage() {
                         <td className="py-4">{getStatusBadge(email.status)}</td>
                         <td className="py-4">{email.date}</td>
                         <td className="py-4">
-                          <Button size="sm" variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                          <Button size="sm" variant="outline" className="border-transparent text-transparent hover:bg-transparent hover:text-transparent"
                             onClick={() => setExpanded(expanded === email.id ? null : email.id)}
                           >
                             {expanded === email.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}

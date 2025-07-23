@@ -16,12 +16,10 @@ export default function MicroestateLayout({
 }) {
   return (
     <AuthProvider>
-    <div className="flex min-h-screen">
-      <div className="flex flex-col flex-1">
+      <div className="flex min-h-screen flex-col">
         <Navbar />
-        <main className="">{children}</main>
+        <main className="flex-1">{children}</main>
         <Footer />
-      </div>
     </div>
     </AuthProvider>
   );

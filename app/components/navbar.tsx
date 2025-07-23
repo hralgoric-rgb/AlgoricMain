@@ -242,31 +242,11 @@ export default function Navbar() {
   };
 
   // Handle logout
-  const handleLogout = async () => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      // Clear sessionStorage
-      sessionStorage.removeItem("authToken");
-
-      // Clear cookies
-      document.cookie =
-        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
-      // Check if user was logged in via Google (NextAuth)
-
-      setIsAuthenticated(false);
-      toast.success("Successfully Logged out");
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (_error) {
-
-      toast.error("Logout failed");
-    }
+  const handleLogout = () => {
+    if (typeof window === "undefined") return;
+    sessionStorage.removeItem("authToken");
+    setIsAuthenticated(false);
+    router.push("/microestate");
   };
 
   // Handle login
@@ -554,6 +534,14 @@ export default function Navbar() {
     const url = new URL(window.location.href);
     url.searchParams.delete("modal");
     router.replace(url.pathname + url.search, { scroll: false });
+  };
+
+  const handleProtectedLinkClick = (_e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      _e.preventDefault();
+      router.push("/microestate/auth");
+      toast.error("Please login to proceed!!");
+    }
   };
   return (
     <>
