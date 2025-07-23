@@ -47,6 +47,7 @@ interface ApiErrorResponse {
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   try {
     const authToken = request.cookies.get("microauthToken")?.value;
+    console.log("Auth Token:", authToken);
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/microestate/api/auth")) {

@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: user.role,
           image: user.profileImage || null,
+          _id: user._id.toString(), // Add this for token
         };
       },
     }),
@@ -39,8 +40,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
-        token._id = user._id;
-        token.name = user.name
+        token._id = user._id || user.id;
+        token.name = user.name;
         token.role = user.role;
       }
       return token;
@@ -54,12 +55,26 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/signIn",
-    error: "/signIn",
+    signIn: "/microestate/auth/login", // Update this path
+    error: "/microestate/auth/login",
   },
   session: {
     strategy: "jwt",
-    maxAge: 3 * 24 * 60 * 60,
+    maxAge: 3 * 24 * 60 * 60, // 3 days
   },
   secret: process.env.NEXTAUTH_SECRET,
+
+  // Complete cookies configuration to override ALL default cookie names
+  cookies: {
+  sessionToken: {
+    name: "microauthToken",
+    options: {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 3 * 24 * 60 * 60,
+    },
+  },
+},
 };

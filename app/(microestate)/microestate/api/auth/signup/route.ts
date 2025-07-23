@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     
     console.log("User data to save:", userData);
     
-    const newUser = new User(userData);
+    const newUser = new User(userData) as typeof User.prototype;
 
     console.log("Saving user to database...");
     await newUser.save();
@@ -106,8 +106,28 @@ export async function POST(request: NextRequest) {
       // Continue with registration even if email fails
     }
 
+    // Generate NextAuth compatible JWT token
+    const jwtSecret = process.env.NEXTAUTH_SECRET;
+    if (!jwtSecret) {
+      throw new Error("NEXTAUTH_SECRET is not configured");
+    }
+
+    // Create token payload similar to NextAuth format
+    const tokenPayload = {
+      _id: newUser._id.toString(),
+      email: newUser.email,
+      role: newUser.role,
+      name: `${newUser.firstName} ${newUser.lastName}`,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (3 * 24 * 60 * 60), // 3 days
+    };
+
+    const sessionToken = jwt.sign(tokenPayload, jwtSecret);
+
+    
+
     console.log("Registration completed successfully");
-    return NextResponse.json(
+    const response=  NextResponse.json(
       {
         success: true,
         message: "User registered successfully. Please check your email for verification code.",
@@ -115,6 +135,15 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
+
+     // Set the same cookie that NextAuth would set
+    response.cookies.set("microauth", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 3 * 24 * 60 * 60, // 3 days
+      path: "/",
+    });
   } catch (error: any) {
     console.error("Registration Error:", error);
     console.error("Error details:", {
