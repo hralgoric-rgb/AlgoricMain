@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const propertyType = searchParams.get("propertyType");
     const currentYield = searchParams.get("currentYield");
     const riskLevel = searchParams.get("riskLevel");
-    const name = searchParams.get("name");
+    const title = searchParams.get("title");
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const city = searchParams.get("city");
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     if (state) query["location.state"] = state;
     if (riskLevel) query.riskLevel = riskLevel;
     if (currentYield) query.currentYield = Number(currentYield);
-    if (name) query.name = { $regex: name, $options: "i" }; // case-insensitive match
+    if (title) query.title = { $regex: title, $options: "i" }; // case-insensitive match
 
     if (minPrice || maxPrice) {
       query.pricePerShare = {};

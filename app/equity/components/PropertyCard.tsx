@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import clsx from "clsx";
+import Image from "next/image";
 
 interface Property {
   id: string;
@@ -44,14 +45,6 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ property }: PropertyCardProps) {
-  console.log(
-    "monthlyRental:",
-    property.monthlyRental,
-    typeof property.monthlyRental
-  );
-
-  console.log(property.images);
-
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "Low":
@@ -140,27 +133,26 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
 
         {/* Enhanced property image placeholder */}
-        <div className="w-full h-full flex items-center justify-center relative">
-          <div className="w-20 h-20 flex items-center justify-center rounded-2xl bg-purple-400/80 shadow-lg shadow-purple-400/30 backdrop-blur-md">
-            <Building2 className="w-12 h-12 text-white" />
-          </div>
-          {/* Static sparkle icon */}
-          <div className="absolute top-4 right-8">
-            <Sparkles className="w-4 h-4 text-yellow-400/60" />
-          </div>
+        <div className="relative w-full h-60 rounded-2xl overflow-hidden">
+          {property.images && property.images.length > 0 ? (
+            <Image
+              src={property.images[0] || "/images/placeholder-property.jpg"}
+              alt={property.title}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            // Enhanced placeholder UI
+            <div className="w-full h-full flex items-center justify-center relative bg-gradient-to-br from-orange-500/20 to-red-500/20">
+              <div className="w-20 h-20 flex items-center justify-center rounded-2xl bg-purple-400/80 shadow-lg shadow-purple-400/30 backdrop-blur-md">
+                <Building2 className="w-12 h-12 text-white" />
+              </div>
+              <div className="absolute top-4 right-8">
+                <Sparkles className="w-4 h-4 text-yellow-400/60" />
+              </div>
+            </div>
+          )}
         </div>
-        {/* Property Image */}
-        {property.images && property.images.length > 0 ? (
-          <img
-            src={property.images[0]}
-            alt={property.title}
-            className="w-full h-full object-cover rounded-2xl"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center rounded-2xl">
-            <Building2 className="w-16 h-16 text-orange-500/50" />
-          </div>
-        )}
       </div>
 
       {/* Enhanced Property Details */}

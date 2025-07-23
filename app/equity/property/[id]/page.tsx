@@ -36,6 +36,7 @@ import { useRouter } from "next/navigation";
 import BuySharesModal from "@/app/commercial/components/BuySharesModal";
 import { CommercialProperty } from "@/app/data/commercialProperties";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface PropertyDetailPageProps {
   params: Promise<{
@@ -191,7 +192,9 @@ export default function PropertyDetailPage({
               <div className="flex items-center gap-4 text-gray-400">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
-                  <span>{property.address.city}</span>
+                  <span>
+                    {property.address.city}, {property.address.state}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-4 h-4" />
@@ -243,7 +246,7 @@ export default function PropertyDetailPage({
             >
               <div className="aspect-video rounded-2xl overflow-hidden bg-gray-800">
                 <img
-                  src={property.images[0] || "/images/placeholder-property.jpg"}
+                  src={property.images[0]}
                   alt={property.title}
                   className="w-full h-full object-cover"
                 />

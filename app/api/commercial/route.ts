@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import CommercialProperties from "@/app/models/CommercialProperty";
 import connectDB from "@/app/lib/mongodb";
 import { Types } from "mongoose";
+import CommercialProperty from "@/app/models/CommercialProperty";
 
 export async function GET() {
   try {
     await connectDB();
 
-    const rawProperties = await CommercialProperties.find(
+    const rawProperties = await CommercialProperty.find(
       {},
       {
         name: 1,
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const body = await req.json();
 
-    const newProperty = await CommercialProperties.create(body);
+    const newProperty = await CommercialProperty.create(body);
 
     return NextResponse.json(
       { success: true, data: newProperty },
