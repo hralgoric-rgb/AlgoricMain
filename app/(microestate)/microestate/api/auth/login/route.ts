@@ -32,18 +32,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if email is verified
-    if (!user.emailVerified) {
-      console.log("Email not verified");
-      return NextResponse.json(
-        { 
-          error: "Email not verified", 
-          message: "Please verify your email address before logging in",
-          userId: user._id 
-        },
-        { status: 403 }
-      );
-    }
+    // // Check if email is verified
+    // if (!user.emailVerified) {
+    //   console.log("Email not verified");
+    //   return NextResponse.json(
+    //     { 
+    //       error: "Email not verified", 
+    //       message: "Please verify your email address before logging in",
+    //       userId: user._id 
+    //     },
+    //     { status: 403 }
+    //   );
+    // }
 
     // Check if user role matches the requested role
     if (role && user.role !== role) {
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     // Return user info without sensitive data
     const userResponse = {
       id: user._id.toString(),
-      name: user.name,
+      name: user.firstName,
       email: user.email,
       role: user.role,
       emailVerified: user.emailVerified,

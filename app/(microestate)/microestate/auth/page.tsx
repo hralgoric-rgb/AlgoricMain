@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-  Mail,
   Eye,
   EyeOff,
-  AlertCircle,
-  CheckCircle,
-  ArrowLeft,
   Building,
+  ArrowLeft,
+  Mail,
+  Lock,
+  CheckCircle,
 } from "lucide-react";
 import {
   FloatingCircles,
@@ -16,14 +16,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import GoogleLoginButton from "../../_components/GoogleLoginButton";
 import Link from "next/link";
 import { useAuth } from "../../Context/AuthProvider";
+import { signIn, getSession } from "next-auth/react";
 
 const Login = () => {
   const router = useRouter();
@@ -34,8 +31,8 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "tenant", // Add role field with default
   });
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,18 +56,6 @@ const Login = () => {
       required: true,
       hasToggle: true,
     },
-    {
-      id: "role",
-      label: "Login As",
-      type: "select",
-      placeholder: "Select your role",
-      value: formData.role,
-      required: true,
-      options: [
-        { value: "tenant", label: "Tenant" },
-        { value: "landlord", label: "Landlord" },
-      ],
-    },
   ];
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -89,80 +74,50 @@ const Login = () => {
       setLoading(true);
       setError(null);
 
-      const response = await axios.post("/microestate/api/auth/login", {
+      const response = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
-        role: formData.role, // Include role in login request
+        redirect: false,
       });
 
-      if (response.data.success) {
+      if (response && response.ok) {
         setSuccess("Logged in successfully!");
-        
-        // Login the user with the new auth system
-        login({
-          id: response.data.user.id,
-          email: response.data.user.email,
-          name: response.data.user.name,
-          role: response.data.user.role,
-          emailVerified: response.data.user.emailVerified,
-        });
 
-        // Redirect based on role
-        setTimeout(() => {
-          if (response.data.user.role === 'landlord') {
-            router.push("/microestate/landlord");
-          } else if (response.data.user.role === 'tenant') {
-            router.push("/microestate/tenant/dashboard");
-          } else {
-            router.push("/microestate");
-          }
-        }, 1000);
+        // Fetch session data after successful login
+        const session = await getSession();
+
+        if (session && session.user) {
+          console.log("Session data:", session);
+          console.log("User data:", session.user);
+
+          const { user } = session;
+
+          // Update your auth context if needed
+          login({
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            emailVerified: user.emailVerified || false,
+          });
+
+          // Redirect based on role
+          setTimeout(() => {
+            if (user.role === "landlord") {
+              router.push("/microestate/landlord");
+            } else if (user.role === "tenant") {
+              router.push("/microestate/tenant/dashboard");
+            } else {
+              router.push("/microestate");
+            }
+          }, 1000);
+        }
       } else {
-        setError(response.data.error || "Login failed");
+        setError(response?.error || "Login failed");
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      const errorMessage = error.response?.data?.error || "An error occurred during login";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.name || !formData.email || !formData.password) {
-      setError("Name, email, and password are required");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      setSuccess(null);
-
-      const response = await axios.post("/microestate/api/signup", formData);
-
-      console.log("signup resp", response);
-
-      if (response?.data?.success) {
-        setSuccess(response.data?.message);
-      }
-
-      router.push("/microestate");
-    } catch (error: any) {
-      if (error?.response?.data?.error) {
-        console.error(error.response.data.error);
-        setError(error.response.data.error);
-      } else {
-        console.error(error, "Error in signup");
-        setError("An error occurred during signup");
-      }
+      setError("An error occurred during login");
     } finally {
       setLoading(false);
     }
@@ -170,13 +125,62 @@ const Login = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    setTimeout(() => {
+
+    if (!forgotPasswordEmail) {
+      setError("Email address is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccess(null);
+
+      console.log("Sending forgot password request for:", forgotPasswordEmail);
+
+      const response = await axios.post(
+        "/microestate/api/auth/forgot-password",
+        {
+          email: forgotPasswordEmail,
+        }
+      );
+
+      console.log("Forgot password response:", response.data);
+
+      if (response.data.success) {
+        setSuccess(
+          response.data.message ||
+            "Password reset instructions have been sent to your email address. Please check your inbox."
+        );
+
+        // Clear the email field after successful request
+        setForgotPasswordEmail("");
+
+        // Optionally redirect back to login after a delay
+        setTimeout(() => {
+          setCurrentView("main");
+          setSuccess(null);
+        }, 5000);
+      } else {
+        setError(response.data.error || "Failed to send reset instructions");
+      }
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+
+      let errorMessage = "An error occurred while sending reset instructions";
+
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
+    } finally {
       setLoading(false);
-      setSuccess("Reset instructions have been sent to your email.");
-    }, 1000);
+    }
   };
 
   const renderInputField = (field: any) => (
@@ -192,7 +196,11 @@ const Login = () => {
             className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
           >
             {field.options?.map((option: any) => (
-              <option key={option.value} value={option.value} className="bg-gray-800 text-white">
+              <option
+                key={option.value}
+                value={option.value}
+                className="bg-gray-800 text-white"
+              >
                 {option.label}
               </option>
             ))}
@@ -200,7 +208,11 @@ const Login = () => {
         ) : (
           <Input
             type={
-              field.hasToggle ? (showPassword ? "text" : "password") : field.type
+              field.hasToggle
+                ? showPassword
+                  ? "text"
+                  : "password"
+                : field.type
             }
             value={field.value}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
@@ -222,44 +234,189 @@ const Login = () => {
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
       </div>
+    </div>
+  );
 
-      {field.showStrength && formData.password && (
-        <div className="mt-2 animate-fadeIn">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs text-gray-400">Password strength:</span>
-            <span
-              className={`text-xs font-medium ${
-                passwordStrength === 0
-                  ? "text-red-400"
-                  : passwordStrength === 1
-                  ? "text-orange-400"
-                  : passwordStrength === 2
-                  ? "text-yellow-400"
-                  : "text-green-400"
-              }`}
-            >
-              {getPasswordStrengthLabel(passwordStrength)}
-            </span>
-          </div>
-          <div className="w-full flex space-x-1">
-            {[1, 2, 3, 4].map((bar) => (
-              <div
-                key={bar}
-                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                  bar <= passwordStrength
-                    ? getPasswordStrengthColor(passwordStrength)
-                    : "bg-gray-700"
-                }`}
-              />
-            ))}
-          </div>
-          <div className="mt-2 space-y-1 text-xs text-gray-400">
-            <p>• At least 8 characters • Mix of letters and numbers</p>
-            <p>• At least 1 special character • Upper and lowercase letters</p>
+  // Clear messages when switching views
+  useEffect(() => {
+    setError(null);
+    setSuccess(null);
+  }, [currentView]);
+
+  const renderMainView = () => (
+    <>
+      <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
+        <div className="relative flex items-center justify-center mb-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 transform hover:rotate-12 transition-transform duration-300">
+            <Building className="w-6 h-6 text-white" />
           </div>
         </div>
-      )}
-    </div>
+        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
+          Welcome to 100 GAJ
+        </h2>
+        <p className="text-center text-gray-300 text-sm">
+          Your gateway to modern real estate management
+        </p>
+      </div>
+      <div className="p-8">
+        <form onSubmit={handleLogin} className="space-y-4 animate-slideIn">
+          <div className="space-y-4">{loginFields.map(renderInputField)}</div>
+
+          {/* Error and Success Messages */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm animate-fadeIn">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-green-400 text-sm animate-fadeIn flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              {success}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 shadow-lg shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none group relative overflow-hidden h-auto"
+          >
+            <span className="relative z-10">
+              {loading ? "Signing in..." : "Sign in"}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+          </Button>
+
+          <div className="text-center pt-2">
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setCurrentView("forgot-password")}
+              className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors duration-200 p-0 h-auto"
+            >
+              Forgot your password?
+            </Button>
+          </div>
+        </form>
+
+        {/* Register Links */}
+        <div className="mt-6 pt-6 border-t border-gray-700/50">
+          <p className="text-center text-gray-400 text-sm mb-4">
+            Don't have an account?
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/microestate/register/tenant">
+              <Button
+                variant="outline"
+                className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200"
+              >
+                Register as Tenant
+              </Button>
+            </Link>
+            <Link href="/microestate/register/landlord">
+              <Button
+                variant="outline"
+                className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200"
+              >
+                Register as Landlord
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  const renderForgotPasswordView = () => (
+    <>
+      <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
+        <div className="relative flex items-center justify-center mb-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <Lock className="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
+          Reset Password
+        </h2>
+        <p className="text-center text-gray-300 text-sm">
+          Enter your email to receive reset instructions
+        </p>
+      </div>
+      <div className="p-8">
+        <form
+          onSubmit={handleForgotPassword}
+          className="space-y-4 animate-slideIn"
+        >
+          <div className="group">
+            <Label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
+              <Mail className="w-4 h-4 text-orange-400" />
+              Email Address
+            </Label>
+            <div className="relative">
+              <Input
+                type="email"
+                value={forgotPasswordEmail}
+                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                placeholder="Enter your registered email"
+                className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
+                required
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
+          </div>
+
+          {/* Error and Success Messages */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm animate-fadeIn">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-green-400 text-sm animate-fadeIn flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              {success}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={loading || !forgotPasswordEmail}
+            className="w-full py-3 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 shadow-lg shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none group relative overflow-hidden h-auto"
+          >
+            <span className="relative z-10">
+              {loading ? "Sending..." : "Send Reset Instructions"}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+          </Button>
+
+          <div className="text-center pt-2">
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setCurrentView("main")}
+              className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors duration-200 p-0 h-auto flex items-center gap-2 mx-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Login
+            </Button>
+          </div>
+        </form>
+
+        {/* Additional Help */}
+        <div className="mt-6 pt-6 border-t border-gray-700/50 text-center">
+          <p className="text-gray-400 text-xs mb-2">Remember your password?</p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setCurrentView("main")}
+            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200"
+          >
+            Sign In Instead
+          </Button>
+        </div>
+      </div>
+    </>
   );
 
   return (
@@ -269,60 +426,9 @@ const Login = () => {
       <div className="flex flex-col items-center justify-center flex-1 py-20 relative z-10">
         <div className="relative z-10 w-full max-w-lg mx-auto px-2">
           <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-orange-500/20 rounded-3xl shadow-2xl shadow-orange-500/10 overflow-hidden transform hover:scale-[1.01] transition-all duration-500">
-            <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
-              <div className="relative flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 transform hover:rotate-12 transition-transform duration-300">
-                  <Building className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
-                Welcome to 100 GAJ
-              </h2>
-              <p className="text-center text-gray-300 text-sm">
-                Your gateway to modern real estate management
-              </p>
-            </div>
-            <div className="p-8">
-              <form onSubmit={handleLogin} className="space-y-4 animate-slideIn">
-                <div className="space-y-4">
-                  {loginFields.map(renderInputField)}
-                </div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 shadow-lg shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none group relative overflow-hidden h-auto"
-                >
-                  <span className="relative z-10">
-                    {loading ? "Signing in..." : "Sign in"}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                </Button>
-                <div className="text-center pt-2">
-                  <Button
-                    type="button"
-                    variant="link"
-                    onClick={() => setCurrentView("forgot-password")}
-                    className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors duration-200 p-0 h-auto"
-                  >
-                    Forgot your password?
-                  </Button>
-                </div>
-              </form>
-              {/* Divider */}
-              <div className="flex items-center gap-4 my-6">
-                <div className="flex-1 h-px bg-gray-700" />
-                <span className="text-sm text-gray-400 whitespace-nowrap">Or sign in with</span>
-                <div className="flex-1 h-px bg-gray-700" />
-              </div>
-              <div className="flex justify-center mb-4">
-                <GoogleLoginButton />
-              </div>
-              <div className="text-center mt-4">
-                <span className="text-gray-400 text-sm">Not a member? </span>
-                <Link href="/microestate/register" className="text-orange-400 hover:underline font-semibold text-sm">Create account</Link>
-              </div>
-            </div>
+            {currentView === "main"
+              ? renderMainView()
+              : renderForgotPasswordView()}
           </div>
         </div>
       </div>
