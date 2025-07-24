@@ -54,7 +54,7 @@ export default function PropertyListingPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [yieldRange, setYieldRange] = useState<[number, number]>([0, 15]);
   const router = useRouter();
-  console.log(properties);
+
   const propertyTypes = [
     { value: "all", label: "All Types", icon: Building2 },
     { value: "Office", label: "Office Buildings", icon: Briefcase },
@@ -82,9 +82,31 @@ export default function PropertyListingPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const nameFromURL = params.get("title") || "";
-    setSearchTerm(nameFromURL); // sets input box
-    setDebouncedSearchTerm(nameFromURL); // triggers fetch immediately
+
+    const title = params.get("title") || "";
+    setSearchTerm(title);
+    setDebouncedSearchTerm(title);
+
+    const propertyType = params.get("propertyType");
+    if (propertyType) setSelectedType(propertyType);
+
+    const riskLevel = params.get("riskLevel");
+    if (riskLevel) setSelectedRisk(riskLevel);
+
+    const sortParam = params.get("sortBy");
+    if (sortParam === "pricePerShare") setSortBy("price");
+    else if (sortParam === "currentYield") setSortBy("yield");
+    else if (sortParam === "currentOccupancy") setSortBy("currentOccupancy");
+
+    const minPrice = params.get("minPrice");
+    const maxPrice = params.get("maxPrice");
+    if (minPrice && maxPrice)
+      setPriceRange([parseInt(minPrice), parseInt(maxPrice)]);
+
+    const minYield = params.get("minYield");
+    const maxYield = params.get("maxYield");
+    if (minYield && maxYield)
+      setYieldRange([parseFloat(minYield), parseFloat(maxYield)]);
   }, []);
 
   useEffect(() => {
@@ -111,11 +133,15 @@ export default function PropertyListingPage() {
       if (priceRange[1] < 10000) params.set("maxPrice", String(priceRange[1]));
       if (yieldRange[0] > 0) params.set("minYield", String(yieldRange[0]));
       if (yieldRange[1] < 15) params.set("maxYield", String(yieldRange[1]));
+      if (sortBy) {
+        if (sortBy === "price") params.set("sortBy", "pricePerShare");
+        else if (sortBy === "yield") params.set("sortBy", "currentYield");
+        else if (sortBy === "currentOccupancy")
+          params.set("sortBy", "currentOccupancy");
+      }
 
-      // // Update URL in browser (client-side routing)
-      // router.replace(`?${params.toString()}`);
-
-      window.history.replaceState(null, "", `?${params.toString()}`);
+      // Update URL in browser (client-side routing)
+      router.replace(`?${params.toString()}`);
 
       try {
         const res = await fetch(`/api/commercial/search?${params.toString()}`, {
@@ -139,30 +165,14 @@ export default function PropertyListingPage() {
     fetchFilteredProperties();
 
     return () => controller.abort();
-  }, [debouncedSearchTerm, selectedType, selectedRisk, priceRange, yieldRange]);
-
-  useEffect(() => {
-    if (!properties.length) return;
-
-    const sorted = [...properties].sort((a, b) => {
-      switch (sortBy) {
-        case "aiScore":
-          return b.aiScore - a.aiScore;
-        case "yield":
-          return b.currentYield - a.currentYield;
-        case "appreciation":
-          return b.predictedAppreciation - a.predictedAppreciation;
-        case "price":
-          return a.pricePerShare - b.pricePerShare;
-        case "occupancy":
-          return b.currentOccupancy - a.currentOccupancy;
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredProperties(sorted);
-  }, [sortBy, properties]);
+  }, [
+    debouncedSearchTerm,
+    selectedType,
+    selectedRisk,
+    priceRange,
+    yieldRange,
+    sortBy,
+  ]);
 
   if (isLoading) {
     return (

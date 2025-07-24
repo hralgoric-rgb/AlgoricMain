@@ -8,7 +8,6 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    console.log(searchParams);
     const propertyType = searchParams.get("propertyType");
     const currentYield = searchParams.get("currentYield");
     const riskLevel = searchParams.get("riskLevel");
@@ -17,6 +16,8 @@ export async function GET(req: NextRequest) {
     const maxPrice = searchParams.get("maxPrice");
     const city = searchParams.get("city");
     const state = searchParams.get("state");
+    const sortBy = searchParams.get("sortBy");
+
     const query: any = {};
 
     if (propertyType) query.propertyType = propertyType;
@@ -24,12 +25,22 @@ export async function GET(req: NextRequest) {
     if (state) query["location.state"] = state;
     if (riskLevel) query.riskLevel = riskLevel;
     if (currentYield) query.currentYield = Number(currentYield);
-    if (title) query.title = { $regex: title, $options: "i" }; // case-insensitive match
+    if (title) query.title = { $regex: title, $options: "i" };
 
     if (minPrice || maxPrice) {
       query.pricePerShare = {};
       if (minPrice) query.pricePerShare.$gte = Number(minPrice);
       if (maxPrice) query.pricePerShare.$lte = Number(maxPrice);
+    }
+
+    // Determine sorting based on sortBy param
+    const sortQuery: Record<string, 1 | -1> = {};
+    if (sortBy === "currentYield") {
+      sortQuery.currentYield = -1; // Descending
+    } else if (sortBy === "pricePerShare") {
+      sortQuery.pricePerShare = 1; // Ascending
+    } else if (sortBy === "currentOccupancy") {
+      sortQuery.currentOccupancy = -1; // Descending
     }
 
     const rawProperties = await CommercialProperty.find(query, {
@@ -49,7 +60,9 @@ export async function GET(req: NextRequest) {
       totalValue: 1,
       features: 1,
       keyTenants: 1,
-    }).lean();
+    })
+      .sort(sortQuery)
+      .lean();
 
     const properties = rawProperties.map((property) => ({
       ...property,
