@@ -85,6 +85,7 @@ export default function TenantRegisterPage() {
         // Store email and role for potential verification
         localStorage.setItem("pendingEmail", formData.email);
         localStorage.setItem("userRole", "tenant");
+        localStorage.setItem("microestate_user", JSON.stringify(response.data.user));
         
         // Redirect to email verification page after successful registration
         setTimeout(() => {

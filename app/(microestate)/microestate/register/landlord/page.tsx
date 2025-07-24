@@ -78,8 +78,7 @@ export default function LandlordRegisterPage() {
       submitData.append("password", formData.password);
       submitData.append("role", "landlord");
 
-     localStorage.setItem("pendingEmail", formData.email.toLowerCase().trim());
-    
+      localStorage.setItem("pendingEmail", formData.email.toLowerCase().trim());
 
       // Add files if selected
       if (profilePic) {
@@ -108,6 +107,7 @@ export default function LandlordRegisterPage() {
         // Store email and role for verification page
         localStorage.setItem("pendingEmail", formData.email);
         localStorage.setItem("userRole", "landlord");
+        localStorage.setItem("microestate_user", JSON.stringify(response.data.user));
         // Redirect to verification page after 2 seconds
         setTimeout(() => {
           router.push("/microestate/verify-email");
