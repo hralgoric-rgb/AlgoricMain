@@ -50,9 +50,11 @@ export interface CommercialProperty {
   featured: boolean;
 
   // Additional Info
+  features: string[];
   amenities: string[];
   nearbyLandmarks: string[];
   propertyManager: string;
+  keyTenants: string[];
 
   // Documents
   documents: {

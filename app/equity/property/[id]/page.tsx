@@ -331,14 +331,7 @@ export default function PropertyDetailPage({
                   Key Features
                 </h3>
                 <div className="space-y-3">
-                  {[
-                    "Prime Location",
-                    "High Occupancy",
-                    "A+ Tenants",
-                    "Modern Facilities",
-                    "24/7 Security",
-                    "Backup Power",
-                  ].map((feature, index) => (
+                  {property.features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-[#B6FF3F]" />
                       <span className="text-gray-300">{feature}</span>
@@ -372,18 +365,16 @@ export default function PropertyDetailPage({
             >
               <h3 className="text-lg font-bold text-white mb-4">Key Tenants</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {["Microsoft India", "Accenture", "Deloitte", "EY", "KPMG"].map(
-                  (tenant, index) => (
-                    <div
-                      key={index}
-                      className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200 cursor-pointer hover:bg-gray-800"
-                    >
-                      <div className="font-semibold text-lg text-white">
-                        {tenant}
-                      </div>
+                {property.keyTenants.map((tenant, index) => (
+                  <div
+                    key={index}
+                    className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200 cursor-pointer hover:bg-gray-800"
+                  >
+                    <div className="font-semibold text-lg text-white">
+                      {tenant}
                     </div>
-                  )
-                )}
+                  </div>
+                ))}
               </div>
             </motion.div>
 

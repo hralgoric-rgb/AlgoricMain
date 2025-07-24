@@ -59,7 +59,7 @@ export interface ICommercialProperty extends Document {
   // Additional Info
   amenities: string[];
   nearbyLandmarks: string[];
-
+  features: string[];
   // Documents
   documents: {
     name: string;
@@ -269,6 +269,10 @@ const CommercialPropertySchema: Schema = new Schema(
       default: [],
     },
     nearbyLandmarks: {
+      type: [String],
+      default: [],
+    },
+    features: {
       type: [String],
       default: [],
     },
