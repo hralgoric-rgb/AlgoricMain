@@ -49,6 +49,11 @@ export async function POST(request:NextRequest) {
         }
         return Response.json({
         success: true,
+        user: {
+            email: user.email,
+            role: user.role,
+            profileImage: user.profileImage,
+        },
         message: "Account verified sucessfully"
        } , {status: 201})
 
