@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
       currentOccupancy: 1,
       totalValue: 1,
       features: 1,
+      keyTenants: 1,
     }).lean();
 
     const properties = rawProperties.map((property) => ({

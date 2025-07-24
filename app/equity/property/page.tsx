@@ -38,6 +38,7 @@ interface Property {
   totalValue: number;
   aiScore: number;
   features: string[];
+  keyTenants: string[];
 }
 
 export default function PropertyListingPage() {
@@ -53,7 +54,7 @@ export default function PropertyListingPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [yieldRange, setYieldRange] = useState<[number, number]>([0, 15]);
   const router = useRouter();
-
+  console.log(properties);
   const propertyTypes = [
     { value: "all", label: "All Types", icon: Building2 },
     { value: "Office", label: "Office Buildings", icon: Briefcase },
@@ -111,8 +112,10 @@ export default function PropertyListingPage() {
       if (yieldRange[0] > 0) params.set("minYield", String(yieldRange[0]));
       if (yieldRange[1] < 15) params.set("maxYield", String(yieldRange[1]));
 
-      // Update URL in browser (client-side routing)
-      router.replace(`?${params.toString()}`);
+      // // Update URL in browser (client-side routing)
+      // router.replace(`?${params.toString()}`);
+
+      window.history.replaceState(null, "", `?${params.toString()}`);
 
       try {
         const res = await fetch(`/api/commercial/search?${params.toString()}`, {
