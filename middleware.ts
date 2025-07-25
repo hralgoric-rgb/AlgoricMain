@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 // Define protected routes
 const protectedRoutes = [
   '/admin/verification',
-]
+];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -17,8 +17,7 @@ export function middleware(request: NextRequest) {
 
   if (isProtectedRoute && !authToken) {
     // Redirect to login page if trying to access protected route without auth
-    const loginUrl = new URL('/', request.url)
-    // toast.error("Please login to proceed!!")
+    const loginUrl = new URL('/microestate/auth', request.url)
     return NextResponse.redirect(loginUrl)
   }
 
@@ -32,6 +31,6 @@ export const config = {
     '/favourites/:path*',
     '/verification/:path*',
     '/admin/verification/:path*',
-    '/sell/:path*'
+    '/sell/:path*',
   ]
 } 

@@ -1,7 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Navbar from '../_components/Navbar';
-import Footer from '../_components/Footer';
 import AuthProvider from '../Context/AuthProvider';
 
 export const metadata: Metadata = {
@@ -17,10 +15,8 @@ export default function MicroestateLayout({
   return (
     <AuthProvider>
       <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-    </div>
+        {children}
+      </div>
     </AuthProvider>
   );
 }

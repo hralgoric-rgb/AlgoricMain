@@ -5,7 +5,6 @@ import { Building, Plus, Search, Filter, Eye, Edit, Trash2, MapPin, DollarSign, 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Background from '../../../_components/Background';
-import ProtectedRoute from '../../../_components/ProtectedRoute';
 
 export default function PropertiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +66,6 @@ export default function PropertiesPage() {
   };
 
   return (
-    // <ProtectedRoute allowedRoles={['landlord']}>
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
       <Background />
       <div className="container mx-auto py-4 mt-8 relative z-10">
@@ -261,6 +259,5 @@ export default function PropertiesPage() {
 
         </div>
       </div>
-    // </ProtectedRoute>
   );
 } 

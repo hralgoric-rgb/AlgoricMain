@@ -5,7 +5,6 @@ import { Building, Plus, ArrowLeft, ArrowRight, Check, Upload, MapPin, DollarSig
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Background from '../../../../_components/Background';
-import ProtectedRoute from '../../../../_components/ProtectedRoute';
 
 // Define the type for formData
 interface Address {
@@ -311,100 +310,98 @@ export default function AddPropertyPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['landlord']}>
-      <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-        <Background />
-        <div className="container mx-auto py-10 mt-24 relative z-10">
-          
-          {/* Header */}
-          <section className="mb-8 animate-fadeIn">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/microestate/landlord/properties">
-                <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Properties
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-white">Add New Property</h1>
-                <p className="text-gray-400">Create a new property listing</p>
-              </div>
+    <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
+      <Background />
+      <div className="container mx-auto py-10 mt-24 relative z-10">
+        
+        {/* Header */}
+        <section className="mb-8 animate-fadeIn">
+          <div className="flex items-center gap-4 mb-6">
+            <Link href="/microestate/landlord/properties">
+              <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Properties
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Add New Property</h1>
+              <p className="text-gray-400">Create a new property listing</p>
             </div>
+          </div>
 
-            {/* Progress Steps */}
-            <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6">
-              <div className="flex items-center justify-between">
-                {steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center">
-                    <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
-                      currentStep >= step.id 
-                        ? 'bg-orange-500 border-orange-500 text-white' 
-                        : 'border-gray-600 text-gray-400'
-                    }`}>
-                      {currentStep > step.id ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <step.icon className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div className="ml-3">
-                      <div className={`text-sm font-medium ${
-                        currentStep >= step.id ? 'text-white' : 'text-gray-400'
-                      }`}>
-                        {step.title}
-                      </div>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div className={`w-16 h-0.5 mx-4 ${
-                        currentStep > step.id ? 'bg-orange-500' : 'bg-gray-600'
-                      }`} />
+          {/* Progress Steps */}
+          <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                    currentStep >= step.id 
+                      ? 'bg-orange-500 border-orange-500 text-white' 
+                      : 'border-gray-600 text-gray-400'
+                  }`}>
+                    {currentStep > step.id ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <step.icon className="w-5 h-5" />
                     )}
                   </div>
-                ))}
-              </div>
+                  <div className="ml-3">
+                    <div className={`text-sm font-medium ${
+                      currentStep >= step.id ? 'text-white' : 'text-gray-400'
+                    }`}>
+                      {step.title}
+                    </div>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`w-16 h-0.5 mx-4 ${
+                      currentStep > step.id ? 'bg-orange-500' : 'bg-gray-600'
+                    }`} />
+                  )}
+                </div>
+              ))}
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Form Content */}
-          <section className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-8 animate-fadeIn">
-            {renderStepContent()}
+        {/* Form Content */}
+        <section className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-8 animate-fadeIn">
+          {renderStepContent()}
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t border-[#2a2a2f]">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Previous
-              </Button>
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-[#2a2a2f]">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Previous
+            </Button>
 
-              <div className="flex gap-3">
-                {currentStep < steps.length ? (
-                  <Button
-                    onClick={nextStep}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
-                  >
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-green-500/25 transition-all duration-300 hover:scale-105"
-                  >
-                    <Check className="w-4 h-4 mr-2" />
-                    Create Property
-                  </Button>
-                )}
-              </div>
+            <div className="flex gap-3">
+              {currentStep < steps.length ? (
+                <Button
+                  onClick={nextStep}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-green-500/25 transition-all duration-300 hover:scale-105"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Create Property
+                </Button>
+              )}
             </div>
-          </section>
+          </div>
+        </section>
 
-        </div>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 } 

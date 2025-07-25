@@ -5,7 +5,6 @@ import { Building, ArrowLeft, Edit, Trash2, MapPin, DollarSign, Users, Calendar,
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Background from '../../../../_components/Background';
-import ProtectedRoute from '../../../../_components/ProtectedRoute';
 import { useParams } from 'next/navigation';
 
 export default function PropertyDetailsPage() {
@@ -316,70 +315,68 @@ export default function PropertyDetailsPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={['landlord']}>
-      <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-        <Background />
-        <div className="container mx-auto py-10 mt-24 relative z-10">
-          
-          {/* Header */}
-          <section className="mb-8 animate-fadeIn">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/microestate/landlord/properties">
-                <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Properties
-                </Button>
-              </Link>
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-white">{property.name}</h1>
-                <div className="flex items-center gap-4 mt-2">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <MapPin className="w-4 h-4" />
-                    <span>{property.address}</span>
-                  </div>
-                  {getStatusBadge(property.status)}
+    <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
+      <Background />
+      <div className="container mx-auto py-10 mt-24 relative z-10">
+        
+        {/* Header */}
+        <section className="mb-8 animate-fadeIn">
+          <div className="flex items-center gap-4 mb-6">
+            <Link href="/microestate/landlord/properties">
+              <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Properties
+              </Button>
+            </Link>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-white">{property.name}</h1>
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <MapPin className="w-4 h-4" />
+                  <span>{property.address}</span>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Property
-                </Button>
-                <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
+                {getStatusBadge(property.status)}
               </div>
             </div>
-
-            {/* Tabs */}
-            <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-2">
-              <div className="flex space-x-1">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
-                      activeTab === tab.id
-                        ? 'bg-orange-500 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-[#1a1a1f]'
-                    }`}
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Property
+              </Button>
+              <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
             </div>
-          </section>
+          </div>
 
-          {/* Tab Content */}
-          <section className="animate-fadeIn">
-            {renderTabContent()}
-          </section>
+          {/* Tabs */}
+          <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-2">
+            <div className="flex space-x-1">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? 'bg-orange-500 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-[#1a1a1f]'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
-        </div>
+        {/* Tab Content */}
+        <section className="animate-fadeIn">
+          {renderTabContent()}
+        </section>
+
       </div>
-    </ProtectedRoute>
+    </div>
   );
 } 
