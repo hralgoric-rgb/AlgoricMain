@@ -4,40 +4,48 @@ import dbConnect from '@/app/(microestate)/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
-    try {
-        
-   await dbConnect()
+  try {
+    await dbConnect();
+    const { password, email } = await request.json();
 
-   const {password , email} = await request.json()
+    if (!password || !email) {
+      return NextResponse.json(
+        { message: "Password and email are required!" },
+        { status: 400 }
+      );
+    }
 
-   if (!password || !email) {
-    return Response.json({
-        message: "Error Password is required!"
-    } , {status: 401}) 
-   }
-   
-   const foundUser  = await User.findOne({email: email})
-   if (!foundUser) {
-      return Response.json({
-        message: "Email does not exist in our database"
-    } , {status: 401}) 
-   }
-   
-  const hashedPassowrd =   await bcrypt.hash(password , 10)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-   foundUser.password = hashedPassowrd
-   await foundUser.save()
-   
+    // Update user and clear reset fields
+    const updatedUser = await User.findOneAndUpdate(
+      { email },
+      {
+        $set: { password: hashedPassword },
+        $unset: {
+          resetPasswordToken: "",
+          resetPasswordExpires: ""
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
       { message: 'Password updated successfully' },
       { status: 200 }
     );
-
-
-    } catch (error) {
-        console.log("Error while Editing the password" , error)
-        return Response.json({
-            message: "Error while handling Reset-password"
-        } , {status: 500})
-    }
+  } catch (error) {
+    console.error("Password reset error:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

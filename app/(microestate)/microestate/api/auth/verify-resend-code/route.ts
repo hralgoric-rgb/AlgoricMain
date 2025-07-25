@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (
       !user ||
+        !user.resetPasswordExpires ||   
       user.resetPasswordToken !== code ||
       new Date() > user.resetPasswordTokenExpiry
     ) {
