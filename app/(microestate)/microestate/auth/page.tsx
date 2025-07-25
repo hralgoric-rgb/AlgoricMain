@@ -8,6 +8,7 @@ import {
   Mail,
   Lock,
   CheckCircle,
+  Key,
 } from "lucide-react";
 import {
   FloatingCircles,
@@ -25,18 +26,25 @@ import { signIn, getSession } from "next-auth/react";
 const Login = () => {
   const router = useRouter();
   const { login } = useAuth();
-  const [currentView, setCurrentView] = useState<"main" | "forgot-password">(
-    "main"
-  );
+  const [currentView, setCurrentView] = useState<
+    "main" | "forgot-password" | "reset-password"
+  >("main");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [resetPasswordData, setResetPasswordData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [resetEmail, setResetEmail] = useState(""); // Store email for password reset
 
   const loginFields = [
     {
@@ -46,7 +54,7 @@ const Login = () => {
       placeholder: "Enter your email",
       value: formData.email,
       required: true,
-    },
+    },  
     {
       id: "password",
       label: "Password",
@@ -144,6 +152,7 @@ const Login = () => {
           email: forgotPasswordEmail,
         }
       );
+      
 
       console.log("Forgot password response:", response.data);
 
@@ -153,14 +162,17 @@ const Login = () => {
             "Password reset instructions have been sent to your email address. Please check your inbox."
         );
 
-        // Clear the email field after successful request
+        // Store email for reset password view
+        setResetEmail(forgotPasswordEmail);
+
+        // Clear the email field
         setForgotPasswordEmail("");
 
-        // Optionally redirect back to login after a delay
+        // Redirect to reset password view after a delay
         setTimeout(() => {
-          setCurrentView("main");
+          setCurrentView("reset-password");
           setSuccess(null);
-        }, 5000);
+        }, 3000);
       } else {
         setError(response.data.error || "Failed to send reset instructions");
       }
@@ -178,6 +190,50 @@ const Login = () => {
       }
 
       setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Placeholder for API call - you'll need to implement this
+
+     await axios.post('/api/auth/resend-password' , {
+      resetEmail,
+      resetPasswordData
+     })
+      console.log("Resetting password for:", resetEmail);
+      console.log("New password:", resetPasswordData.newPassword);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSuccess("Password reset successfully! Redirecting to login...");
+      
+      // Clear form data
+      setResetPasswordData({
+        newPassword: "",
+        confirmPassword: "",
+      });
+      
+      // Redirect to login after success
+      setTimeout(() => {
+        setCurrentView("main");
+        setSuccess(null);
+      }, 2000);
+    } catch (error) {
+      setError("Failed to reset password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -419,6 +475,137 @@ const Login = () => {
     </>
   );
 
+  const renderResetPasswordView = () => (
+    <>
+      <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
+        <div className="relative flex items-center justify-center mb-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <Key className="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
+          Set New Password
+        </h2>
+        <p className="text-center text-gray-300 text-sm">
+          Enter your new password below
+        </p>
+        <p className="text-center text-orange-400 text-xs mt-2">
+          For: {resetEmail}
+        </p>
+      </div>
+      <div className="p-8">
+        <form onSubmit={handleResetPassword} className="space-y-4 animate-slideIn">
+          <div className="space-y-4">
+            {/* New Password Field */}
+            <div className="group">
+              <Label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
+                <Lock className="w-4 h-4 text-orange-400" />
+                New Password
+              </Label>
+              <div className="relative">
+                <Input
+                  type={showNewPassword ? "text" : "password"}
+                  value={resetPasswordData.newPassword}
+                  onChange={(e) => 
+                    setResetPasswordData(prev => ({
+                      ...prev,
+                      newPassword: e.target.value
+                    }))
+                  }
+                  placeholder="Enter your new password"
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-orange-400 transition-colors duration-200 hover:bg-transparent h-auto"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </Button>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
+            </div>
+
+            {/* Confirm Password Field */}
+            <div className="group">
+              <Label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
+                <Lock className="w-4 h-4 text-orange-400" />
+                Confirm Password
+              </Label>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={resetPasswordData.confirmPassword}
+                  onChange={(e) => 
+                    setResetPasswordData(prev => ({
+                      ...prev,
+                      confirmPassword: e.target.value
+                    }))
+                  }
+                  placeholder="Confirm your new password"
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-orange-400 transition-colors duration-200 hover:bg-transparent h-auto"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </Button>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Error and Success Messages */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm animate-fadeIn">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-green-400 text-sm animate-fadeIn flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              {success}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 shadow-lg shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none group relative overflow-hidden h-auto"
+          >
+            <span className="relative z-10">
+              {loading ? "Resetting..." : "Reset Password"}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+          </Button>
+
+          <div className="text-center pt-2">
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setCurrentView("forgot-password")}
+              className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors duration-200 p-0 h-auto flex items-center gap-2 mx-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Verification
+            </Button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex flex-col justify-between">
       <FloatingCircles />
@@ -426,9 +613,9 @@ const Login = () => {
       <div className="flex flex-col items-center justify-center flex-1 py-20 relative z-10">
         <div className="relative z-10 w-full max-w-lg mx-auto px-2">
           <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-orange-500/20 rounded-3xl shadow-2xl shadow-orange-500/10 overflow-hidden transform hover:scale-[1.01] transition-all duration-500">
-            {currentView === "main"
-              ? renderMainView()
-              : renderForgotPasswordView()}
+            {currentView === "main" && renderMainView()}
+            {currentView === "forgot-password" && renderForgotPasswordView()}
+            {currentView === "reset-password" && renderResetPasswordView()}
           </div>
         </div>
       </div>
