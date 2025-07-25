@@ -21,8 +21,7 @@ export default function VerifyEmailPage() {
     setSuccess(null);
 
     try {
-      const response = await axios.post("/api/auth/verifycode", {
-        email: localStorage.getItem("pendingEmail") || "",
+      const response = await axios.post("/microestate/api/verifycode", {
         code: verificationCode,
       });
 

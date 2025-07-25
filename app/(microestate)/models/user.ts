@@ -13,7 +13,9 @@ export interface IUser extends Document {
   emailVerified?: boolean;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
-  qr?: string;
+  qrCode?: string; // Changed from 'qr' to 'qrCode' for consistency
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
   // Instance methods
@@ -79,6 +81,7 @@ const userSchema = new Schema<IUser>(
     },
     emailVerified: {
       type: Boolean,
+      default: false,
     },
     verificationToken: {
       type: String,
@@ -86,8 +89,17 @@ const userSchema = new Schema<IUser>(
     verificationTokenExpiry: {
       type: Date,
     },
-    qr: {
+    qrCode: {
+      // Changed from 'qr' to 'qrCode'
       type: String,
+    },
+    resetPasswordToken: {
+      type: String,
+      required: false,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      required: false,
     },
   },
   {
@@ -119,6 +131,7 @@ userSchema.methods.comparePassword = async function (
 };
 
 // Create and export the model
-const User: IUserModel = mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema);
+const User =
+  mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
 
 export default User;

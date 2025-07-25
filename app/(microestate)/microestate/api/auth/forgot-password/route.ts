@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         resetTokenExpiry.setHours(resetTokenExpiry.getHours() + 1); 
       
         foundUser.resetPasswordToken = resetCode;
-        foundUser.resetPasswordTokenExpiry = resetTokenExpiry;
+        foundUser.resetPasswordExpires = resetTokenExpiry;
         
 
 await User.updateOne(
@@ -39,7 +39,7 @@ await User.updateOne(
   {
     $set: {
       resetPasswordToken: resetCode,
-      resetPasswordTokenExpiry: resetTokenExpiry,
+      resetPasswordExpires: resetTokenExpiry,
     }
   }
 );

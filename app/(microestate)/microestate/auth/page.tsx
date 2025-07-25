@@ -159,14 +159,22 @@ const Login = () => {
       if (response.data.success) {
         setSuccess(
           response.data.message ||
-            "A 6-digit reset code has been sent to your email address."
+          "Password reset instructions have been sent to your email address. Please check your inbox."
         );
+
+        // Store email for reset password view
         setResetEmail(forgotPasswordEmail);
+
+        // Clear the email field
         setForgotPasswordEmail("");
-        setCurrentView("reset-password");
-        setSuccess(null);
+
+        // Redirect to reset password view after a delay
+        setTimeout(() => {
+          setCurrentView("reset-password");
+          setSuccess(null);
+        }, 3000);
       } else {
-        setError(response.data.error || "Failed to send reset code");
+        setError(response.data.error || "Failed to send reset instructions");
       }
     } catch (error: any) {
       console.error("Forgot password error:", error);
@@ -388,8 +396,8 @@ const Login = () => {
           Reset Password
         </h2>
         <p className="text-center text-gray-300 text-sm">
-            Enter your email to receive a 6-digit reset code
-          </p>
+          Enter your email to receive reset instructions
+        </p>
       </div>
       <div className="p-8">
         <form
@@ -433,7 +441,7 @@ const Login = () => {
             className="w-full py-3 px-6 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 shadow-lg shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none group relative overflow-hidden h-auto"
           >
             <span className="relative z-10">
-              {loading ? "Sending..." : "Send Reset Code"}
+              {loading ? "Sending..." : "Send Reset Instructions"}
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
           </Button>
