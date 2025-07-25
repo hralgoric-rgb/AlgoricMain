@@ -64,6 +64,14 @@ export default function PropertyDetailPage({
         setPropertyId(id);
         setIsLoading(true);
 
+        // Validate MongoDB ObjectId (24 hex chars)
+        const isValidObjectId = id && /^[a-fA-F0-9]{24}$/.test(id);
+        if (!isValidObjectId) {
+          setProperty(null);
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch(`/api/commercial/${id}`);
         const data = await response.json();
 

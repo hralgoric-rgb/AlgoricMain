@@ -8,6 +8,9 @@ const config: NextConfig = {
 
   // Image optimizations
   images: {
+    domains: [
+      "www.devdiscourse.com",
+    ],
     remotePatterns: [
       {
         protocol: "https",

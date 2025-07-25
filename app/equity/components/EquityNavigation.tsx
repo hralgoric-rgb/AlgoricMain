@@ -1,17 +1,27 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Home, Building2, Target, BarChart3, Menu, X } from "lucide-react";
+import { Home, Building2, Target, BarChart3, Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import React from "react";
 
 export default function EquityNavigation() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  // Check authentication on mount
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsAuthenticated(!!localStorage.getItem("authToken"));
+    }
+  }, []);
 
   const navItems = [
     { href: "/equity", label: "Dashboard", icon: Home },
-    { href: "/equity/property", label: "Properties", icon: Building2 },
+    { href: "/equity/properties", label: "Properties", icon: Building2 },
     { href: "/equity/portfolio", label: "Portfolio", icon: Target },
     { href: "/equity/dashboard", label: "Analytics", icon: BarChart3 },
   ];
@@ -52,6 +62,45 @@ export default function EquityNavigation() {
                   </Link>
                 );
               })}
+              {/* Post Property Button */}
+              <Link
+                href="/equity/property/post"
+                className="ml-4 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium"
+              >
+                <span>Post Property</span>
+              </Link>
+              {isAuthenticated && (
+                <Link
+                  href="/equity/kyc"
+                  className="ml-4 px-4 py-2 rounded-lg bg-gradient-to-r from-[#a78bfa] to-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium shadow-md hover:from-purple-500 hover:to-purple-800"
+                >
+                  <span>KYC</span>
+                </Link>
+              )}
+              {isAuthenticated && (
+                <div className="relative ml-4">
+                  <button
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                    onClick={() => setShowProfileMenu((v) => !v)}
+                  >
+                    <User className="w-5 h-5" />
+                    <span>Profile</span>
+                  </button>
+                  {showProfileMenu && (
+                    <div className="absolute right-0 mt-2 w-40 bg-black border border-gray-700 rounded-lg shadow-lg z-50">
+                      <Link href="/equity/profile" className="block px-4 py-2 text-white hover:bg-gray-800">My Profile</Link>
+                      <button
+                        className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-800"
+                        onClick={() => {
+                          localStorage.removeItem("authToken");
+                          document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                          window.location.reload();
+                        }}
+                      >Logout</button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -98,6 +147,44 @@ export default function EquityNavigation() {
                   </Link>
                 );
               })}
+              {/* Post Property Button for Mobile */}
+              <Link
+                href="/equity/property/post"
+                className="block w-full mt-2 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 text-center font-medium"
+                onClick={() => setMobileOpen(false)}
+              >
+                Post Property
+              </Link>
+              {isAuthenticated && (
+                <Link
+                  href="/equity/kyc"
+                  className="block w-full mt-2 px-4 py-3 rounded-lg bg-gradient-to-r from-[#a78bfa] to-purple-700 text-white border border-purple-400 transition-all duration-300 text-center font-medium shadow-md hover:from-purple-500 hover:to-purple-800"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  KYC
+                </Link>
+              )}
+              {isAuthenticated && (
+                <>
+                  <Link
+                    href="/equity/profile"
+                    className="block w-full mt-2 px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-600 text-center font-medium"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <button
+                    className="block w-full mt-2 px-4 py-3 rounded-lg bg-red-600 text-white border border-red-400 text-center font-medium"
+                    onClick={() => {
+                      localStorage.removeItem("authToken");
+                      document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                      window.location.reload();
+                    }}
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         )}
