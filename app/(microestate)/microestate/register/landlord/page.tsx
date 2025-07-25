@@ -52,27 +52,23 @@ export default function LandlordRegisterPage() {
 
     setLoading(true);
     try {
-      console.log("Sending registration data:", {
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        password: formData.password,
-        role: "landlord",
-        address: formData.address
-      });
-
-      const response = await axios.post("/microestate/api/auth/signup", {
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        password: formData.password,
-        role: "landlord",
-        address: formData.address
-      });
+      // Create FormData for file uploads
+      const submitData = new FormData();
+      submitData.append("email", formData.email);
+      submitData.append("firstName", formData.firstName);
+      submitData.append("lastName", formData.lastName);
+      submitData.append("phone", formData.phone);
+      submitData.append("password", formData.password);
+      submitData.append("role", "landlord");
+      submitData.append("address", formData.address);
+      // Add profile picture if selected
+      if (profilePic) {
+        submitData.append("profileImage", profilePic);
+      }
       
-      console.log("Registration response:", response.data);
+      const response = await axios.post("/microestate/api/auth/signup", submitData
+      // Do NOT set Content-Type header manually; axios will handle it
+      );
       
       if (response.data.success) {
         setSuccess(response.data.message);
@@ -153,7 +149,14 @@ export default function LandlordRegisterPage() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-white mb-1 flex items-center gap-2"><MapPin className="w-4 h-4 text-orange-400" /> ADDRESS</label>
-              <Input type="text" className="bg-[#181c24] text-white border-orange-500/20 focus:border-orange-500" />
+              <Input
+  type="text"
+  name="address"
+  required
+  className="bg-[#181c24] text-white border-orange-500/20 focus:border-orange-500"
+  value={formData.address}
+  onChange={handleChange}
+/>
             </div>
             <div>
               <label className="block text-sm font-semibold text-white mb-1 flex items-center gap-2"><Hash className="w-4 h-4 text-orange-400" /> TAX ID</label>

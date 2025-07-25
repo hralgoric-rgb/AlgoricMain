@@ -25,7 +25,7 @@ export async function POST(request:NextRequest) {
             )
         }
 
-        if (user.isVerified == true) {
+        if (user.emailVerified == true) {
             return NextResponse.json(
                 {error: "User already verified"},
                 {status: 401}
@@ -44,11 +44,16 @@ export async function POST(request:NextRequest) {
         const IsCodeExpired = new Date(user.verificationTokenExpiry) > new Date()
 
         if (isCodeVaild && IsCodeExpired) {
-            user.isVerified = true
+            user.emailVerified = true
             await user.save()
         }
         return Response.json({
         success: true,
+        user: {
+            email: user.email,
+            role: user.role,
+            profileImage: user.profileImage,
+        },
         message: "Account verified sucessfully"
        } , {status: 201})
 
