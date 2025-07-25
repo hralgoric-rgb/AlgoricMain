@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Building, Users, FileText, Shield, TrendingUp, Clock, Mail } from "lucide-react";
 import gsap from "gsap";
 import { FloatingCircles, ParticleBackground } from "../_components/Background";
+import ProtectedRoute from '../_components/ProtectedRoute';
 
 
 function Page() {
@@ -132,7 +133,7 @@ function Page() {
             <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-20 bg-transparent">
                 <ParticleBackground />
 
-    
+
 
                 <div className="container mx-auto px-6 text-center relative z-10">
                     <div className="max-w-5xl mx-auto">
@@ -316,7 +317,6 @@ function Page() {
                     </div>
                 </div>
             </section>
-
         </div>
     );
 };

@@ -150,268 +150,268 @@ export default function TenantDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['tenant']} redirectTo="/microestate/auth">
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black">
-      <Background />
-      <TenantNavbar />
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black">
+        <Background />
+        <TenantNavbar />
         <main className="flex-1 container mx-auto px-4 py-12 md:py-16 mx-4 md:mx-12">
-        <h1 className="text-5xl font-extrabold mb-10 bg-gradient-to-r from-orange-500 via-white to-orange-400 bg-clip-text text-transparent">Dashboard</h1>
-        <AnimatePresence>
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{}}
+          <h1 className="text-5xl font-extrabold mb-10 bg-gradient-to-r from-orange-500 via-white to-orange-400 bg-clip-text text-transparent">Dashboard</h1>
+          <AnimatePresence>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{}}
               className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 lg:gap-16"
-          >
-            {/* Main Left Column */}
+            >
+              {/* Main Left Column */}
               <div className="md:col-span-2 flex flex-col gap-10">
-              {/* Lease Summary */}
-              <motion.section
-                custom={1}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
+                {/* Lease Summary */}
+                <motion.section
+                  custom={1}
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
                   className={`${cardClass} mb-2 p-8 md:p-10 lg:p-12`}
-              >
+                >
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-orange-400" /> Lease Summary</h3>
-                {loading ? <Skeleton className="h-24 w-full" /> : (
+                  {loading ? <Skeleton className="h-24 w-full" /> : (
                     <div className="grid grid-cols-2 gap-6 text-white">
-                    <div><span className="text-gray-400">Start:</span> {leaseSummary.start}</div>
-                    <div><span className="text-gray-400">End:</span> {leaseSummary.end}</div>
-                    <div><span className="text-gray-400">Notice Period:</span> {leaseSummary.noticePeriod}</div>
-                    <div className="col-span-2"><span className="text-gray-400">Terms:</span> {leaseSummary.terms}</div>
-                  </div>
-                )}
-              </motion.section>
-              {/* Payment History */}
-              <motion.section
-                custom={2}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
+                      <div><span className="text-gray-400">Start:</span> {leaseSummary.start}</div>
+                      <div><span className="text-gray-400">End:</span> {leaseSummary.end}</div>
+                      <div><span className="text-gray-400">Notice Period:</span> {leaseSummary.noticePeriod}</div>
+                      <div className="col-span-2"><span className="text-gray-400">Terms:</span> {leaseSummary.terms}</div>
+                    </div>
+                  )}
+                </motion.section>
+                {/* Payment History */}
+                <motion.section
+                  custom={2}
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
                   className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
-              >
+                >
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><CreditCard className="w-5 h-5 text-orange-400" /> Rent Payment History</h3>
-                {loading ? (
+                  {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                ) : (
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : (
                     <div className="flex flex-col gap-4 md:gap-6">
-                    {expandedPaymentHistory.map((p, idx) => (
+                      {expandedPaymentHistory.map((p, idx) => (
                         <div key={idx} className="flex flex-col md:flex-row md:justify-between md:items-center bg-[#23232a] rounded-2xl px-6 py-4 shadow hover:shadow-orange-500/20 transition gap-2 md:gap-0">
                           <span className="text-white text-base md:text-lg font-medium">{p.month}</span>
                           <div className="flex flex-wrap gap-2 md:gap-4 items-center">
                             <span className="text-white font-semibold">₹{p.amount}</span>
                             <span className={`text-xs font-bold px-3 py-1 rounded-full ${p.status === "Paid" ? "bg-gradient-to-r from-green-500 to-green-400 text-white" : "bg-gradient-to-r from-orange-500 to-orange-400 text-white"}`}>{p.status}</span>
-                          <span className="text-xs text-gray-400">{p.date}</span>
-                          {p.invoice && (
-                            <button
-                              onClick={() => handleDownload(p.month)}
+                            <span className="text-xs text-gray-400">{p.date}</span>
+                            {p.invoice && (
+                              <button
+                                onClick={() => handleDownload(p.month)}
                                 className="bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 hover:from-orange-700 hover:to-red-800 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-400 btn-glow shadow-md"
-                              title="Download"
-                            >
-                              <Download className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </motion.section>
-              {/* Outstanding Dues */}
-              <motion.section
-                custom={3}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
-                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
-              >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-400" /> Outstanding Dues</h3>
-                {loading ? <Skeleton className="h-10 w-full" /> : (
-                  expandedOutstandingDues.length === 0 ? <span className="text-green-400">No outstanding dues!</span> : (
-                      <ul className="text-white space-y-4">
-                      {expandedOutstandingDues.map((d, idx) => (
-                          <li key={idx} className="flex justify-between items-center bg-[#23232a] rounded-2xl px-6 py-4 shadow hover:shadow-orange-500/20 transition">
-                          <span>{d.type} (Due {d.dueDate})</span>
-                          <span className="font-bold text-orange-400">₹{d.amount}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )
-                )}
-              </motion.section>
-              {/* Maintenance Tickets */}
-              <motion.section
-                custom={4}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
-                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
-              >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-orange-400" /> Maintenance/Support Tickets</h3>
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                ) : (
-                    <ul className="text-white space-y-4">
-                    {expandedTickets.map((t) => (
-                        <li key={t.id} className={`flex flex-col md:flex-row md:justify-between md:items-center px-6 py-4 rounded-2xl shadow ${t.status === "Open" ? "bg-orange-500/10 border-l-4 border-orange-500" : "bg-gray-700/40"} gap-2 md:gap-0`}>
-                        <span>{t.subject}</span>
-                          <div className="flex gap-2 items-center">
-                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${t.status === "Open" ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white" : "bg-gradient-to-r from-green-500 to-green-400 text-white"}`}>{t.status}</span>
-                        <span className="text-xs text-gray-400">{t.created}</span>
-                        <button
-                          onClick={() => openConfirmModal(t)}
-                              className="ml-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-3 py-1 rounded-full text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-red-400 btn-glow shadow-md"
-                        >Delete Ticket</button>
+                                title="Download"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.section>
-              {/* Move-out Timeline */}
-              {moveOut.noticeGiven && (
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </motion.section>
+                {/* Outstanding Dues */}
                 <motion.section
-                  custom={5}
+                  custom={3}
                   variants={sectionVariants}
                   initial="hidden"
                   animate="visible"
-                    className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
+                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
                 >
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-orange-400" /> Move-out Countdown</h3>
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-400" /> Outstanding Dues</h3>
                   {loading ? <Skeleton className="h-10 w-full" /> : (
-                    daysLeft !== null && (
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        <span className="text-white text-lg">Move-out in <span className="font-bold text-orange-400">{daysLeft} days</span> ({moveOut.moveOutDate})</span>
-                        <ProgressBar percent={Math.max(0, 100 - (daysLeft/60)*100)} label="Lease End Approaching" />
-                      </div>
+                    expandedOutstandingDues.length === 0 ? <span className="text-green-400">No outstanding dues!</span> : (
+                        <ul className="text-white space-y-4">
+                        {expandedOutstandingDues.map((d, idx) => (
+                            <li key={idx} className="flex justify-between items-center bg-[#23232a] rounded-2xl px-6 py-4 shadow hover:shadow-orange-500/20 transition">
+                            <span>{d.type} (Due {d.dueDate})</span>
+                            <span className="font-bold text-orange-400">₹{d.amount}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )
                   )}
                 </motion.section>
-              )}
-              {/* Activity Log */}
-              <motion.section
-                custom={6}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
+                {/* Maintenance Tickets */}
+                <motion.section
+                  custom={4}
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
                   className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
-              >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><User className="w-5 h-5 text-orange-400" /> Activity Log</h3>
-                {loading ? (
+                >
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-orange-400" /> Maintenance/Support Tickets</h3>
+                  {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                ) : (
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : (
                     <ul className="text-white space-y-4">
-                    {expandedActivityLog.map((a, idx) => (
-                        <li key={idx} className="flex justify-between items-center px-6 py-4 rounded-2xl bg-[#23232a] shadow hover:shadow-orange-500/20 transition">
-                        <span>{a.action}</span>
-                        <span className="text-xs text-gray-400">{a.date}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.section>
-            </div>
-            {/* Right Column */}
-              <div className="flex flex-col gap-10">
-              {/* Landlord Contact */}
-              <motion.section
-                custom={7}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
-                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
-              >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><User className="w-5 h-5 text-orange-400" /> Landlord Contact</h3>
-                {loading ? <Skeleton className="h-16 w-full" /> : (
-                  <div className="text-white text-center">
-                      <div className="font-bold text-lg mb-2">{landlordCard.name}</div>
-                      <div className="text-gray-400 mb-2 flex items-center justify-center gap-2"><Phone className="w-4 h-4" />{landlordCard.phone}</div>
-                    <div className="text-xs text-orange-400">Visiting: {landlordCard.visiting}</div>
-                  </div>
-                )}
-              </motion.section>
-              {/* Notifications */}
-              <motion.section
-                custom={8}
-                variants={sectionVariants}
-                initial="hidden"
-                animate="visible"
-                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
-              >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-400" /> Notifications</h3>
-                {loading ? <Skeleton className="h-10 w-full" /> : (
-                  expandedNotifications.length === 0 ? <span className="text-gray-400">No notifications.</span> : (
-                      <ul className="space-y-4">
-                      {expandedNotifications.map((n) => (
-                          <li key={n.id} className={`flex items-center gap-2 px-6 py-4 rounded-2xl shadow ${n.type === "alert" ? "bg-orange-500/10 border-l-4 border-orange-500" : "bg-gray-700/40"}`}>
-                          <span className="text-white">{n.message}</span>
-                          <span className="text-xs text-gray-400 ml-auto">{n.date}</span>
+                      {expandedTickets.map((t) => (
+                        <li key={t.id} className={`flex flex-col md:flex-row md:justify-between md:items-center px-6 py-4 rounded-2xl shadow ${t.status === "Open" ? "bg-orange-500/10 border-l-4 border-orange-500" : "bg-gray-700/40"} gap-2 md:gap-0`}>
+                          <span>{t.subject}</span>
+                          <div className="flex gap-2 items-center">
+                            <span className={`text-xs font-bold px-3 py-1 rounded-full ${t.status === "Open" ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white" : "bg-gradient-to-r from-green-500 to-green-400 text-white"}`}>{t.status}</span>
+                            <span className="text-xs text-gray-400">{t.created}</span>
+                            <button
+                              onClick={() => openConfirmModal(t)}
+                              className="ml-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-3 py-1 rounded-full text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-red-400 btn-glow shadow-md"
+                            >Delete Ticket</button>
+                          </div>
                         </li>
                       ))}
                     </ul>
-                  )
+                  )}
+                </motion.section>
+                {/* Move-out Timeline */}
+                {moveOut.noticeGiven && (
+                  <motion.section
+                    custom={5}
+                    variants={sectionVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
+                  >
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Calendar className="w-5 h-5 text-orange-400" /> Move-out Countdown</h3>
+                    {loading ? <Skeleton className="h-10 w-full" /> : (
+                      daysLeft !== null && (
+                          <div className="flex flex-col md:flex-row md:items-center gap-4">
+                          <span className="text-white text-lg">Move-out in <span className="font-bold text-orange-400">{daysLeft} days</span> ({moveOut.moveOutDate})</span>
+                          <ProgressBar percent={Math.max(0, 100 - (daysLeft/60)*100)} label="Lease End Approaching" />
+                        </div>
+                      )
+                    )}
+                  </motion.section>
                 )}
-              </motion.section>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </main>
-      <TenantFooter />
-      {/* Modal integration */}
-      <Modal open={modal === "profile"} onClose={closeModal} slideFrom="center">
-        <h2 className="text-xl font-bold text-white mb-4">Update Profile</h2>
-        <div className="mb-4 text-gray-300">(Mock profile form goes here)</div>
-        <button
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          onClick={() => { toast.success("Profile updated!"); closeModal(); }}
-        >Save Changes</button>
-      </Modal>
-      <Modal open={modal === "receipt"} onClose={closeModal} slideFrom="bottom">
-        <h2 className="text-xl font-bold text-white mb-4">Payment Receipt</h2>
-        <div className="mb-4 text-gray-300">(Mock receipt for {modalData?.month || "July 2025"})</div>
-        <button
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          onClick={() => { toast.success("Receipt downloaded!"); closeModal(); }}
-        >Download PDF</button>
-      </Modal>
-      <Modal open={modal === "confirm"} onClose={closeModal} slideFrom="center">
-        <h2 className="text-xl font-bold text-white mb-4">Confirm Action</h2>
-        <div className="mb-4 text-gray-300">Are you sure you want to proceed?</div>
-        <div className="flex gap-4">
+                {/* Activity Log */}
+                <motion.section
+                  custom={6}
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
+                >
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><User className="w-5 h-5 text-orange-400" /> Activity Log</h3>
+                  {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : (
+                    <ul className="text-white space-y-4">
+                      {expandedActivityLog.map((a, idx) => (
+                        <li key={idx} className="flex justify-between items-center px-6 py-4 rounded-2xl bg-[#23232a] shadow hover:shadow-orange-500/20 transition">
+                          <span>{a.action}</span>
+                          <span className="text-xs text-gray-400">{a.date}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </motion.section>
+              </div>
+              {/* Right Column */}
+              <div className="flex flex-col gap-10">
+                {/* Landlord Contact */}
+                <motion.section
+                  custom={7}
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
+                >
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><User className="w-5 h-5 text-orange-400" /> Landlord Contact</h3>
+                  {loading ? <Skeleton className="h-16 w-full" /> : (
+                    <div className="text-white text-center">
+                        <div className="font-bold text-lg mb-2">{landlordCard.name}</div>
+                        <div className="text-gray-400 mb-2 flex items-center justify-center gap-2"><Phone className="w-4 h-4" />{landlordCard.phone}</div>
+                      <div className="text-xs text-orange-400">Visiting: {landlordCard.visiting}</div>
+                    </div>
+                  )}
+                </motion.section>
+                {/* Notifications */}
+                <motion.section
+                  custom={8}
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className={`${cardClass} mb-2 hover:scale-[1.02] transition-transform duration-300 p-8 md:p-10 lg:p-12`}
+                >
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-400" /> Notifications</h3>
+                  {loading ? <Skeleton className="h-10 w-full" /> : (
+                    expandedNotifications.length === 0 ? <span className="text-gray-400">No notifications.</span> : (
+                        <ul className="space-y-4">
+                        {expandedNotifications.map((n) => (
+                            <li key={n.id} className={`flex items-center gap-2 px-6 py-4 rounded-2xl shadow ${n.type === "alert" ? "bg-orange-500/10 border-l-4 border-orange-500" : "bg-gray-700/40"}`}>
+                            <span className="text-white">{n.message}</span>
+                            <span className="text-xs text-gray-400 ml-auto">{n.date}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  )}
+                </motion.section>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </main>
+        <TenantFooter />
+        {/* Modal integration */}
+        <Modal open={modal === "profile"} onClose={closeModal} slideFrom="center">
+          <h2 className="text-xl font-bold text-white mb-4">Update Profile</h2>
+          <div className="mb-4 text-gray-300">(Mock profile form goes here)</div>
           <button
-            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200"
-            onClick={closeModal}
-          >Cancel</button>
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            onClick={() => { toast.success("Profile updated!"); closeModal(); }}
+          >Save Changes</button>
+        </Modal>
+        <Modal open={modal === "receipt"} onClose={closeModal} slideFrom="bottom">
+          <h2 className="text-xl font-bold text-white mb-4">Payment Receipt</h2>
+          <div className="mb-4 text-gray-300">(Mock receipt for {modalData?.month || "July 2025"})</div>
           <button
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200"
-            onClick={() => { toast.success("Action confirmed!"); closeModal(); }}
-          >Confirm</button>
-        </div>
-      </Modal>
-      <style jsx global>{`
-        .pulse-glow {
-          box-shadow: 0 0 0 0 #ff6a00, 0 0 8px 2px #ff3c00;
-          animation: pulseGlow 2s infinite alternate;
-        }
-        @keyframes pulseGlow {
-          0% { box-shadow: 0 0 0 0 #ff6a00, 0 0 8px 2px #ff3c00; }
-          100% { box-shadow: 0 0 0 4px #ff6a00, 0 0 16px 8px #ff3c00; }
-        }
-      `}</style>
-    </div>
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            onClick={() => { toast.success("Receipt downloaded!"); closeModal(); }}
+          >Download PDF</button>
+        </Modal>
+        <Modal open={modal === "confirm"} onClose={closeModal} slideFrom="center">
+          <h2 className="text-xl font-bold text-white mb-4">Confirm Action</h2>
+          <div className="mb-4 text-gray-300">Are you sure you want to proceed?</div>
+          <div className="flex gap-4">
+            <button
+              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200"
+              onClick={closeModal}
+            >Cancel</button>
+            <button
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow transition-all duration-200"
+              onClick={() => { toast.success("Action confirmed!"); closeModal(); }}
+            >Confirm</button>
+          </div>
+        </Modal>
+        <style jsx global>{`
+          .pulse-glow {
+            box-shadow: 0 0 0 0 #ff6a00, 0 0 8px 2px #ff3c00;
+            animation: pulseGlow 2s infinite alternate;
+          }
+          @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 #ff6a00, 0 0 8px 2px #ff3c00; }
+            100% { box-shadow: 0 0 0 4px #ff6a00, 0 0 16px 8px #ff3c00; }
+          }
+        `}</style>
+      </div>
     </ProtectedRoute>
   );
 } 

@@ -74,8 +74,7 @@ export default function LandlordDashboard() {
                       <motion.span initial={{ scale: 1 }} whileHover={{ scale: 1.2, rotate: 10 }} className="inline-block">
                     <Plus className="w-4 h-4 mr-2" />
                       </motion.span>
-                    Add Property
-                  </Button>
+                    </Button>
                     <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded bg-black/80 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-lg">Add a new property</span>
                   </motion.div>
                 </Link>

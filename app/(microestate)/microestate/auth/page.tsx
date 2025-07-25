@@ -159,7 +159,7 @@ const Login = () => {
       if (response.data.success) {
         setSuccess(
           response.data.message ||
-            "Password reset instructions have been sent to your email address. Please check your inbox."
+          "Password reset instructions have been sent to your email address. Please check your inbox."
         );
 
         // Store email for reset password view

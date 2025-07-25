@@ -138,6 +138,7 @@ export default function PropertiesPage() {
       <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
         <Background />
         <div className="container mx-auto py-4 mt-8 relative z-10">
+
           {/* Header */}
           <section className="mb-8 animate-fadeIn">
             <div className="flex items-center justify-between mb-6">
@@ -372,6 +373,6 @@ export default function PropertiesPage() {
           </section>
         </div>
       </div>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 }
