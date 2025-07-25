@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import EquityAnimatedBackground from "../EquityAnimatedBackground";
 import BackgroundVideo from "../components/BackgroundVideo";
 import EquityNavigation from "../components/EquityNavigation";
+import { useRouter } from 'next/navigation';
 
 interface DashboardMetrics {
   totalPortfolioValue: number;
@@ -142,6 +143,8 @@ export default function DashboardPage() {
     { value: "predictions", label: "Predictive Analytics" },
     { value: "market", label: "Market Intelligence" }
   ];
+
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -468,6 +471,14 @@ Platform: 100GAJ Equity Investment
             >
               <Share2 className={`w-4 h-4 mr-2 ${sharing ? 'animate-pulse' : 'group-hover:scale-110 transition-transform duration-300'}`} />
               {sharing ? 'Sharing...' : 'Share Analysis'}
+            </Button>
+            {/* Post Property Button */}
+            <Button
+              onClick={() => router.push('/equity/property/post')}
+              className="bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 group"
+            >
+              <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+              Post Property
             </Button>
           </motion.div>
 
