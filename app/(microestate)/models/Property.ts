@@ -340,9 +340,12 @@ propertySchema.methods.isRecentlyUpdated = function(this: IProperty): boolean {
 // Indexes for performance
 propertySchema.index({ landlordId: 1, status: 1 });
 
-// Create the model
-const Property: IPropertyModel = mongoose.models.Property as IPropertyModel || 
-  mongoose.model<IProperty, IPropertyModel>('Property', propertySchema);
+// Create the model - **THIS IS THE CRITICAL FIX**
+// It ensures you are always using the same model definition and avoids OverwriteModelError.
+// The model name in mongoose is 'MicroProperty', so we must check for it by that name.
+const Property: IPropertyModel = 
+  (mongoose.models.MicroProperty as IPropertyModel) || 
+  mongoose.model<IProperty, IPropertyModel>('MicroProperty', propertySchema);
 
 export default Property;
 

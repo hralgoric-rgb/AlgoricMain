@@ -1,49 +1,62 @@
-import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/app/(microestate)/lib/db';
-import Property from '@/app/(microestate)/models/Property';
-import mongoose from 'mongoose';
-import { requireLandlord } from '@/app/(microestate)/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/app/(microestate)/lib/db";
+import Property from "@/app/(microestate)/models/Property";
+import mongoose from "mongoose";
+import { requireLandlord } from "@/app/(microestate)/lib/authorize";
 
 // Helper function to validate ObjectId
 const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 
+// GET microestate/api/properties/[id] - get property detail of a landlord
+export const GET = requireLandlord(
+  async (
+    request: NextRequest, 
+    context: {
+      params: { id: string };
+      userId: string;
+      userRole: string;
+      userEmail: string;
+    }
+  ) => {
+    const { id } = context.params;
+    const { userId } = context;
 
-// GET microestate/api/properties/[id] - get  property detail of a landlord
-export const GET = requireLandlord(async (
-  params: { id: string },
-  context: { userId: string; userRole: string; userEmail: string }
-) => {
-  const { userId } = context;
-  try {
-    const { id } = await params;
+    try {
+      console.log(`Fetching property with id: ${id} for landlord: ${userId}`);
 
-    if (!isValidObjectId(userId)) {
+      if (!isValidObjectId(id)) {
+        return NextResponse.json(
+          { error: "Invalid property ID format" },
+          { status: 400 }
+        );
+      }
+
+      await dbConnect();
+
+      // Find the property ensuring it belongs to the logged-in landlord
+      const property = await Property.findOne({ _id: id, landlordId: userId })
+        .select("-landlordId")
+        .lean();
+
+      if (!property) {
+        return NextResponse.json(
+          {
+            error:
+              "Property not found or you do not have permission to view it.",
+          },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(property, { status: 200 });
+    } catch (error) {
+      console.error("Error fetching property:", error);
       return NextResponse.json(
-        { error: 'Invalid property ID format' },
-        { status: 400 }
+        { error: "An error occurred while fetching the property" },
+        { status: 500 }
       );
     }
-
-    await dbConnect();
-
-    const property = await Property.findOne({_id: id, landlordId: userId}).select("-landlordId").lean();
-
-    if (!property) {
-      return NextResponse.json(
-        { error: 'Properties not Found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(property, { status: 200 });
-  } catch (_error) {
-
-    return NextResponse.json(
-      { error: 'An error occurred while fetching the property' },
-      { status: 500 }
-    );
   }
-}
 );
 
 // // PUT /api/properties/[id] - Update a property
@@ -84,7 +97,7 @@ export const GET = requireLandlord(async (
 
 //     // Remove fields that shouldn't be updated
 //     const {...updateData } = data;
-    
+
 //     // Update the property
 //     const updatedProperty = await Property.findByIdAndUpdate(
 //       id,
