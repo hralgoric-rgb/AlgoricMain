@@ -77,18 +77,6 @@ export default function LandlordRegisterPage() {
       submitData.append("phone", formData.phone);
       submitData.append("password", formData.password);
       submitData.append("role", "landlord");
-<<<<<<< HEAD
-      submitData.append("address", formData.address);
-      // Add profile picture if selected
-      if (profilePic) {
-        submitData.append("profileImage", profilePic);
-      }
-      
-      const response = await axios.post("/microestate/api/auth/signup", submitData
-      // Do NOT set Content-Type header manually; axios will handle it
-      );
-      
-=======
 
       localStorage.setItem("pendingEmail", formData.email.toLowerCase().trim());
 
@@ -113,8 +101,6 @@ export default function LandlordRegisterPage() {
       );
 
       console.log("Registration response:", response.data);
-
->>>>>>> 272f0c8a10d93f61d487d1129e2f6ff555ba4afa
       if (response.data.success) {
         setSuccess(response.data.message || "Registration successful!");
         // Store email and role for verification page
@@ -298,26 +284,6 @@ export default function LandlordRegisterPage() {
                 />
               </div>
             </div>
-<<<<<<< HEAD
-            <div>
-              <label className="block text-sm font-semibold text-white mb-1 flex items-center gap-2"><MapPin className="w-4 h-4 text-orange-400" /> ADDRESS</label>
-              <Input
-  type="text"
-  name="address"
-  required
-  className="bg-[#181c24] text-white border-orange-500/20 focus:border-orange-500"
-  value={formData.address}
-  onChange={handleChange}
-/>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-white mb-1 flex items-center gap-2"><Hash className="w-4 h-4 text-orange-400" /> TAX ID</label>
-              <Input type="text" className="bg-[#181c24] text-white border-orange-500/20 focus:border-orange-500" />
-            </div>
-            {error && <div className="text-red-500 text-sm mt-2 bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</div>}
-            {success && <div className="text-green-500 text-sm mt-2 bg-green-500/10 p-3 rounded-lg border border-green-500/20">{success}</div>}
-            <Button type="submit" className="mt-6 w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold py-3 rounded-xl text-lg shadow-lg shadow-orange-500/20 transition-all duration-200" disabled={loading}>
-=======
 
             {/* Error and Success Messages */}
             {error && (
@@ -337,7 +303,6 @@ export default function LandlordRegisterPage() {
               className="mt-6 w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold py-3 rounded-xl text-lg shadow-lg shadow-orange-500/20 transition-all duration-200"
               disabled={loading}
             >
->>>>>>> 272f0c8a10d93f61d487d1129e2f6ff555ba4afa
               {loading ? "Registering..." : "Register as Landlord"}
             </Button>
           </div>
