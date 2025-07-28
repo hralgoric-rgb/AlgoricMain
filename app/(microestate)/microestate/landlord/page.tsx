@@ -27,7 +27,6 @@ export default function LandlordDashboard() {
       { type: 'tenant', message: 'New tenant moved in', time: '2 days ago' }
     ]
   });
-
   useEffect(() => {
     if (user) {
       const firstName = user.name ? user.name.split(' ')[0] : 'User';

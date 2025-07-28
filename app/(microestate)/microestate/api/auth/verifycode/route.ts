@@ -25,7 +25,7 @@ export async function POST(request:NextRequest) {
             )
         }
 
-        if (user.emailVerified == true) {
+        if (user.isVerified == true) {
             return NextResponse.json(
                 {error: "User already verified"},
                 {status: 401}
