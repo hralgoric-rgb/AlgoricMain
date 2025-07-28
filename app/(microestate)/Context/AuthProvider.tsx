@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react"
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { useRouter, usePathname } from 'next/navigation';
+import { set } from "mongoose";
 
 interface User {
   id: string;
@@ -42,17 +43,28 @@ export default function AuthProvider({
 
   // Recalculate auth state on mount and on route change
   useEffect(() => {
-    const storedUser = localStorage.getItem('microestate_user');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('microestate_user');
-        setUser(null);
-      }
-    } else {
+    if (typeof document !== 'undefined' && document.cookie.split('; ').some(cookie => cookie.trim().startsWith('microauth='))) {
+
+        const storedUser = localStorage.getItem('microestate_user');
+
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+          } catch (error) {
+            console.error('Error parsing stored user data:', error);
+            localStorage.removeItem('microestate_user');
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+    }
+    else {
+      localStorage.removeItem('microestate_user');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('nextauth.message');
+      
       setUser(null);
     }
     setLoading(false);
