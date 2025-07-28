@@ -227,13 +227,15 @@ const ChatBot: React.FC<ChatBotProps> = ({ className = '' }) => {
             </div>
           )}
           
-          {/* Tooltip - Hidden on mobile */}
-          <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:block">
-            <div className="bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap">
-              {isOpen ? 'Close Chat' : hasNewMessage ? 'New Message!' : 'Chat with AI'}
-              <div className="absolute top-full left-2 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          {/* Tooltip - Hidden on mobile and when chat is open */}
+          {!isOpen && (
+            <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:block">
+              <div className="bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap">
+                {hasNewMessage ? 'New Message!' : 'Chat with AI'}
+                <div className="absolute top-full left-2 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
             </div>
-          </div>
+          )}
         </button>
       </div>
 
