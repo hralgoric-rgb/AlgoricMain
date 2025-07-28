@@ -80,13 +80,50 @@ export function generateSlug(title: string): string {
 }
 
 /**
- * Calculates EMI for a loan
+ * Calculates EMI for a loan using API (with fallback to local calculation)
  * @param principal Loan amount
  * @param rate Annual interest rate (in percentage)
  * @param tenure Loan tenure in years
  * @returns Monthly EMI amount
  */
-export function calculateEMI(principal: number, rate: number, tenure: number): number {
+export async function calculateEMI(principal: number, rate: number, tenure: number): Promise<number> {
+  try {
+    // Import the API service dynamically to avoid SSR issues
+    const { emiCalculatorAPI } = await import('./emi-calculator-api');
+    
+    const result = await emiCalculatorAPI.calculateEMI({
+      loanAmount: principal,
+      interestRate: rate,
+      tenure: tenure,
+    });
+    
+    return result.monthlyEMI;
+  } catch (error) {
+    console.error('EMI API calculation failed, using fallback:', error);
+    
+    // Fallback to local calculation
+    const monthlyRate = rate / (12 * 100);
+    const numberOfPayments = tenure * 12;
+    
+    if (monthlyRate === 0) {
+      return principal / numberOfPayments;
+    }
+    
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
+                (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+                
+    return Math.round(emi);
+  }
+}
+
+/**
+ * Calculates EMI for a loan (synchronous fallback version)
+ * @param principal Loan amount
+ * @param rate Annual interest rate (in percentage)
+ * @param tenure Loan tenure in years
+ * @returns Monthly EMI amount
+ */
+export function calculateEMISync(principal: number, rate: number, tenure: number): number {
   const monthlyRate = rate / (12 * 100);
   const numberOfPayments = tenure * 12;
   

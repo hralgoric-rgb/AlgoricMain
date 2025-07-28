@@ -1,9 +1,13 @@
 // components/GoogleLoginButton.tsx
 import { useEffect } from "react";
-
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 export default function GoogleLoginButton() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/equity";
+
   const handleCredentialResponse = async (response: any) => {
   try {
     const token = response.credential;
@@ -20,12 +24,14 @@ export default function GoogleLoginButton() {
     if (!res.ok) throw new Error("Server error");
     const data = await res.json();
     const authToken = data.token;
-    // Store token in sessionStorage
+    // Store token in localStorage and sessionStorage
+    localStorage.setItem("authToken", authToken);
     sessionStorage.setItem("authToken", authToken);
     document.cookie = `authToken=${authToken}; path=/;`;
     toast.success("Successfully logged in!");
+    // Redirect to the intended page instead of reloading
     setTimeout(() => {
-      window.location.reload();
+      router.push(redirect);
     }, 1000);
   } catch (_error) {
 

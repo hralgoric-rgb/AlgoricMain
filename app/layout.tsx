@@ -10,6 +10,9 @@ import { Toaster } from "sonner";
 // Dynamically import the PremiumPopup component with no SSR to avoid hydration issues
 const PremiumPopup = dynamic(() => import('@/components/ui/PremiumPopup'));
 
+// Dynamically import the ChatBot component with no SSR to avoid hydration issues
+const ChatBotWrapper = dynamic(() => import('@/components/ui/ChatBotWrapper'));
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -69,6 +72,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <PremiumPopup />
+          <ChatBotWrapper />
         </AuthProvider>
         
       </body>

@@ -40,6 +40,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user has a password (users with Google OAuth might not have a password)
+    if (!user.password) {
+      return NextResponse.json(
+        { error: 'Please use Google Sign-In for this account' },
+        { status: 401 }
+      );
+    }
+
     // Check password
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
@@ -75,7 +83,7 @@ export async function POST(request: NextRequest) {
   } catch (_error) {
 
     return NextResponse.json(
-      { error: 'An error occurred during login' },
+      { error: `An error occurred during login,${_error}` },
       { status: 500 }
     );
   }

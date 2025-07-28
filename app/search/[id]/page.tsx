@@ -32,6 +32,7 @@ import Navbar from "@/app/components/navbar";
 import { LocalityAnalysis } from "@/components/ui/locality-analysis";
 import { PropertyNewsWhiteSection } from "@/components/ui/property-news-white";
 import { FavoritesAPI } from "@/app/lib/api-helpers";
+import { useAutoEMICalculator } from "@/hooks/useEMICalculator";
 
 // Decorative components matching other pages
 // const HouseIcon = () => (
@@ -185,6 +186,21 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     tenure: 20
   });
 
+  // Use the EMI calculator hook
+  const { calculation: emiCalculation, isCalculating: isEmiCalculating } = useAutoEMICalculator({
+    loanAmount: emiData.loanAmount,
+    interestRate: emiData.interestRate,
+    tenure: emiData.tenure,
+    debounceMs: 500,
+  });
+
+  // Fallback values
+  const emiResult = emiCalculation || {
+    monthlyEMI: 0,
+    totalInterest: 0,
+    totalAmount: 0,
+  };
+
   // Favorites state
   const [token, setToken] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Property[]>([]);
@@ -202,25 +218,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     }
     return false;
   };
-
-  // EMI Calculation function
-  const calculateEMI = () => {
-    const principal = emiData.loanAmount;
-    const monthlyRate = emiData.interestRate / 12 / 100;
-    const months = emiData.tenure * 12;
-    
-    const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
-    const totalAmount = emi * months;
-    const totalInterest = totalAmount - principal;
-    
-    return {
-      emi: Math.round(emi),
-      totalInterest: Math.round(totalInterest),
-      totalAmount: Math.round(totalAmount)
-    };
-  };
-
-  const emiCalculation = calculateEMI();
 
   // Handle image overlay
   const openImageOverlay = (index: number) => {
@@ -1698,19 +1695,31 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                     <div className="flex justify-between items-center">
                       <span className="text-black/70">Monthly EMI</span>
                       <span className="text-lg font-semibold text-orange-600">
-                        ₹{emiCalculation.emi.toLocaleString()}
+                        {isEmiCalculating ? (
+                          <div className="animate-pulse">Calculating...</div>
+                        ) : (
+                          `₹${emiResult.monthlyEMI.toLocaleString()}`
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-black/70">Total Interest</span>
                       <span className="text-black">
-                        ₹{emiCalculation.totalInterest.toLocaleString()}
+                        {isEmiCalculating ? (
+                          <div className="animate-pulse">Calculating...</div>
+                        ) : (
+                          `₹${emiResult.totalInterest.toLocaleString()}`
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-black/70">Total Amount</span>
                       <span className="text-black font-medium">
-                        ₹{emiCalculation.totalAmount.toLocaleString()}
+                        {isEmiCalculating ? (
+                          <div className="animate-pulse">Calculating...</div>
+                        ) : (
+                          `₹${emiResult.totalAmount.toLocaleString()}`
+                        )}
                       </span>
                     </div>
                   </div>

@@ -40,11 +40,20 @@ export default function PostPropertyPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
+        
+        console.log("Initial KYC fetch:", { status: res.status, data }); // Debug log
+        
         if (res.ok && data.reviewed) {
           // Find the accepted KYC for the current user
           const tokenPayload = JSON.parse(atob(token.split('.')[1]));
           const userId = tokenPayload.userId || tokenPayload.sub;
+          
+          console.log("Initial token payload:", { userId }); // Debug log
+          
           const myKyc = data.reviewed.find((k: any) => k.userId === userId && k.status === "accepted");
+          
+          console.log("Initial found KYC:", myKyc); // Debug log
+          
           if (myKyc) {
             setKycStatus(myKyc.status);
             setKycData(myKyc);
@@ -57,7 +66,8 @@ export default function PostPropertyPage() {
           setKycStatus(null);
           setKycData(null);
         }
-      } catch {
+      } catch (err) {
+        console.error("Initial KYC fetch error:", err); // Debug log
         setKycStatus(null);
         setKycData(null);
       }
@@ -77,10 +87,19 @@ export default function PostPropertyPage() {
       setOtpError("Please enter a valid 6-digit OTP");
       return;
     }
+    
+    if (!kycData || !kycData._id) {
+      setOtpError("KYC data not found. Please try clicking Post Now again.");
+      return;
+    }
+    
     setOtpLoading(true);
     setOtpError("");
     try {
       const token = localStorage.getItem("authToken");
+      
+      console.log("Sending OTP verification:", { kycId: kycData._id, otp }); // Debug log
+      
       const res = await fetch("/api/kyc/verify-otp", {
         method: "POST",
         headers: {
@@ -93,6 +112,9 @@ export default function PostPropertyPage() {
         }),
       });
       const data = await res.json();
+      
+      console.log("OTP verification response:", { status: res.status, data }); // Debug log
+      
       if (res.ok) {
         setOtpVerified(true);
         setShowOtpModal(false);
@@ -103,7 +125,8 @@ export default function PostPropertyPage() {
         setOtpError(data.error || "Failed to verify OTP");
       }
     } catch (err) {
-      setOtpError("An error occurred. Please try again.");
+      console.error("OTP verification error:", err); // Debug log
+      setOtpError(`An error occurred: ${err instanceof Error ? err.message : 'Please try again.'}`);
     }
     setOtpLoading(false);
   };
@@ -130,10 +153,19 @@ export default function PostPropertyPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataKyc = await resKyc.json();
+      
+      console.log("KYC fetch response:", { status: resKyc.status, data: dataKyc }); // Debug log
+      
       if (resKyc.ok && dataKyc.reviewed) {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
         const userId = tokenPayload.userId || tokenPayload.sub;
+        
+        console.log("Token payload:", { userId }); // Debug log
+        
         const myKyc = dataKyc.reviewed.find((k: any) => k.userId === userId && k.status === "accepted");
+        
+        console.log("Found KYC:", myKyc); // Debug log
+        
         if (!myKyc) {
           setOtpError("Your KYC must be accepted before posting a property.");
           setOtpLoading(false);
@@ -151,6 +183,9 @@ export default function PostPropertyPage() {
           body: JSON.stringify({ userId: myKyc.userId }),
         });
         const dataOtp = await resOtp.json();
+        
+        console.log("OTP generation response:", { status: resOtp.status, data: dataOtp }); // Debug log
+        
         if (!resOtp.ok) {
           setOtpError(dataOtp.error || "Failed to send OTP");
           setOtpLoading(false);
@@ -165,6 +200,7 @@ export default function PostPropertyPage() {
         setShowOtpModal(true);
       }
     } catch (err) {
+      console.error("Post Now error:", err); // Debug log
       setOtpError("An error occurred. Please try again.");
       setShowOtpModal(true);
     }

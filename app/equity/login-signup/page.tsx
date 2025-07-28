@@ -65,6 +65,7 @@ export default function EquityLoginSignup() {
       // Store JWT token if login
       if (isLogin && data.token) {
         localStorage.setItem("authToken", data.token);
+        sessionStorage.setItem("authToken", data.token);
         document.cookie = `authToken=${data.token}; path=/;`;
       }
       setLoading(false);

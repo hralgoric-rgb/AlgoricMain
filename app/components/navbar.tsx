@@ -248,8 +248,9 @@ export default function Navbar() {
     }
 
     try {
-      // Clear sessionStorage
+      // Clear sessionStorage and localStorage
       sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
 
       // Clear cookies
       document.cookie =
