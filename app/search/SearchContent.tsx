@@ -305,16 +305,17 @@ const SearchPage = () => {
     }
   }, [token]);
   const router = useRouter();
-  // Property types from backend
+  // Property types from backend - Updated to match database schema and UI dropdown requirements
+  // Includes all property types: apartment, house, villa, studio, penthouse, duplex, townhouse, condo
   const propertyTypes = [
-    "House",
-    "Flat",
-    "PG/Hostel",
-    "Plot",
-    "Commercial",
-    "Apartment",
-    "Villa",
-    "Townhouse",
+    "apartment",
+    "house", 
+    "villa",
+    "studio",
+    "penthouse",
+    "duplex",
+    "townhouse",
+    "condo",
   ];
   const bedOptions = [1, 2, 3, 4, 5, 6];
 

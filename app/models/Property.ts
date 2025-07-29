@@ -5,7 +5,7 @@ interface IProperty {
   title: string;
   description: string;
   price: number;
-  propertyType: string; // apartment, house, villa, commercial, etc.
+  propertyType: string; // apartment, house, villa, studio, penthouse, duplex, townhouse, condo
   listingType: string; // sale, rent
   status: string; // active, pending, sold
   bedrooms: number;
@@ -68,7 +68,8 @@ const propertySchema = new Schema<IProperty>(
     propertyType: {
       type: String,
       required: true,
-      enum: ['apartment', 'house', 'villa', 'land', 'commercial', 'office', 'other'],
+      // Updated enum to include all property types from UI dropdown
+      enum: ['apartment', 'house', 'villa', 'studio', 'penthouse', 'duplex', 'townhouse', 'condo'],
     },
     listingType: {
       type: String,
@@ -83,12 +84,14 @@ const propertySchema = new Schema<IProperty>(
     },
     bedrooms: {
       type: Number,
-      required: function() { return this.propertyType !== 'land' && this.propertyType !== 'commercial'; },
+      // Updated validation - all property types now require bedrooms
+      required: true,
       min: 0,
     },
     bathrooms: {
       type: Number,
-      required: function() { return this.propertyType !== 'land' && this.propertyType !== 'commercial'; },
+      // Updated validation - all property types now require bathrooms
+      required: true,
       min: 0,
     },
     area: {

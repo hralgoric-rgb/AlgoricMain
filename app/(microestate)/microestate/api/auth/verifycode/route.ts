@@ -1,5 +1,5 @@
 import dbConnect from "@/app/(microestate)/lib/db";
-import User from "@/app/models/User";
+import User from "@/app/(microestate)/models/user";
 import { NextRequest , NextResponse } from "next/server";
 
 

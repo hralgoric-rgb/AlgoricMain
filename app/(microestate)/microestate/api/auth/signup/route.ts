@@ -11,7 +11,28 @@ import jwt from "jsonwebtoken";
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if database URI is configured
+    if (!process.env.MICRO_MONGODB_URI) {
+      console.error("MICRO_MONGODB_URI is not configured");
+      return NextResponse.json(
+        { error: "Database configuration is missing" },
+        { status: 500 }
+      );
+    }
+
     await dbConnect();
+    
+    // Test database connection
+    try {
+      await User.findOne({}).limit(1);
+      console.log("Database connection successful");
+    } catch (dbError) {
+      console.error("Database connection test failed:", dbError);
+      return NextResponse.json(
+        { error: "Database connection failed" },
+        { status: 500 }
+      );
+    }
 
     const form = await request.formData();
     const email = form.get("email")?.toString().trim();
@@ -51,13 +72,23 @@ export async function POST(request: NextRequest) {
     // Handle QR code upload for landlords
     let qrCodeUrl: string | undefined;
     if (role === "landlord" && qrFile) {
-      qrCodeUrl = await uploadToImageKit(qrFile);
+      try {
+        qrCodeUrl = await uploadToImageKit(qrFile);
+      } catch (uploadError) {
+        console.warn('QR code upload failed:', uploadError);
+        // Continue without QR code upload
+      }
     }
 
     // Handle profile image upload
     let profileImageUrl: string | undefined;
     if (profileImageFile) {
-      profileImageUrl = await uploadToImageKit(profileImageFile);
+      try {
+        profileImageUrl = await uploadToImageKit(profileImageFile);
+      } catch (uploadError) {
+        console.warn('Profile image upload failed:', uploadError);
+        // Continue without profile image upload
+      }
     }
 
     // Generate verification code
@@ -65,7 +96,7 @@ export async function POST(request: NextRequest) {
     const verificationTokenExpiry = new Date();
     verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
 
-    // Create user object with correct field mapping
+    // Create user object with correct field mapping for microestate User model
     const userData = {
       firstName,
       lastName,
@@ -73,11 +104,11 @@ export async function POST(request: NextRequest) {
       email,
       password,
       role,
-      emailVerified: false, // Boolean, not string
+      emailVerified: false, // Boolean, not Date
       verificationToken: verificationCode,
       verificationTokenExpiry,
       ...(profileImageUrl && { profileImage: profileImageUrl }),
-      ...(qrCodeUrl && { qrCode: qrCodeUrl }), // Fixed: use qrCode instead of qr
+      ...(qrCodeUrl && { qrCode: qrCodeUrl }),
     };
 
     console.log("Creating user with data:", {
@@ -85,7 +116,21 @@ export async function POST(request: NextRequest) {
       password: "[REDACTED]",
     });
 
+    console.log("User model schema:", User.schema.obj);
+    
     const newUser = new User(userData);
+    console.log("User instance created:", newUser);
+    
+    // Validate the data before saving
+    const validationError = newUser.validateSync();
+    if (validationError) {
+      console.error("Validation error:", validationError);
+      return NextResponse.json(
+        { error: `Validation failed: ${validationError.message}` },
+        { status: 400 }
+      );
+    }
+    
     await newUser.save();
 
     console.log("User created successfully:", newUser._id);
@@ -102,24 +147,26 @@ export async function POST(request: NextRequest) {
 
     // Generate NextAuth compatible JWT token
     const jwtSecret = process.env.NEXTAUTH_SECRET;
-    if (!jwtSecret) {
-      throw new Error("NEXTAUTH_SECRET is not configured");
+    let sessionToken = null;
+    
+    if (jwtSecret) {
+      // Create token payload similar to NextAuth format
+      const tokenPayload = {
+        _id: newUser._id.toString(),
+        email: newUser.email,
+        role: newUser.role,
+        name: `${newUser.firstName} ${newUser.lastName}`,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        emailVerified: newUser.emailVerified,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60, // 3 days
+      };
+
+      sessionToken = jwt.sign(tokenPayload, jwtSecret);
+    } else {
+      console.warn("NEXTAUTH_SECRET is not configured, skipping JWT token generation");
     }
-
-    // Create token payload similar to NextAuth format
-    const tokenPayload = {
-      _id: newUser._id.toString(),
-      email: newUser.email,
-      role: newUser.role,
-      name: `${newUser.firstName} ${newUser.lastName}`,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      emailVerified: newUser.emailVerified,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60, // 3 days
-    };
-
-    const sessionToken = jwt.sign(tokenPayload, jwtSecret);
 
     const response = NextResponse.json(
       {
@@ -141,13 +188,15 @@ export async function POST(request: NextRequest) {
     );
 
     // Set the same cookie that NextAuth would set
-    response.cookies.set("microauth", sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 3 * 24 * 60 * 60, // 3 days
-      path: "/",
-    });
+    if (sessionToken) {
+      response.cookies.set("microauth", sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 3 * 24 * 60 * 60, // 3 days
+        path: "/",
+      });
+    }
 
     return response;
   } catch (error: any) {
@@ -156,6 +205,7 @@ export async function POST(request: NextRequest) {
       name: error.name,
       message: error.message,
       stack: error.stack,
+      code: error.code,
     });
 
     // Return more specific error messages
@@ -176,8 +226,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Return the actual error message for debugging
     return NextResponse.json(
-      { error: "An error occurred during registration" },
+      { error: error.message || "An error occurred during registration" },
       { status: 500 }
     );
   }
