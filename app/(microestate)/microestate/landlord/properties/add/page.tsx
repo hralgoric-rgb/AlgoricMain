@@ -137,6 +137,8 @@ export default function AddPropertyPage() {
     { id: 5, title: "Images", icon: Upload },
   ];
 
+  // Property types array - Updated to match database schema and UI dropdown requirements
+  // Includes all property types: apartment, house, villa, studio, penthouse, duplex, townhouse, condo
   const propertyTypes = [
     "apartment",
     "house",

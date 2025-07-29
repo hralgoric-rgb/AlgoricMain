@@ -38,6 +38,8 @@ const Login = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  // Changes made by Priya - Adding verification code state for enhanced security
+  const [verificationCode, setVerificationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -198,6 +200,12 @@ const Login = () => {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Changes made by Priya - Adding verification code validation for enhanced security
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError("Please enter the 6-digit verification code");
+      return;
+    }
+    
     if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -207,33 +215,34 @@ const Login = () => {
       setLoading(true);
       setError(null);
       
-      // Placeholder for API call - you'll need to implement this
-
-     await axios.post('/api/auth/resend-password' , {
-      resetEmail,
-      resetPasswordData
-     })
-      console.log("Resetting password for:", resetEmail);
-      console.log("New password:", resetPasswordData.newPassword);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSuccess("Password reset successfully! Redirecting to login...");
-      
-      // Clear form data
-      setResetPasswordData({
-        newPassword: "",
-        confirmPassword: "",
+      // Changes made by Priya - Updated API call to include verification code for secure password reset
+      const response = await axios.post('/microestate/api/auth/reset-password', {
+        email: resetEmail,
+        code: verificationCode,
+        password: resetPasswordData.newPassword
       });
       
-      // Redirect to login after success
-      setTimeout(() => {
-        setCurrentView("main");
-        setSuccess(null);
-      }, 2000);
-    } catch (error) {
-      setError("Failed to reset password. Please try again.");
+      if (response.data.success) {
+        setSuccess("Password reset successfully! Redirecting to login...");
+        
+        // Clear form data
+        setResetPasswordData({
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setVerificationCode(""); // Changes made by Priya - Clear verification code after successful reset
+        
+        // Redirect to login after success
+        setTimeout(() => {
+          setCurrentView("main");
+          setSuccess(null);
+        }, 2000);
+      } else {
+        setError(response.data.error || "Failed to reset password. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Reset password error:", error);
+      setError(error.response?.data?.error || "Failed to reset password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -497,6 +506,29 @@ const Login = () => {
       <div className="p-8">
         <form onSubmit={handleResetPassword} className="space-y-4 animate-slideIn">
           <div className="space-y-4">
+            {/* Changes made by Priya - Adding verification code field for enhanced security */}
+            <div className="group">
+              <Label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-orange-400" />
+                Verification Code
+              </Label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  maxLength={6}
+                  minLength={6}
+                  pattern="[0-9]{6}"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Enter 6-digit code"
+                  className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto text-center tracking-widest text-lg"
+                  required
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
+              <div className="text-xs text-gray-400 mt-1 text-center">{verificationCode.length}/6 digits</div>
+            </div>
+
             {/* New Password Field */}
             <div className="group">
               <Label className="text-gray-300 text-sm font-medium mb-2 block flex items-center gap-2">
@@ -588,6 +620,17 @@ const Login = () => {
               {loading ? "Resetting..." : "Reset Password"}
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+          </Button>
+
+          {/* Changes made by Priya - Adding resend verification code button for better user experience */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleForgotPassword}
+            disabled={loading}
+            className="w-full py-3 px-6 border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200"
+          >
+            Resend Verification Code
           </Button>
 
           <div className="text-center pt-2">

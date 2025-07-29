@@ -27,7 +27,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Background from "../../../../_components/Background";
 import ProtectedRoute from "../../../../_components/ProtectedRoute";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 
 // Define a type for the property data from the API
@@ -76,11 +76,14 @@ interface Property {
 
 export default function PropertyDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const propertyId = params.id as string;
   const [activeTab, setActiveTab] = useState("overview");
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (propertyId) {
@@ -95,14 +98,28 @@ export default function PropertyDetailsPage() {
         } catch (err: any) {
           console.error("Fetch error:", err);
           setError(
-            err.response?.data?.error || "Failed to fetch property details."
+            err.response?.data?.error || "Failed to fetch property details"
           );
-          setProperty(null);
         } finally {
           setLoading(false);
         }
       };
+
       fetchProperty();
+
+      // Add event listener to refresh data when page becomes visible
+      const handleVisibilityChange = () => {
+        if (!document.hidden) {
+          fetchProperty();
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      // Cleanup event listener
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [propertyId]);
 
@@ -183,91 +200,170 @@ export default function PropertyDetailsPage() {
     switch (activeTab) {
       case "overview":
         return (
-          <div className="space-y-6">
-            {/* Property Images */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Property Images
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {property.images.map((image: string, index: number) => (
+          <div className="space-y-8">
+            {/* Property Images - Enhanced Gallery */}
+            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <Eye className="w-5 h-5 text-orange-400" />
+                Property Images
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Featured Image - Reduced Size */}
+                <div className="lg:col-span-2">
+                  <div className="aspect-[3/2] bg-gray-800 rounded-xl overflow-hidden shadow-lg">
+                    <img
+                      src={property.images[0] || "/images/placeholder-property.jpg"}
+                      alt="Main property image"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </div>
+                {/* Thumbnail Images - Smaller */}
+                <div className="space-y-3">
+                  {property.images.slice(1, 4).map((image: string, index: number) => (
                     <div
-                      key={index}
-                      className="aspect-video bg-gray-800 rounded-lg overflow-hidden"
+                      key={index + 1}
+                      className="aspect-[3/2] bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
                     >
                       <img
                         src={image}
-                        alt={`Property image ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        alt={`Property image ${index + 2}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   ))}
+                  {property.images.length === 1 && (
+                    <div className="aspect-[3/2] bg-gray-800 rounded-lg flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">No additional images</span>
+                    </div>
+                  )}
                 </div>
               </div>
+            </div>
 
-              {/* Property Details */}
+            {/* Property Details and Financial Summary - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Property Details - Enhanced */}
               <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                  <Building className="w-5 h-5 text-orange-400" />
                   Property Details
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Type:</span>
-                    <span className="text-white capitalize">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2">
+                      <Building className="w-4 h-4" />
+                      Type:
+                    </span>
+                    <span className="text-white font-medium capitalize">
                       {property.propertyType}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Bedrooms:</span>
-                    <span className="text-white">{property.bedrooms}</span>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Bedrooms:
+                    </span>
+                    <span className="text-white font-medium">{property.bedrooms}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Bathrooms:</span>
-                    <span className="text-white">{property.bathrooms}</span>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2">
+                      <Building className="w-4 h-4" />
+                      Bathrooms:
+                    </span>
+                    <span className="text-white font-medium">{property.bathrooms}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Area:</span>
-                    <span className="text-white">
-                      {property.squareFootage} sq ft
+                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Area:
+                    </span>
+                    <span className="text-white font-medium">
+                      {property.squareFootage?.toLocaleString()} sq ft
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Furnished:</span>
-                    <span className="text-white">
+                  <div className="flex justify-between items-center py-3">
+                    <span className="text-gray-400 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Furnished:
+                    </span>
+                    <span className={`font-medium ${property.features.furnished ? 'text-green-400' : 'text-gray-400'}`}>
                       {property.features.furnished ? "Yes" : "No"}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Financial Summary */}
-            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Financial Summary
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">
-                    ₹{property.rent.amount.toLocaleString()}
+              {/* Financial Summary - Enhanced */}
+              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-orange-400" />
+                  Financial Summary
+                </h3>
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-orange-500/10 to-orange-400/10 border border-orange-500/20 rounded-xl p-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-white mb-1">
+                        ₹{property.rent.amount.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-400">Monthly Rent</div>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-400">Monthly Rent</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">
-                    ₹{property.securityDeposit.toLocaleString()}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-800/50 rounded-lg p-4 text-center">
+                      <div className="text-xl font-bold text-white mb-1">
+                        ₹{property.securityDeposit.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-400">Security Deposit</div>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-lg p-4 text-center">
+                      <div className="text-xl font-bold text-white mb-1">
+                        {property.tenants?.length || 0}
+                      </div>
+                      <div className="text-xs text-gray-400">Active Tenants</div>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-400">Security Deposit</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white mb-1">
-                    {property.tenants?.length || 0}
-                  </div>
-                  <div className="text-sm text-gray-400">Active Tenants</div>
                 </div>
               </div>
             </div>
+
+            {/* Amenities Section - New */}
+            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-orange-400" />
+                Amenities & Features
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Object.entries(property.features).map(([feature, available]) => (
+                  <div
+                    key={feature}
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      available
+                        ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                        : 'bg-gray-800/50 border-gray-700/50 text-gray-500'
+                    }`}
+                  >
+                    <CheckCircle className={`w-4 h-4 ${available ? 'text-green-400' : 'text-gray-600'}`} />
+                    <span className="text-sm font-medium capitalize">
+                      {feature.replace(/([A-Z])/g, ' $1').trim()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Property Description - New */}
+            {property.description && (
+              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-orange-400" />
+                  Description
+                </h3>
+                <p className="text-gray-300 leading-relaxed">
+                  {property.description}
+                </p>
+              </div>
+            )}
           </div>
         );
 
@@ -285,6 +381,40 @@ export default function PropertyDetailsPage() {
           </div>
         );
     }
+  };
+
+  const handleEditProperty = () => {
+    router.push(`/microestate/landlord/properties/${propertyId}/edit`);
+  };
+
+  const handleDeleteProperty = async () => {
+    if (!property) return;
+    
+    try {
+      setDeleteLoading(true);
+      const response = await axios.delete(`/microestate/api/properties/${propertyId}`);
+      
+      if (response.data.success) {
+        // Redirect to properties list after successful deletion
+        router.push("/microestate/landlord/properties");
+      } else {
+        setError("Failed to delete property. Please try again.");
+      }
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setError(err.response?.data?.error || "Failed to delete property. Please try again.");
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
   };
 
   if (loading) {
@@ -369,6 +499,7 @@ export default function PropertyDetailsPage() {
                 <Button
                   variant="outline"
                   className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                  onClick={handleEditProperty}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Property
@@ -376,9 +507,11 @@ export default function PropertyDetailsPage() {
                 <Button
                   variant="outline"
                   className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  onClick={confirmDelete}
+                  disabled={deleteLoading}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  {deleteLoading ? "Deleting..." : "Delete"}
                 </Button>
               </div>
             </div>
@@ -408,6 +541,47 @@ export default function PropertyDetailsPage() {
           <section className="animate-fadeIn">{renderTabContent()}</section>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#1a1a1f] border border-red-500/30 rounded-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Delete Property</h3>
+            </div>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete "{property?.title}"? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={cancelDelete}
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                disabled={deleteLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteProperty}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete Property"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
