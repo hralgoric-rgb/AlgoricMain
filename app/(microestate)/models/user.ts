@@ -127,8 +127,8 @@ userSchema.methods.comparePassword = async function (
   }
 };
 
-// Create and export the model
+// Create and export the model with a unique name and collection to avoid conflicts
 const User =
-  mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);
+  mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema, "microestate_users");
 
 export default User;

@@ -60,7 +60,7 @@ export default function VerifyEmailPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post("/microestate/api/resend-code", {
+      const response = await axios.post("/microestate/api/auth/resend-code", {
         email: localStorage.getItem("pendingEmail") || "",
       });
 

@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, Model, Types } from 'mongoose';
 
-// Define property types
-export type PropertyType = 'apartment' | 'house' | 'condo' | 'townhouse' | 'studio';
+// Define property types - Updated to include all property types from the UI dropdown
+export type PropertyType = 'apartment' | 'house' | 'villa' | 'studio' | 'penthouse' | 'duplex' | 'townhouse' | 'condo';
 export type PropertyStatus = 'available' | 'rented' | 'maintenance' | 'inactive';
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'INR';
 
@@ -168,8 +168,8 @@ const propertySchema = new Schema<IProperty>(
     propertyType: {
       type: String,
       enum: {
-        values: ['apartment', 'house', 'condo', 'townhouse', 'studio'],
-        message: 'Property type must be one of: apartment, house, condo, townhouse, studio',
+        values: ['apartment', 'house', 'villa', 'studio', 'penthouse', 'duplex', 'townhouse', 'condo'],
+        message: 'Property type must be one of: apartment, house, villa, studio, penthouse, duplex, townhouse, condo',
       },
       required: [true, 'Property type is required'],
       index: true,
@@ -191,7 +191,7 @@ const propertySchema = new Schema<IProperty>(
     squareFootage: {
       type: Number,
       min: [1, 'Square footage must be positive'],
-      max: [50000, 'Square footage cannot exceed 50,000'],
+      max: [200000, 'Square footage cannot exceed 200,000'],
     },
     rent: {
       amount: {
