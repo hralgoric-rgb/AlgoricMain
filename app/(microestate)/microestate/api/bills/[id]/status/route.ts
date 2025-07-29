@@ -1,6 +1,4 @@
 // updating payment status of the particular bill
-
-
 import { NextResponse , NextRequest } from "next/server";
 import UtilityBill from "@/app/(microestate)/models/Utility";
 import dbConnect from "@/app/(microestate)/lib/db";
@@ -49,6 +47,7 @@ export async function PATCH(request: NextRequest , {params}: {params: {billId: s
         await dbConnect()
 
         const {status} = await request.json()
+        
         if (!status) {
              return NextResponse.json({
             message: "Status is required!"

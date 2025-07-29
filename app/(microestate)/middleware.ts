@@ -166,85 +166,85 @@ export const config = {
 /**
  * Landlord authorization middleware
  * Ensures user has landlord role
- */
-export const requireLandlord = (handler: Function) => {
-  return async (request: NextRequest, context?: any) => {
-    console.log("🏠 RequireLandlord middleware called");
+//  */
+// export const requireLandlord = (handler: Function) => {
+//   return async (request: NextRequest, context?: any) => {
+//     console.log("🏠 RequireLandlord middleware called");
 
-    const headers = new Headers(request.headers);
-    const userId = headers.get("x-user-id");
-    const userRole = headers.get("x-user-role") as "landlord" | "tenant";
-    const userEmail = headers.get("x-user-email");
+//     const headers = new Headers(request.headers);
+//     const userId = headers.get("x-user-id");
+//     const userRole = headers.get("x-user-role") as "landlord" | "tenant";
+//     const userEmail = headers.get("x-user-email");
 
-    console.log("📋 Headers received:", { userId, userRole, userEmail });
+//     console.log("📋 Headers received:", { userId, userRole, userEmail });
 
-    if (!userId) {
-      console.log("❌ No userId in headers");
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Authentication required.",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
+//     if (!userId) {
+//       console.log("❌ No userId in headers");
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           message: "Authentication required.",
+//         },
+//         {
+//           status: 401,
+//         }
+//       );
+//     }
 
-    if (userRole !== "landlord") {
-      console.log("❌ User is not a landlord:", userRole);
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Access denied. Landlord role required.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+//     if (userRole !== "landlord") {
+//       console.log("❌ User is not a landlord:", userRole);
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           message: "Access denied. Landlord role required.",
+//         },
+//         {
+//           status: 403,
+//         }
+//       );
+//     }
 
-    console.log("✅ Landlord authorization successful");
-    return handler(request, { userId, userRole, userEmail });
-  };
-};
+//     console.log("✅ Landlord authorization successful");
+//     return handler(request, { userId, userRole, userEmail });
+//   };
+// };
 
-/**
- * Tenant authorization middleware
- */
-export const requireTenant = (handler: Function) => {
-  return async (request: NextRequest, context?: any) => {
-    console.log("🏠 RequireTenant middleware called");
+// /**
+//  * Tenant authorization middleware
+//  */
+// export const requireTenant = (handler: Function) => {
+//   return async (request: NextRequest, context?: any) => {
+//     console.log("🏠 RequireTenant middleware called");
 
-    const headers = new Headers(request.headers);
-    const userId = headers.get("x-user-id");
-    const userRole = headers.get("x-user-role") as "landlord" | "tenant";
-    const userEmail = headers.get("x-user-email");
+//     const headers = new Headers(request.headers);
+//     const userId = headers.get("x-user-id");
+//     const userRole = headers.get("x-user-role") as "landlord" | "tenant";
+//     const userEmail = headers.get("x-user-email");
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Authentication required.",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
+//     if (!userId) {
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           message: "Authentication required.",
+//         },
+//         {
+//           status: 401,
+//         }
+//       );
+//     }
 
-    if (userRole !== "tenant") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Access denied. Tenant role required.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+//     if (userRole !== "tenant") {
+//       return NextResponse.json(
+//         {
+//           success: false,
+//           message: "Access denied. Tenant role required.",
+//         },
+//         {
+//           status: 403,
+//         }
+//       );
+//     }
 
-    return handler(request, { userId, userRole, userEmail });
-  };
-};
+//     return handler(request, { userId, userRole, userEmail });
+//   };
+// };

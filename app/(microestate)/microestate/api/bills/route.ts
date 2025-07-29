@@ -3,42 +3,40 @@
 import { NextResponse , NextRequest } from "next/server";
 import UtilityBill from "@/app/(microestate)/models/Utility";
 import dbConnect from "@/app/(microestate)/lib/db";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
 import User from "@/app/models/User";
-import Property from "@/app/(microestate)/models/Property";
+import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import Lease from "@/app/(microestate)/models/Lease";
 
+// // get all bills
+// export async function GET(_request: NextRequest ) {
 
-// get all bills
-export async function GET(_request: NextRequest) {
-
-    try {
-        await dbConnect()
+//     try {
+//         await dbConnect()
          
-        const bills = await UtilityBill.find()
-        .populate("propertyId" , "title address")
-        .populate("landlordId" , "name ")
-        .populate("TentantId" , "name")
+//         const bills = await UtilityBill.find()
+//         .populate("propertyId" , "title address")
+//         .populate("landlordId" , "name ")
+//         .populate("TentantId" , "name")
 
-        if (!bills) {
-            return NextResponse.json({
-            message: "No Bills Found"
-        }, {status: 200})
-        }
+//         if (!bills) {
+//             return NextResponse.json({
+//             message: "No Bills Found"
+//         }, {status: 200})
+//         }
 
-        return NextResponse.json({
-            message: "Bills Found",
-            bills
-        }, {status: 200})
+//         return NextResponse.json({
+//             message: "Bills Found",
+//             bills
+//         }, {status: 200})
 
 
-    } catch (error) {
-        console.log("Error while Getting all the bills" , error)
-        return NextResponse.json({
-            message: "Error occcured"
-        }, {status: 500})
-    }
-}
+//     } catch (error) {
+//         console.log("Error while Getting all the bills" , error)
+//         return NextResponse.json({
+//             message: "Error occcured"
+//         }, {status: 500})
+//     }
+// }
 
 // create bill
 
@@ -50,100 +48,105 @@ export async function GET(_request: NextRequest) {
 // add that bill in Utility for that tentant and return response 
 
 
+// requiredLandlord 
+// property id from lease model
+// take propertyId from frontend (params/url)
 // add bill
 
-export async function POST(request: NextRequest) {
-    
+export const POST = requireLandlord(
+  async (request: NextRequest, context: { userId: string; userRole: string; userEmail: string }) => {
     try {
-     await dbConnect()
+      await dbConnect();
 
-    const {utilityType , amount , billingPeriod , dueDate , responsibleParty , billDocument , notes } = await request.json()
+      const {
+        utilityType,
+        amount,
+        billingPeriod,
+        dueDate,
+        responsibleParty,
+        billDocument,
+        notes,
+      } = await request.json();
 
-    if (!utilityType || !amount || !billingPeriod || !dueDate || !responsibleParty) {
-        return NextResponse.json({
-            message: "ALL fields are required!"
-        } , {status: 404})
-    }
-      
-     const session = await getServerSession(authOptions)
-     if (!session) {
-       return NextResponse.json({
-            message: "Unauthorized"
-        } , {status: 404})
-     }
+      if (!utilityType || !amount || !billingPeriod || !dueDate || !responsibleParty) {
+        return NextResponse.json(
+          { message: "ALL fields are required!" },
+          { status: 400 }
+        );
+      }
 
-     if (session.user.role === "Tentant") {
-        return NextResponse.json({
-            message: "Only Landloards Can add bills"
-        } , {status: 400})
-     }
+      const UserId = context.userId;
 
-     const UserId = session.user.id 
-     
-     const FoundUser =  await User.findById(UserId)
-     if (!FoundUser) {
-         return NextResponse.json({
-            message: "User does not exists in our database"
-        } , {status: 400})
-     }
-     
-     // finding the properties which is owned by landloard
-     const property = await Property.findOne({landlordId: UserId}) // lanloard
-     if (!property) {
-        return NextResponse.json({
-            message: "You Dont have any property"
-        } , {status: 400})
-     }
- 
-     //TODO: Check this on how to find Tentant Id
-        const tenant = await User.findOne({
-               role: "Tenant",  
-          propertyId: property?._id,
-          status: "active"
-    });
-    
- if (responsibleParty === "tenant" && !tenant) {
+      const FoundUser = await User.findById(UserId);
+      if (!FoundUser) {
+        return NextResponse.json(
+          { message: "User does not exist in our database" },
+          { status: 400 }
+        );
+      }
+
+      // Find property owned by landlord
+      const property = await Lease.findOne({ landlordId: UserId });
+      if (!property) {
+        return NextResponse.json(
+          { message: "You don't have any property" },
+          { status: 400 }
+        );
+      }
+
+      // Find active tenant assigned to the property
+      const tenant = await User.findOne({
+        role: "Tenant",
+        propertyId: property._id,
+        status: "active",
+      });
+
+      if (responsibleParty === "tenant" && !tenant) {
+        return NextResponse.json(
+          { message: "No active tenant assigned to this property" },
+          { status: 400 }
+        );
+      }
+
+      if (!tenant) {
+        return NextResponse.json(
+          { message: "No tenant assigned to your property" },
+          { status: 404 }
+        );
+      }
+
+      const newBill = await UtilityBill.create({
+        propertyId: property._id,
+        landlordId: UserId,
+        tenantId: tenant._id,
+        utilityType,
+        amount,
+        billingPeriod: {
+          start: new Date(billingPeriod.start),
+          end: new Date(billingPeriod.end),
+        },
+        dueDate: new Date(dueDate),
+        status: "pending",
+        responsibleParty,
+        billDocument,
+        notes,
+      });
+
+      await newBill.save();
+
       return NextResponse.json(
-        { message: "No active tenant assigned to this property" },
-        { status: 400 }
+        {
+          message: "Bill Created Successfully",
+          newBill,
+        },
+        { status: 200 }
       );
-    }
-     if (!tenant) {
-      return NextResponse.json(
-        { message: "No tenant assigned to your property" },
-        { status: 404 }
-      );
-    }
-
-   
- const newBill = await UtilityBill.create({
-    propertyId: property?._id,
-    landlordId: UserId,
-    tenantId: tenant?._id, // TODO: check 
-    utilityType,
-    amount,
-       billingPeriod: {
-        start: new Date(billingPeriod.start),
-        end: new Date(billingPeriod.end)
-      },
-    dueDate: new Date(dueDate),
-    status: "pending",
-    responsibleParty ,
-    billDocument,
-    notes
- })
-  newBill.save()
-   
-   return NextResponse.json({
-    message: "Bill Created Sucessfully",
-    newBill
-   } , {status: 200})
-
     } catch (error) {
-        console.log("Error while Creating Bill" , error)
-        return NextResponse.json({
-            message: "Error while creating bill"
-        } , {status: 500})
+      console.error("Error while Creating Bill", error);
+      return NextResponse.json(
+        { message: "Error while creating bill" },
+        { status: 500 }
+      );
     }
-
-}
+  }
+);

@@ -22,9 +22,14 @@ export interface IUtilityBill extends Document {
   dueDate: Date;
   paidDate?: Date;
   status: UtilityStatus;
+   paymentProof?: {
+    url: string;
+    uploadedAt?: Date;
+  };
   responsibleParty: ResponsibleParty;
   billDocument?: string;
   notes?: string;
+ 
   createdAt: Date;
   updatedAt: Date;
   
@@ -151,11 +156,24 @@ const utilityBillSchema = new Schema<IUtilityBill>(
         message: "Bill document must be a valid URL to a PDF or image file",
       },
     },
+      paymentProof: {
+    url: {
+      type: String,
+      validate: {
+        validator: function (value: string) {
+          return !value || /^https?:\/\/.+\.(pdf|jpg|jpeg|png|gif)$/i.test(value);
+        },
+        message: "Payment proof must be a valid URL to an image file",
+      },
+    },
+    uploadedAt: Date,
+  },
     notes: {
       type: String,
       maxlength: [500, "Notes cannot exceed 500 characters"],
     },
   },
+  
   {
     timestamps: true,
   }
@@ -172,59 +190,61 @@ utilityBillSchema.methods.markAsPaid = function(this: IUtilityBill, paidDate?: D
   this.paidDate = paidDate || new Date();
 };
 
-utilityBillSchema.methods.getDaysOverdue = function(this: IUtilityBill): number {
-  if (this.status === "paid") return 0;
+// utilityBillSchema.methods.getDaysOverdue = function(this: IUtilityBill): number {
+//   if (this.status === "paid") return 0;
   
-  const today = new Date();
-  const timeDiff = today.getTime() - this.dueDate.getTime();
-  return Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
-};
+//   const today = new Date();
+//   const timeDiff = today.getTime() - this.dueDate.getTime();
+//   return Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+// };
 
-utilityBillSchema.methods.getBillingPeriodDuration = function(this: IUtilityBill): number {
-  const timeDiff = this.billingPeriod.end.getTime() - this.billingPeriod.start.getTime();
-  return Math.ceil(timeDiff / (1000 * 3600 * 24));
-};
+// utilityBillSchema.methods.getBillingPeriodDuration = function(this: IUtilityBill): number {
+//   const timeDiff = this.billingPeriod.end.getTime() - this.billingPeriod.start.getTime();
+//   return Math.ceil(timeDiff / (1000 * 3600 * 24));
+// };
 
-utilityBillSchema.methods.isValidBillingPeriod = function(this: IUtilityBill): boolean {
-  return this.billingPeriod.start < this.billingPeriod.end;
-};
+// utilityBillSchema.methods.isValidBillingPeriod = function(this: IUtilityBill): boolean {
+//   return this.billingPeriod.start < this.billingPeriod.end;
+// };
 
 // Static Methods
-utilityBillSchema.statics.findOverdueBills = function(): Promise<IUtilityBill[]> {
+utilityBillSchema.statics.findOverdueBills = function(LandlordId): Promise<IUtilityBill[]> {
   return this.find({
     status: { $in: ["pending"] },
-    dueDate: { $lt: new Date() }
+    dueDate: { $lt: new Date() },
+    LandlordId
   }).populate("propertyId landlordId tenantId");
 };
 
-utilityBillSchema.statics.findPendingBills = function(): Promise<IUtilityBill[]> {
-  return this.find({ status: "pending" }).populate("propertyId landlordId tenantId");
-};
+// utilityBillSchema.statics.findPendingBills = function(): Promise<IUtilityBill[]> {
+//   return this.find({ status: "pending" }).populate("propertyId landlordId tenantId");
+// };
 
-utilityBillSchema.statics.findByProperty = function(propertyId: string): Promise<IUtilityBill[]> {
-  return this.find({ propertyId })
-    .populate("landlordId tenantId")
-    .sort({ dueDate: -1 });
-};
+// utilityBillSchema.statics.findByProperty = function(propertyId: string): Promise<IUtilityBill[]> {
+//   return this.find({ propertyId })
+//     .populate("landlordId tenantId")
+//     .sort({ dueDate: -1 });
+// };
 
-utilityBillSchema.statics.findByTenant = function(tenantId: string): Promise<IUtilityBill[]> {
-  return this.find({ tenantId, responsibleParty: "tenant" })
-    .populate("propertyId landlordId")
-    .sort({ dueDate: -1 });
-};
+// utilityBillSchema.statics.findByTenant = function(tenantId: string): Promise<IUtilityBill[]> {
+//   return this.find({ tenantId, responsibleParty: "tenant" })
+//     .populate("propertyId landlordId")
+//     .sort({ dueDate: -1 });
+// };
 
-utilityBillSchema.statics.findByLandlord = function(landlordId: string): Promise<IUtilityBill[]> {
-  return this.find({ landlordId })
-    .populate("propertyId tenantId")
-    .sort({ dueDate: -1 });
-};
+// utilityBillSchema.statics.findByLandlord = function(landlordId: string): Promise<IUtilityBill[]> {
+//   return this.find({ landlordId })
+//     .populate("propertyId tenantId")
+//     .sort({ dueDate: -1 });
+// };
 
-utilityBillSchema.statics.findByUtilityType = function(utilityType: UtilityType): Promise<IUtilityBill[]> {
-  return this.find({ utilityType })
-    .populate("propertyId landlordId tenantId")
-    .sort({ dueDate: -1 });
-};
+// utilityBillSchema.statics.findByUtilityType = function(utilityType: UtilityType): Promise<IUtilityBill[]> {
+//   return this.find({ utilityType })
+//     .populate("propertyId landlordId tenantId")
+//     .sort({ dueDate: -1 });
+// };
 
+//  for history of bill by a particular property Id 
 utilityBillSchema.statics.getMonthlyUtilityCost = function(
   propertyId: string,
   year: number,
@@ -251,62 +271,65 @@ utilityBillSchema.statics.getMonthlyUtilityCost = function(
   ]).then(result => result[0]?.totalCost || 0);
 };
 
-utilityBillSchema.statics.getUtilityStats = function(propertyId: string) {
-  return this.aggregate([
-    {
-      $match: {
-        propertyId: new mongoose.Types.ObjectId(propertyId)
-      }
-    },
-    {
-      $group: {
-        _id: "$status",
-        total: { $sum: "$amount" },
-        count: { $sum: 1 },
-        types: {
-          $push: {
-            type: "$utilityType",
-            amount: "$amount"
-          }
-        }
-      }
-    }
-  ]).then(results => {
-    const stats = {
-      totalPaid: 0,
-      totalPending: 0,
-      totalOverdue: 0,
-      averageMonthly: 0,
-      byType: {} as Record<UtilityType, number>
-    };
+
+
+
+// utilityBillSchema.statics.getUtilityStats = function(propertyId: string) {
+//   return this.aggregate([
+//     {
+//       $match: {
+//         propertyId: new mongoose.Types.ObjectId(propertyId)
+//       }
+//     },
+//     {
+//       $group: {
+//         _id: "$status",
+//         total: { $sum: "$amount" },
+//         count: { $sum: 1 },
+//         types: {
+//           $push: {
+//             type: "$utilityType",
+//             amount: "$amount"
+//           }
+//         }
+//       }
+//     }
+//   ]).then(results => {
+//     const stats = {
+//       totalPaid: 0,
+//       totalPending: 0,
+//       totalOverdue: 0,
+//       averageMonthly: 0,
+//       byType: {} as Record<UtilityType, number>
+//     };
     
-    results.forEach(result => {
-      switch (result._id) {
-        case "paid":
-          stats.totalPaid = result.total;
-          break;
-        case "pending":
-          stats.totalPending = result.total;
-          break;
-        case "overdue":
-          stats.totalOverdue = result.total;
-          break;
-      }
+//     results.forEach(result => {
+//       switch (result._id) {
+//         case "paid":
+//           stats.totalPaid = result.total;
+//           break;
+//         case "pending":
+//           stats.totalPending = result.total;
+//           break;
+//         case "overdue":
+//           stats.totalOverdue = result.total;
+//           break;
+//       }
       
-      // Calculate by type
-      result.types.forEach((typeData: any) => {
-        const utilityType = typeData.type as UtilityType;
-        if (!stats.byType[utilityType]) {
-          stats.byType[utilityType] = 0;
-        }
-        stats.byType[utilityType] += typeData.amount;
-      });
-    });
+//       // Calculate by type
+//       result.types.forEach((typeData: any) => {
+//         const utilityType = typeData.type as UtilityType;
+//         if (!stats.byType[utilityType]) {
+//           stats.byType[utilityType] = 0;
+//         }
+//         stats.byType[utilityType] += typeData.amount;
+//       });
+//     });
     
-    stats.averageMonthly = (stats.totalPaid + stats.totalPending + stats.totalOverdue) / 12;
-    return stats;
-  });
-};
+//     stats.averageMonthly = (stats.totalPaid + stats.totalPending + stats.totalOverdue) / 12;
+//     return stats;
+//   });
+// };
 
 // Pre-save middleware for status updates
 utilityBillSchema.pre<IUtilityBill>("save", function(next) {
@@ -391,68 +414,69 @@ export interface UtilityStats {
   byType: Record<UtilityType, number>;
 }
 
-// Utility functions
-export const calculateUtilityAverage = (
-  bills: IUtilityBill[],
-  utilityType?: UtilityType
-): number => {
-  const filteredBills = utilityType 
-    ? bills.filter(bill => bill.utilityType === utilityType)
-    : bills;
+// // Utility functions
+// export const calculateUtilityAverage = (
+//   bills: IUtilityBill[],
+//   utilityType?: UtilityType
+// ): number => {
+//   const filteredBills = utilityType 
+//     ? bills.filter(bill => bill.utilityType === utilityType)
+//     : bills;
   
-  if (filteredBills.length === 0) return 0;
+//   if (filteredBills.length === 0) return 0;
   
-  const total = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
-  return total / filteredBills.length;
-};
+//   const total = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+//   return total / filteredBills.length;
+// };
 
-export const generateUtilityReport = (bills: IUtilityBill[]) => {
-  const report = {
-    totalBills: bills.length,
-    totalAmount: 0,
-    paidAmount: 0,
-    pendingAmount: 0,
-    overdueAmount: 0,
-    byType: {} as Record<UtilityType, { count: number; total: number; average: number }>,
-    byResponsibleParty: {
-      landlord: { count: 0, total: 0 },
-      tenant: { count: 0, total: 0 }
-    }
-  };
+
+// export const generateUtilityReport = (bills: IUtilityBill[]) => {
+//   const report = {
+//     totalBills: bills.length,
+//     totalAmount: 0,
+//     paidAmount: 0,
+//     pendingAmount: 0,
+//     overdueAmount: 0,
+//     byType: {} as Record<UtilityType, { count: number; total: number; average: number }>,
+//     byResponsibleParty: {
+//       landlord: { count: 0, total: 0 },
+//       tenant: { count: 0, total: 0 }
+//     }
+//   };
   
-  bills.forEach(bill => {
-    report.totalAmount += bill.amount;
+//   bills.forEach(bill => {
+//     report.totalAmount += bill.amount;
     
-    // Status breakdown
-    switch (bill.status) {
-      case "paid":
-        report.paidAmount += bill.amount;
-        break;
-      case "pending":
-        report.pendingAmount += bill.amount;
-        break;
-      case "overdue":
-        report.overdueAmount += bill.amount;
-        break;
-    }
+//     // Status breakdown
+//     switch (bill.status) {
+//       case "paid":
+//         report.paidAmount += bill.amount;
+//         break;
+//       case "pending":
+//         report.pendingAmount += bill.amount;
+//         break;
+//       case "overdue":
+//         report.overdueAmount += bill.amount;
+//         break;
+//     }
     
-    // By type
-    if (!report.byType[bill.utilityType]) {
-      report.byType[bill.utilityType] = { count: 0, total: 0, average: 0 };
-    }
-    report.byType[bill.utilityType].count++;
-    report.byType[bill.utilityType].total += bill.amount;
+//     // By type
+//     if (!report.byType[bill.utilityType]) {
+//       report.byType[bill.utilityType] = { count: 0, total: 0, average: 0 };
+//     }
+//     report.byType[bill.utilityType].count++;
+//     report.byType[bill.utilityType].total += bill.amount;
     
-    // By responsible party
-    report.byResponsibleParty[bill.responsibleParty].count++;
-    report.byResponsibleParty[bill.responsibleParty].total += bill.amount;
-  });
+//     // By responsible party
+//     report.byResponsibleParty[bill.responsibleParty].count++;
+//     report.byResponsibleParty[bill.responsibleParty].total += bill.amount;
+//   });
   
-  // Calculate averages
-  Object.keys(report.byType).forEach(type => {
-    const typeData = report.byType[type as UtilityType];
-    typeData.average = typeData.total / typeData.count;
-  });
+//   // Calculate averages
+//   Object.keys(report.byType).forEach(type => {
+//     const typeData = report.byType[type as UtilityType];
+//     typeData.average = typeData.total / typeData.count;
+//   });
   
-  return report;
-};
+//   return report;
+//};

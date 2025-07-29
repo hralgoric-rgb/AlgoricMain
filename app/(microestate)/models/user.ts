@@ -9,7 +9,6 @@ export interface IUser extends Document {
   password: string;
   phone: string;
   role: "landlord" | "tenant";
-   propertyId?: mongoose.Types.ObjectId;
   profileImage?: string;
   emailVerified?: boolean;
   verificationToken?: string;
@@ -69,17 +68,10 @@ const userSchema = new Schema<IUser>(
         message: "Please enter a valid phone number",
       },
     },
-       role: {
+    role: {
       type: String,
       enum: ["landlord", "tenant"],
       required: [true, "Role is required"],
-    },
-    propertyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Property",
-      required: function (this: IUser) {
-        return this.role === "tenant";
-      },
     },
     profileImage: {
       type: String,

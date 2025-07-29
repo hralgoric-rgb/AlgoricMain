@@ -1,32 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
 import UtilityBill from "@/app/(microestate)/models/Utility";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/options";
+import { requireLandlord } from "@/app/(microestate)/lib/authorize";
 
-export async function POST( _request: NextRequest) {
+// require Landlord
+// ulitily model 
+
+export const GET = requireLandlord(
+  async (_request: NextRequest, context: { userId: string }) => {
     try {
-        await dbConnect()
+      await dbConnect();
 
-         const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const OverDueBills = await UtilityBill.findOverdueBills()
+      const landlordId = context.userId;
+
+      const overdueBills = await UtilityBill.find({
+        landlordId,
+        status: "overdue",
+        dueDate: { $lt: new Date() },
+      }).populate("propertyId tenantId");
 
       return NextResponse.json(
-      {
-        message: "Overdue bills fetched successfully",
-        count: OverDueBills.length,
-        bills: OverDueBills,
-      },
-      { status: 200 }
-    );
-        
+        {
+          message: "Overdue bills fetched successfully",
+          count: overdueBills.length,
+          bills: overdueBills,
+        },
+        { status: 200 }
+      );
     } catch (error) {
-        console.log("Error while Finding Overdue Bills" , error)
-        return NextResponse.json({
-            message: "Error while finding OverDue BIlls"
-        } , {status: 500})
+      console.error("Error while finding overdue bills", error);
+      return NextResponse.json(
+        { message: "Error while finding overdue bills" },
+        { status: 500 }
+      );
     }
-}
+  }
+);
