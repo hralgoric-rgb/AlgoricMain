@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, FileText, CreditCard, User, Menu, Users, Building } from "lucide-react";
 import { toast } from "sonner";
+import { signOut } from "next-auth/react";
 
 const navLinks = [
   { href: "/microestate/landlord", label: "Dashboard", icon: <Home className="w-4 h-4" /> },
@@ -33,11 +34,15 @@ export default function LandlordNavbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [dropdownOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut({
+      redirect: false, // We will handle the redirect manually
+      callbackUrl: "/microestate", // Tell next-auth where to go after signout is complete
+    });
+
     localStorage.removeItem("microestate_user");
-    if (typeof window !== 'undefined') {
-      document.cookie = 'microauthToken=; Max-Age=0; path=/;';
-    }
+     localStorage.removeItem("userRole");
+
     router.push("/microestate");
     toast.success("You have been logged out.");
   };

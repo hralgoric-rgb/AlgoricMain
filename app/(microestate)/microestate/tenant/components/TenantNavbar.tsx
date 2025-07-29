@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, FileText, CreditCard, User, Menu, QrCode } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const navLinks = [
   { href: "/microestate/tenant/", label: "Dashboard", icon: <Home className="w-4 h-4" /> },
@@ -32,11 +33,15 @@ export default function TenantNavbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [dropdownOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut({
+      redirect: false, 
+      callbackUrl: "/microestate",
+    })
+
     localStorage.removeItem("microestate_user");
-    if (typeof window !== 'undefined') {
-      document.cookie = 'microauthToken=; Max-Age=0; path=/;';
-    }
+    localStorage.removeItem("userRole");
+    
     router.push("/microestate");
   };
 

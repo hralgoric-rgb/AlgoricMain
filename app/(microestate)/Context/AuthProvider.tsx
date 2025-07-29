@@ -1,6 +1,6 @@
 'use client'
 
-import { SessionProvider } from "next-auth/react"
+import { SessionProvider, signOut } from "next-auth/react"
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { useRouter, usePathname } from 'next/navigation';
 import { set } from "mongoose";
@@ -43,30 +43,23 @@ export default function AuthProvider({
 
   // Recalculate auth state on mount and on route change
   useEffect(() => {
-    if (typeof document !== 'undefined' && document.cookie.split('; ').some(cookie => cookie.trim().startsWith('microauth='))) {
+    
 
-        const storedUser = localStorage.getItem('microestate_user');
+      const storedUser = localStorage.getItem('microestate_user');
 
-        if (storedUser) {
-          try {
-            const userData = JSON.parse(storedUser);
-            setUser(userData);
-          } catch (error) {
-            console.error('Error parsing stored user data:', error);
-            localStorage.removeItem('microestate_user');
-            setUser(null);
-          }
-        } else {
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          localStorage.removeItem('microestate_user');
           setUser(null);
         }
-    }
-    else {
-      localStorage.removeItem('microestate_user');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('nextauth.message');
-      
-      setUser(null);
-    }
+      } else {
+        setUser(null);
+      }
+    
     setLoading(false);
   }, [pathname]);
 
@@ -75,14 +68,15 @@ export default function AuthProvider({
     localStorage.setItem('microestate_user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     localStorage.removeItem('microestate_user');
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('authToken');
-      document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      router.replace('/microestate');
-    }
+    localStorage.removeItem('userRole');
+    await signOut({
+      redirect: false,
+      callbackUrl: "/microestate", 
+    })
+    router.push("/microestate");
   };
 
   const isAuthenticated = !!user;

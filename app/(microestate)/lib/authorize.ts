@@ -20,33 +20,33 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
   error?: string;
 }> {
   try {
-    // First check for headers set by middleware
-    const userIdHeader = request.headers.get("x-user-id");
-    const userRoleHeader = request.headers.get("x-user-role");
-    const userEmailHeader = request.headers.get("x-user-email");
+    // // First check for headers set by middleware
+    // const userIdHeader = request.headers.get("x-user-id");
+    // const userRoleHeader = request.headers.get("x-user-role");
+    // const userEmailHeader = request.headers.get("x-user-email");
 
-    console.log("🔍 Headers from middleware:", {
-      userId: userIdHeader,
-      userRole: userRoleHeader,
-      userEmail: userEmailHeader,
-    });
+    // console.log("🔍 Headers from middleware:", {
+    //   userId: userIdHeader,
+    //   userRole: userRoleHeader,
+    //   userEmail: userEmailHeader,
+    // });
 
-    if (userIdHeader && userRoleHeader && userEmailHeader) {
-      return {
-        success: true,
-        user: {
-          _id: userIdHeader,
-          email: userEmailHeader,
-          role: userRoleHeader as "landlord" | "tenant",
-        },
-      };
-    }
+    // if (userIdHeader && userRoleHeader && userEmailHeader) {
+    //   return {
+    //     success: true,
+    //     user: {
+    //       _id: userIdHeader,
+    //       email: userEmailHeader,
+    //       role: userRoleHeader as "landlord" | "tenant",
+    //     },
+    //   };
+    // }
 
     // Try to get the microauth cookie directly first
     const microauthCookie = request.cookies.get("microauth");
 
     if (microauthCookie) {
-      console.log("🔄 Found microauth cookie, verifying...");
+      // console.log("🔄 Found microauth cookie, verifying...");
 
       try {
         const jwtSecret = process.env.NEXTAUTH_SECRET;
@@ -60,6 +60,9 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
           id: decoded._id,
           role: decoded.role,
           email: decoded.email,
+          name: decoded.name,
+          firstName: decoded.firstName,
+          lastName: decoded.lastName,
         });
 
         return {
@@ -69,8 +72,8 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
             email: decoded.email,
             role: decoded.role,
             name: decoded.name,
-            firstName: decoded.firstName,
-            lastName: decoded.lastName,
+            // firstName: decoded.firstName,
+            // lastName: decoded.lastName,
           },
         };
       } catch (jwtError) {
@@ -97,6 +100,7 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
       id: token._id || token.sub,
       role: token.role,
       email: token.email,
+      name: token.name,
     });
 
     return {
@@ -106,8 +110,8 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
         email: token.email as string,
         role: token.role as "landlord" | "tenant",
         name: token.name as string,
-        firstName: token.firstName as string,
-        lastName: token.lastName as string,
+        // firstName: token.firstName as string,
+        // lastName: token.lastName as string,
       },
     };
   } catch (error) {
@@ -139,7 +143,7 @@ export function requireLandlord(handler: Function) {
     }
 
     if (authResult.user.role !== "landlord") {
-      console.log("❌ User is not a landlord:", authResult.user.role);
+      // console.log("❌ User is not a landlord:", authResult.user.role);
       return NextResponse.json(
         {
           success: false,
@@ -151,7 +155,6 @@ export function requireLandlord(handler: Function) {
       );
     }
 
-    console.log("✅ Landlord authorization successful");
 
     // Pass user data to the handler
     const contextWithUser = {
