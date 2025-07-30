@@ -3,7 +3,7 @@
 import { NextResponse , NextRequest } from "next/server";
 import UtilityBill from "@/app/(microestate)/models/Utility";
 import dbConnect from "@/app/(microestate)/lib/db";
-import User from "@/app/models/User";
+import User from "@/app/(microestate)/models/user";
 import { requireLandlord } from "@/app/(microestate)/lib/authorize";
 import Lease from "@/app/(microestate)/models/Lease";
 

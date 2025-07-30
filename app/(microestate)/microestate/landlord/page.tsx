@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Building, FileText, Mail, Plus, Home, User, CheckCircle, Inbox, Edit, Users, Calendar, CreditCard, Bell, Settings, Download, Trash2, Edit2, FileDown, AlertTriangle, TrendingUp, DollarSign, Clock, MapPin, Eye, BarChart3, Activity } from 'lucide-react';
+import { Building, FileText, Mail, Plus, Home, User, CheckCircle, Inbox, Edit, Users, Calendar, CreditCard, Bell, Settings, Download, Trash2, Edit2, FileDown, AlertTriangle, TrendingUp, DollarSign, Clock, MapPin, Eye, BarChart3, Activity, Zap, Droplets, Wifi, Receipt, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Background from '../../_components/Background';
@@ -27,6 +27,31 @@ export default function LandlordDashboard() {
       { type: 'tenant', message: 'New tenant moved in', time: '2 days ago' }
     ]
   });
+
+  // Utility Bills State
+  const [utilityBills, setUtilityBills] = useState({
+    pending: [
+      { id: 1, tenantName: 'John Doe', property: 'Urban Loft', type: 'Electricity', amount: 2500, dueDate: '2024-02-15', responsibility: '100% Tenant' },
+      { id: 2, tenantName: 'Jane Smith', property: 'Family Home', type: 'Water', amount: 800, dueDate: '2024-02-20', responsibility: '50-50' }
+    ],
+    overdue: [
+      { id: 3, tenantName: 'Mike Johnson', property: 'City Apartment', type: 'Internet', amount: 1200, dueDate: '2024-02-10', responsibility: '100% Tenant' }
+    ],
+    paid: [
+      { id: 4, tenantName: 'Sarah Wilson', property: 'Garden Villa', type: 'Electricity', amount: 1800, dueDate: '2024-01-25', responsibility: '100% Tenant', paidDate: '2024-01-20' }
+    ]
+  });
+
+  const [showCreateBill, setShowCreateBill] = useState(false);
+  const [newBill, setNewBill] = useState({
+    tenantId: '',
+    propertyId: '',
+    utilityType: '',
+    amount: '',
+    dueDate: '',
+    responsibility: '100% Tenant',
+    notes: ''
+  });
   useEffect(() => {
     if (user) {
       const firstName = user.name ? user.name.split(' ')[0] : 'User';
@@ -44,8 +69,71 @@ export default function LandlordDashboard() {
     }
   };
 
+  const getUtilityIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'electricity': return <Zap className="w-4 h-4 text-yellow-400" />;
+      case 'water': return <Droplets className="w-4 h-4 text-blue-400" />;
+      case 'internet': return <Wifi className="w-4 h-4 text-purple-400" />;
+      case 'gas': return <AlertCircle className="w-4 h-4 text-orange-400" />;
+      default: return <Receipt className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const handleCreateBill = async () => {
+    try {
+      // TODO: API call to create bill
+      console.log('Creating bill:', newBill);
+      setShowCreateBill(false);
+      setNewBill({
+        tenantId: '',
+        propertyId: '',
+        utilityType: '',
+        amount: '',
+        dueDate: '',
+        responsibility: '100% Tenant',
+        notes: ''
+      });
+    } catch (error) {
+      console.error('Error creating bill:', error);
+    }
+  };
+
+  const handleMarkAsPaid = async (billId: number) => {
+    try {
+      // TODO: API call to mark bill as paid
+      console.log('Marking bill as paid:', billId);
+    } catch (error) {
+      console.error('Error marking bill as paid:', error);
+    }
+  };
+
+  const calculateUtilityStats = () => {
+    const totalPending = utilityBills.pending.reduce((sum, bill) => sum + bill.amount, 0);
+    const totalOverdue = utilityBills.overdue.reduce((sum, bill) => sum + bill.amount, 0);
+    const totalPaid = utilityBills.paid.reduce((sum, bill) => sum + bill.amount, 0);
+    const averageBill = utilityBills.paid.length > 0 ? totalPaid / utilityBills.paid.length : 0;
+    
+    return { totalPending, totalOverdue, totalPaid, averageBill };
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(55, 65, 81, 0.3);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #f97316, #dc2626);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #ea580c, #b91c1c);
+        }
+      `}</style>
       <Background />
       <div className="container mx-auto py-10 mt-8 relative z-10">
         {/* Welcome Header */}
@@ -250,6 +338,423 @@ export default function LandlordDashboard() {
             </div>
           </div>
         </section>
+
+                 {/* Utility Bills Section */}
+         <section className="mt-8 bg-gradient-to-br from-[#1a1a1f] via-[#1f1f25] to-[#2a2a2f] border border-orange-500/20 shadow-2xl rounded-2xl p-8 animate-fadeIn relative overflow-hidden">
+           {/* Background Pattern */}
+           <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 opacity-50"></div>
+           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full -translate-y-32 translate-x-32"></div>
+           <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-red-500/10 to-transparent rounded-full translate-y-24 -translate-x-24"></div>
+           
+           <div className="relative z-10">
+             <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-4">
+                 <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/25">
+                   <Receipt className="w-7 h-7 text-white" />
+                 </div>
+                 <div>
+                   <h2 className="text-2xl font-bold text-white">Utility Bills Management</h2>
+                   <p className="text-gray-400 text-sm">Track and manage all utility expenses</p>
+                 </div>
+               </div>
+               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                 <Button 
+                   onClick={() => setShowCreateBill(true)}
+                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/30"
+                 >
+                   <Plus className="w-5 h-5 mr-2" />
+                   Create Bill
+                 </Button>
+               </motion.div>
+             </div>
+
+                     {/* Utility Stats Cards */}
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+             {(() => {
+               const stats = calculateUtilityStats();
+               return [
+                 {
+                   title: 'Pending Bills',
+                   value: `₹${stats.totalPending.toLocaleString()}`,
+                   count: utilityBills.pending.length,
+                   color: 'text-yellow-400',
+                   bgColor: 'bg-gradient-to-br from-yellow-500/10 to-orange-500/10',
+                   borderColor: 'border-yellow-500/20',
+                   icon: <Clock className="w-6 h-6" />
+                 },
+                 {
+                   title: 'Overdue Bills',
+                   value: `₹${stats.totalOverdue.toLocaleString()}`,
+                   count: utilityBills.overdue.length,
+                   color: 'text-red-400',
+                   bgColor: 'bg-gradient-to-br from-red-500/10 to-pink-500/10',
+                   borderColor: 'border-red-500/20',
+                   icon: <AlertCircle className="w-6 h-6" />
+                 },
+                 {
+                   title: 'This Month Paid',
+                   value: `₹${stats.totalPaid.toLocaleString()}`,
+                   count: utilityBills.paid.length,
+                   color: 'text-green-400',
+                   bgColor: 'bg-gradient-to-br from-green-500/10 to-emerald-500/10',
+                   borderColor: 'border-green-500/20',
+                   icon: <CheckCircle className="w-6 h-6" />
+                 },
+                 {
+                   title: 'Average Bill',
+                   value: `₹${Math.round(stats.averageBill).toLocaleString()}`,
+                   count: utilityBills.paid.length,
+                   color: 'text-blue-400',
+                   bgColor: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10',
+                   borderColor: 'border-blue-500/20',
+                   icon: <BarChart3 className="w-6 h-6" />
+                 }
+               ].map((stat, index) => (
+                 <motion.div
+                   key={stat.title}
+                   className={`${stat.bgColor} ${stat.borderColor} border rounded-2xl p-6 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer`}
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: index * 0.1 }}
+                   whileHover={{ scale: 1.02, y: -2 }}
+                 >
+                   <div className="flex items-center justify-between mb-4">
+                     <div className={`${stat.color} p-2 rounded-xl bg-white/5 group-hover:bg-white/10 transition-colors`}>
+                       {stat.icon}
+                     </div>
+                     <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded-full">{stat.count} bills</span>
+                   </div>
+                   <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
+                   <div className="text-sm text-gray-400 font-medium">{stat.title}</div>
+                 </motion.div>
+               ));
+             })()}
+           </div>
+
+                     {/* Bills Lists */}
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+             {/* Pending Bills */}
+             <div className="bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-yellow-500/20 rounded-2xl p-6 shadow-lg">
+               <div className="flex items-center gap-3 mb-6">
+                 <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                   <Clock className="w-5 h-5 text-white" />
+                 </div>
+                 <div>
+                   <h3 className="text-xl font-bold text-white">Pending Bills</h3>
+                   <p className="text-sm text-gray-400">{utilityBills.pending.length} bills awaiting payment</p>
+                 </div>
+               </div>
+               <div className="space-y-4">
+                 {utilityBills.pending.map((bill) => (
+                   <motion.div 
+                     key={bill.id} 
+                     className="bg-gradient-to-r from-yellow-500/5 to-orange-500/5 border border-yellow-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
+                     whileHover={{ scale: 1.02, y: -2 }}
+                   >
+                     <div className="flex items-center justify-between mb-3">
+                       <div className="flex items-center gap-3">
+                         <div className="p-2 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
+                           {getUtilityIcon(bill.type)}
+                         </div>
+                         <div>
+                           <span className="text-white font-semibold">{bill.type}</span>
+                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                         </div>
+                       </div>
+                       <span className="text-xl font-bold text-yellow-400">₹{bill.amount.toLocaleString()}</span>
+                     </div>
+                     <div className="flex items-center justify-between text-sm mb-4">
+                       <span className="text-yellow-400 font-medium">Due: {new Date(bill.dueDate).toLocaleDateString()}</span>
+                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs">{bill.responsibility}</span>
+                     </div>
+                     <div className="flex gap-3">
+                       <Button 
+                         size="sm" 
+                         onClick={() => handleMarkAsPaid(bill.id)}
+                         className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                       >
+                         <CheckCircle className="w-4 h-4 mr-2" />
+                         Mark Paid
+                       </Button>
+                       <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
+                         <Edit className="w-4 h-4 mr-2" />
+                         Edit
+                       </Button>
+                     </div>
+                   </motion.div>
+                 ))}
+               </div>
+             </div>
+
+             {/* Overdue Bills */}
+             <div className="bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-red-500/20 rounded-2xl p-6 shadow-lg">
+               <div className="flex items-center gap-3 mb-6">
+                 <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
+                   <AlertCircle className="w-5 h-5 text-white" />
+                 </div>
+                 <div>
+                   <h3 className="text-xl font-bold text-white">Overdue Bills</h3>
+                   <p className="text-sm text-gray-400">{utilityBills.overdue.length} bills past due date</p>
+                 </div>
+               </div>
+               <div className="space-y-4">
+                 {utilityBills.overdue.map((bill) => (
+                   <motion.div 
+                     key={bill.id} 
+                     className="bg-gradient-to-r from-red-500/5 to-pink-500/5 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
+                     whileHover={{ scale: 1.02, y: -2 }}
+                   >
+                     <div className="flex items-center justify-between mb-3">
+                       <div className="flex items-center gap-3">
+                         <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                           {getUtilityIcon(bill.type)}
+                         </div>
+                         <div>
+                           <span className="text-white font-semibold">{bill.type}</span>
+                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                         </div>
+                       </div>
+                       <span className="text-xl font-bold text-red-400">₹{bill.amount.toLocaleString()}</span>
+                     </div>
+                     <div className="flex items-center justify-between text-sm mb-4">
+                       <span className="text-red-400 font-medium">Overdue since {new Date(bill.dueDate).toLocaleDateString()}</span>
+                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs">{bill.responsibility}</span>
+                     </div>
+                     <div className="flex gap-3">
+                       <Button 
+                         size="sm" 
+                         onClick={() => handleMarkAsPaid(bill.id)}
+                         className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                       >
+                         <CheckCircle className="w-4 h-4 mr-2" />
+                         Mark Paid
+                       </Button>
+                       <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
+                         <Mail className="w-4 h-4 mr-2" />
+                         Send Reminder
+                       </Button>
+                     </div>
+                   </motion.div>
+                 ))}
+               </div>
+             </div>
+           </div>
+
+                     {/* Recent Paid Bills */}
+           <div className="mt-8 bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-green-500/20 rounded-2xl p-6 shadow-lg">
+             <div className="flex items-center gap-3 mb-6">
+               <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                 <CheckCircle className="w-5 h-5 text-white" />
+               </div>
+               <div>
+                 <h3 className="text-xl font-bold text-white">Recently Paid Bills</h3>
+                 <p className="text-sm text-gray-400">Successfully completed payments</p>
+               </div>
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+               {utilityBills.paid.map((bill) => (
+                 <motion.div 
+                   key={bill.id} 
+                   className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border border-green-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
+                   whileHover={{ scale: 1.02, y: -2 }}
+                 >
+                   <div className="flex items-center justify-between mb-3">
+                     <div className="flex items-center gap-3">
+                       <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
+                         {getUtilityIcon(bill.type)}
+                       </div>
+                       <div>
+                         <span className="text-white font-semibold">{bill.type}</span>
+                         <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                       </div>
+                     </div>
+                     <span className="text-xl font-bold text-green-400">₹{bill.amount.toLocaleString()}</span>
+                   </div>
+                   <div className="flex items-center justify-between text-sm">
+                     <span className="text-green-400 font-medium">Paid: {new Date(bill.paidDate!).toLocaleDateString()}</span>
+                     <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs">{bill.responsibility}</span>
+                   </div>
+                 </motion.div>
+               ))}
+             </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Create Bill Modal */}
+         {showCreateBill && (
+           <motion.div 
+             className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+             style={{ paddingTop: '80px' }}
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+           >
+             <motion.div 
+               className="bg-gradient-to-br from-[#1a1a1f] to-[#2a2a2f] border border-orange-500/20 rounded-2xl shadow-2xl max-w-lg w-full max-h-[calc(100vh-140px)] overflow-hidden flex flex-col"
+               initial={{ scale: 0.9, y: 20, opacity: 0 }}
+               animate={{ scale: 1, y: 0, opacity: 1 }}
+               exit={{ scale: 0.9, y: 20, opacity: 0 }}
+               transition={{ type: "spring", damping: 25, stiffness: 300 }}
+             >
+                             {/* Header */}
+               <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-b border-orange-500/30 p-6 relative overflow-hidden">
+                 {/* Background Pattern */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5"></div>
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                 
+                 <div className="flex items-center justify-between relative z-10">
+                   <div className="flex items-center gap-4">
+                     <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25">
+                       <Receipt className="w-6 h-6 text-white" />
+                     </div>
+                     <div>
+                       <h3 className="text-2xl font-bold text-white drop-shadow-sm">Create Utility Bill</h3>
+                       <p className="text-sm text-gray-300 font-medium">Add a new utility bill for your tenant</p>
+                     </div>
+                   </div>
+                   <Button 
+                     variant="outline" 
+                     onClick={() => setShowCreateBill(false)}
+                     className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 w-10 h-10 p-0 rounded-xl shadow-lg"
+                   >
+                     <span className="text-xl font-bold">×</span>
+                   </Button>
+                 </div>
+               </div>
+
+                             {/* Form Content */}
+               <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+                {/* Utility Type */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-orange-400" />
+                    Utility Type *
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={newBill.utilityType}
+                      onChange={(e) => setNewBill({...newBill, utilityType: e.target.value})}
+                      className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none"
+                    >
+                      <option value="">Select utility type</option>
+                      <option value="Electricity">⚡ Electricity</option>
+                      <option value="Water">💧 Water</option>
+                      <option value="Internet">📶 Internet</option>
+                      <option value="Gas">🔥 Gas</option>
+                      <option value="Other">📄 Other</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Amount */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-green-400" />
+                    Amount (₹) *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={newBill.amount}
+                      onChange={(e) => setNewBill({...newBill, amount: e.target.value})}
+                      className="w-full p-4 pl-12 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+                      placeholder="0.00"
+                    />
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                      ₹
+                    </div>
+                  </div>
+                </div>
+
+                {/* Due Date */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-blue-400" />
+                    Due Date *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      value={newBill.dueDate}
+                      onChange={(e) => setNewBill({...newBill, dueDate: e.target.value})}
+                      className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Responsibility Split */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                    <Users className="w-4 h-4 text-purple-400" />
+                    Responsibility Split *
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={newBill.responsibility}
+                      onChange={(e) => setNewBill({...newBill, responsibility: e.target.value})}
+                      className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none"
+                    >
+                      <option value="100% Tenant">👤 100% Tenant</option>
+                      <option value="100% Landlord">🏠 100% Landlord</option>
+                      <option value="50-50">⚖️ 50-50 Split</option>
+                      <option value="70-30">📊 70-30 (Tenant-Landlord)</option>
+                      <option value="30-70">📊 30-70 (Tenant-Landlord)</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-yellow-400" />
+                    Additional Notes
+                  </label>
+                  <textarea
+                    value={newBill.notes}
+                    onChange={(e) => setNewBill({...newBill, notes: e.target.value})}
+                    rows={3}
+                    className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 resize-none"
+                    placeholder="Add any additional notes or details about this bill..."
+                  />
+                </div>
+              </div>
+
+                             {/* Footer */}
+               <div className="bg-gradient-to-r from-orange-500/5 to-red-500/5 border-t border-orange-500/20 p-6 flex-shrink-0">
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCreateBill(false)}
+                    className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 py-3 rounded-xl font-semibold"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateBill}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                  >
+                    <Receipt className="w-4 h-4 mr-2" />
+                    Create Bill
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
