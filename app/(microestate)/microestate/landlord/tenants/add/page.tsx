@@ -51,6 +51,7 @@ export default function AddTenantPage() {
     if (validate()) {
       try {
         // TODO: Submit new tenant data to API
+        const response =  await axios.post("/api/")
         console.log('Submitting tenant data:', formData);
         alert('Tenant added successfully!');
       } catch (error) {
