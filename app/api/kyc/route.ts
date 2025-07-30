@@ -21,8 +21,20 @@ const KycRequestSchema = new mongoose.Schema({
 const KycRequest = mongoose.models.KycRequest || mongoose.model("KycRequest", KycRequestSchema);
 
 function getUserIdFromAuthHeader(authHeader: string | null) {
-  if (!authHeader) return "000000000000000000000000";
-  return "000000000000000000000000";
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('Invalid auth header:', authHeader);
+    return null;
+  }
+  
+  try {
+    const token = authHeader.substring(7);
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    console.log('JWT payload:', payload);
+    return payload.userId || payload.sub;
+  } catch (error) {
+    console.error('Error parsing JWT token:', error);
+    return null;
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -61,10 +73,13 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     await connectDB();
-    const { userId } = await req.json();
+    const authHeader = req.headers.get("authorization");
+    const userId = getUserIdFromAuthHeader(authHeader);
+    
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid user ID or not authenticated" }, { status: 400 });
     }
+    
     const kyc = await KycRequest.findOne({ userId, status: "accepted" });
     if (!kyc) {
       return NextResponse.json({ error: "KYC not accepted or not found" }, { status: 400 });
@@ -77,6 +92,13 @@ export async function PUT(req: NextRequest) {
     kyc.postOtpExpiry = otpExpiry;
     kyc.otpVerified = false;
     await kyc.save();
+    
+    console.log("Generated OTP for KYC:", {
+      kycId: kyc._id,
+      userId: kyc.userId,
+      otp: otp,
+      expiry: otpExpiry
+    });
     // Send email
     const emailHtml = `<div style='font-family: Arial, sans-serif;'><h2>Your Property Posting OTP</h2><p>Your OTP is: <b>${otp}</b></p><p>This OTP is valid for 10 minutes.</p></div>`;
     try {

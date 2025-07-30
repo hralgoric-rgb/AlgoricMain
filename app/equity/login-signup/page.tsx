@@ -96,6 +96,10 @@ export default function EquityLoginSignup() {
       setShowOtp(false);
       setIsLogin(true);
       setLoading(false);
+      // After email verification, redirect to the intended page
+      setTimeout(() => {
+        router.push(redirect);
+      }, 1500);
     } catch (err) {
       setOtpError("An error occurred. Please try again.");
       setLoading(false);

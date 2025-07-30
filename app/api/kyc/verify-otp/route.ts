@@ -23,6 +23,8 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const { userId, kycId, otp } = await req.json();
+    console.log("OTP Verification Request:", { userId, kycId, otp });
+    
     if (!otp || (!userId && !kycId)) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -39,8 +41,20 @@ export async function POST(req: NextRequest) {
       kyc = await KycRequest.findOne({ userId, status: "accepted" });
     }
     if (!kyc) {
+      console.log("KYC not found for:", { userId, kycId });
       return NextResponse.json({ error: "KYC record not found" }, { status: 404 });
     }
+    console.log("Found KYC:", { 
+      kycId: kyc._id, 
+      userId: kyc.userId, 
+      status: kyc.status, 
+      otpVerified: kyc.otpVerified,
+      hasOtp: !!kyc.postOtp,
+      otpExpiry: kyc.postOtpExpiry,
+      expectedOtp: kyc.postOtp,
+      receivedOtp: otp
+    });
+    
     if (kyc.otpVerified) {
       return NextResponse.json({ success: true, message: "OTP already verified" });
     }
@@ -48,9 +62,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No OTP generated for this KYC" }, { status: 400 });
     }
     if (kyc.postOtp !== otp) {
+      console.log("OTP mismatch:", { expected: kyc.postOtp, received: otp });
       return NextResponse.json({ error: "Invalid OTP" }, { status: 401 });
     }
     if (new Date() > new Date(kyc.postOtpExpiry)) {
+      console.log("OTP expired:", { expiry: kyc.postOtpExpiry, now: new Date() });
       return NextResponse.json({ error: "OTP expired" }, { status: 401 });
     }
     kyc.otpVerified = true;

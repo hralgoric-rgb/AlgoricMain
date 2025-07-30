@@ -21,7 +21,7 @@ export default function EquityNavigation() {
 
   const navItems = [
     { href: "/equity", label: "Dashboard", icon: Home },
-    { href: "/equity/properties", label: "Properties", icon: Building2 },
+    { href: "/equity/property", label: "Properties", icon: Building2 },
     { href: "/equity/portfolio", label: "Portfolio", icon: Target },
     { href: "/equity/dashboard", label: "Analytics", icon: BarChart3 },
   ];
@@ -63,12 +63,21 @@ export default function EquityNavigation() {
                 );
               })}
               {/* Post Property Button */}
-              <Link
-                href="/equity/property/post"
-                className="ml-4 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium"
-              >
-                <span>Post Property</span>
-              </Link>
+              {isAuthenticated ? (
+                <Link
+                  href="/equity/property/post-dashboard"
+                  className="ml-4 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium"
+                >
+                  <span>Post Property</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/equity/login-signup?redirect=/equity/property/post-dashboard"
+                  className="ml-4 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium"
+                >
+                  <span>Post Property</span>
+                </Link>
+              )}
               {isAuthenticated && (
                 <Link
                   href="/equity/kyc"
@@ -148,13 +157,23 @@ export default function EquityNavigation() {
                 );
               })}
               {/* Post Property Button for Mobile */}
-              <Link
-                href="/equity/property/post"
-                className="block w-full mt-2 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 text-center font-medium"
-                onClick={() => setMobileOpen(false)}
-              >
-                Post Property
-              </Link>
+              {isAuthenticated ? (
+                <Link
+                  href="/equity/property/post-dashboard"
+                  className="block w-full mt-2 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 text-center font-medium"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Post Property
+                </Link>
+              ) : (
+                <Link
+                  href="/equity/login-signup?redirect=/equity/property/post-dashboard"
+                  className="block w-full mt-2 px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 text-center font-medium"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Post Property
+                </Link>
+              )}
               {isAuthenticated && (
                 <Link
                   href="/equity/kyc"
