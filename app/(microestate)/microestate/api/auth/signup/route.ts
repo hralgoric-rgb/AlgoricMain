@@ -153,14 +153,16 @@ export async function POST(request: NextRequest) {
       // Create token payload similar to NextAuth format
       const tokenPayload = {
         _id: newUser._id.toString(),
-        email: newUser.email,
-        role: newUser.role,
-        name: `${newUser.firstName} ${newUser.lastName}`,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        emailVerified: newUser.emailVerified,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60, // 3 days
+  id: newUser._id.toString(),
+  email: newUser.email,
+  role: newUser.role,
+  name: `${newUser.firstName} ${newUser.lastName}`,
+  firstName: newUser.firstName,
+  lastName: newUser.lastName,
+  phone: newUser.phone, // ADD THIS
+  emailVerified: newUser.emailVerified,
+  iat: Math.floor(Date.now() / 1000),
+  exp: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
       };
 
       sessionToken = jwt.sign(tokenPayload, jwtSecret);
@@ -201,23 +203,8 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error: any) {
     console.error("Registration Error:", error);
-    console.error("Error details:", {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-    });
+   ;
 
-    // Return more specific error messages
-    if (error.name === "ValidationError") {
-      const validationErrors = Object.values(error.errors).map(
-        (err: any) => err.message
-      );
-      return NextResponse.json(
-        { error: `Validation failed: ${validationErrors.join(", ")}` },
-        { status: 400 }
-      );
-    }
 
     if (error.code === 11000) {
       return NextResponse.json(
