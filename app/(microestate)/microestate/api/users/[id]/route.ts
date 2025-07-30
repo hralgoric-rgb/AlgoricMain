@@ -1,18 +1,18 @@
 import { NextRequest , NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
 import User from "@/app/(microestate)/models/user";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/options";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "../../auth/[...nextauth]/options";
 
 
 export async function GET(request: NextRequest , {params} : {params: {id: string}}) {
     await dbConnect()
 
-   const session = await getServerSession(authOptions)
+//    const session = await getServerSession({ req: request, ...authOptions }); // ✅ FIXED HERE
   
-   if (!session || !session.user) {
-    return NextResponse.json({error: "Unauthorized"} , {status: 401})
-   }
+//    if (!session || !session.user) {
+//     return NextResponse.json({error: "Unauthorized"} , {status: 401})
+//    }
 
    try {
     const user = await User.findById(params.id).select('-password')
