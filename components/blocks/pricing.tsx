@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Check, Star } from "lucide-react";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import confetti from "canvas-confetti";
 import NumberFlow from "@number-flow/react";
 
@@ -20,21 +20,33 @@ interface PricingPlan {
   buttonText: string;
   href: string;
   isPopular: boolean;
+  onPayment?: () => void;
 }
 
 interface PricingProps {
   plans: PricingPlan[];
   title?: string;
   description?: string;
+  isAnnual?: boolean;
+  isProcessing?: boolean;
 }
 
 export function PricingUI({
   plans,
   title = "Simple, Transparent Pricing",
   description = "Choose the plan that works for you\nAll plans include access to our platform, lead generation tools, and dedicated support.",
+  isAnnual,
+  isProcessing = false,
 }: PricingProps) {
-  const [isMonthly, setIsMonthly] = useState(true);
+  const [isMonthly, setIsMonthly] = useState(isAnnual !== undefined ? !isAnnual : true);
   const switchRef = useRef<HTMLButtonElement>(null);
+
+  // Update internal state when external prop changes
+  useEffect(() => {
+    if (isAnnual !== undefined) {
+      setIsMonthly(!isAnnual);
+    }
+  }, [isAnnual]);
 
   const handleToggle = (checked: boolean) => {
     setIsMonthly(!checked);
@@ -73,21 +85,23 @@ export function PricingUI({
         </p>
       </div>
 
-      {/* Billing toggle */}
-      <div className="flex justify-center items-center mb-12 gap-4">
-        <span className="text-sm font-medium text-muted-foreground">
-          Monthly
-        </span>
-        <Switch
-          ref={switchRef as any}
-          checked={!isMonthly}
-          onCheckedChange={handleToggle}
-          className="data-[state=checked]:bg-primary"
-        />
-        <span className="text-sm font-medium text-muted-foreground">
-          Annual <span className="text-primary">(Save 20%)</span>
-        </span>
-      </div>
+      {/* Only show toggle if isAnnual prop is not provided (external control) */}
+      {isAnnual === undefined && (
+        <div className="flex justify-center items-center mb-12 gap-4">
+          <span className="text-sm font-medium text-muted-foreground">
+            Monthly
+          </span>
+          <Switch
+            ref={switchRef as any}
+            checked={!isMonthly}
+            onCheckedChange={handleToggle}
+            className="data-[state=checked]:bg-primary"
+          />
+          <span className="text-sm font-medium text-muted-foreground">
+            Annual <span className="text-primary">(Save 20%)</span>
+          </span>
+        </div>
+      )}
 
       {/* Pricing cards */}
       <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-3">
@@ -150,15 +164,28 @@ export function PricingUI({
               ))}
             </ul>
 
-            <Link
-              href={plan.href}
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "mt-8 w-full text-lg font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground",
-              )}
-            >
-              {plan.buttonText}
-            </Link>
+            {plan.onPayment ? (
+              <button
+                onClick={plan.onPayment}
+                disabled={isProcessing}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "mt-8 w-full text-lg font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed",
+                )}
+              >
+                {isProcessing ? "Processing..." : plan.buttonText}
+              </button>
+            ) : (
+              <Link
+                href={plan.href}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "mt-8 w-full text-lg font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground",
+                )}
+              >
+                {plan.buttonText}
+              </Link>
+            )}
 
             <p className="mt-6 text-xs text-muted-foreground">
               {plan.description}
