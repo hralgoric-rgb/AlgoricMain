@@ -1,6 +1,6 @@
 import { NextRequest , NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
-import User from "@/app/models/User";
+import User from "@/app/(microestate)/models/user";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 

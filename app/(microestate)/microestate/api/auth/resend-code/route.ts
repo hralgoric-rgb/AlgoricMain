@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/app/(microestate)/lib/db';
-import User from '@/app/models/User';
+import User from '@/app/(microestate)/models/user';
 import { 
   generateVerificationCode, 
   sendEmail, 
@@ -9,12 +9,12 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await request.json();
+    const { email } = await request.json();
 
    
-    if (!userId) {
+    if (!email) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'Email is required' },
         { status: 400 }
       );
     }
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({ email });
     
     if (!user) {
       return NextResponse.json(

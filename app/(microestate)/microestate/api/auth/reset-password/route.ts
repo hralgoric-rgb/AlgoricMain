@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import User from '@/app/models/User';
+import User from '@/app/(microestate)/models/user';
 import dbConnect from '@/app/(microestate)/lib/db';
 import bcrypt from 'bcryptjs';
 

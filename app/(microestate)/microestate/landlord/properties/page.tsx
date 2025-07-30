@@ -17,8 +17,10 @@ import {
   AlertTriangle,
   MoreVertical,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Background from "../../../_components/Background";
 import ProtectedRoute from "../../../_components/ProtectedRoute";
@@ -43,31 +45,67 @@ interface Property {
 }
 
 export default function PropertiesPage() {
+  const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get("/microestate/api/properties");
-        setProperties(response.data);
-        setError(null);
-      } catch (err: any) {
-        console.error("Fetch error:", err);
-        setError(
-          err.response?.data?.error || "Failed to fetch properties."
-        );
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/microestate/api/properties");
+      
+      // Changes made by Priya - Ensuring properties is always an array to prevent filter error
+      const propertiesData = response.data;
+      if (Array.isArray(propertiesData)) {
+        setProperties(propertiesData);
+      } else if (propertiesData && Array.isArray(propertiesData.properties)) {
+        setProperties(propertiesData.properties);
+      } else if (propertiesData && Array.isArray(propertiesData.data)) {
+        setProperties(propertiesData.data);
+      } else {
+        console.warn("Unexpected API response structure:", propertiesData);
         setProperties([]);
-      } finally {
-        setLoading(false);
+      }
+      
+      setError(null);
+    } catch (err: any) {
+      console.error("Fetch error:", err);
+      setError(
+        err.response?.data?.error || "Failed to fetch properties."
+      );
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  // Listen for route changes to refresh data when returning from edit page
+  useEffect(() => {
+    // Add event listener for when the page becomes visible or focused
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchProperties();
       }
     };
 
-    fetchProperties();
+    const handleFocus = () => {
+      fetchProperties();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const getStatusBadge = (status: string) => {
@@ -105,14 +143,15 @@ export default function PropertiesPage() {
     }
   };
 
-  const filteredProperties = properties.filter((property) => {
+  // Changes made by Priya - Adding safety check to prevent filter error when properties is not an array
+  const filteredProperties = Array.isArray(properties) ? properties.filter((property) => {
     const matchesSearch =
       property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.address.street.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.address.city.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || property.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }) : [];
 
   if (loading) {
     return (
@@ -145,12 +184,18 @@ export default function PropertiesPage() {
                 <h1 className="text-3xl font-bold text-white">My Properties</h1>
                 <p className="text-gray-400">Manage your property listings</p>
               </div>
-              <Link href="/microestate/landlord/properties/add">
-                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Property
+              <div className="flex gap-2">
+                <Link href="/microestate/landlord/properties/add">
+                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Property
+                  </Button>
+                </Link>
+                <Button onClick={fetchProperties} className="bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-gray-500/25 transition-all duration-300 hover:scale-105">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
                 </Button>
-              </Link>
+              </div>
             </div>
 
             {/* Search and Filter */}
@@ -249,9 +294,11 @@ export default function PropertiesPage() {
                           View
                         </Button>
                       </Link>
-                      <Button variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
-                        <Edit className="w-4 h-4" />
-                      </Button>
+                      <Link href={`/microestate/landlord/properties/${property._id}/edit`}>
+                        <Button variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </Link>
                       <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
                         <Trash2 className="w-4 h-4" />
                       </Button>

@@ -28,6 +28,8 @@ import { toast } from "sonner";
 import { FeedbackDialog } from "../FeedbackDialog";
 import Image from "next/image";
 
+// Updated property types array to match database schema and UI dropdown requirements
+// Includes all property types: apartment, house, villa, studio, penthouse, duplex, townhouse, condo
 const propertyTypes = [
   {
     value: "apartment",
@@ -36,12 +38,11 @@ const propertyTypes = [
   },
   { value: "house", label: "House", icon: <Home className="w-5 h-5" /> },
   { value: "villa", label: "Villa", icon: <Home className="w-5 h-5" /> },
-  {
-    value: "commercial",
-    label: "Commercial",
-    icon: <Store className="w-5 h-5" />,
-  },
-  { value: "land", label: "Land", icon: <LandPlot className="w-5 h-5" /> },
+  { value: "studio", label: "Studio", icon: <Building className="w-5 h-5" /> },
+  { value: "penthouse", label: "Penthouse", icon: <Building className="w-5 h-5" /> },
+  { value: "duplex", label: "Duplex", icon: <Home className="w-5 h-5" /> },
+  { value: "townhouse", label: "Townhouse", icon: <Home className="w-5 h-5" /> },
+  { value: "condo", label: "Condo", icon: <Building className="w-5 h-5" /> },
 ];
 
 const amenities = [
