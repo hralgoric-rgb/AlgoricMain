@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Building,
   ArrowLeft,
@@ -68,11 +68,24 @@ interface Property {
   };
   images: string[];
   status: "available" | "rented" | "maintenance" | "inactive";
-  // Note: tenants, documents, and payments might need separate API calls
-  // For now, we'll use placeholder data for those tabs.
-  tenants?: any[];
-  documents?: any[];
-  payments?: any[];
+}
+
+// Interface for the tenant data returned by the API
+interface TenantInfo {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+interface LeaseInfo {
+  _id: string;
+  tenantId: TenantInfo;
+  startDate: string;
+  endDate: string;
+  monthlyRent: number;
+  status: "draft" | "active" | "expired" | "terminated";
 }
 
 export default function PropertyDetailsPage() {
@@ -86,43 +99,67 @@ export default function PropertyDetailsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
-    if (propertyId) {
-      const fetchProperty = async () => {
-        try {
-          setLoading(true);
-          const response = await axios.get(
-            `/microestate/api/properties/${propertyId}`
-          );
-          setProperty(response.data);
-          setError(null);
-        } catch (err: any) {
-          console.error("Fetch error:", err);
-          setError(
-            err.response?.data?.error || "Failed to fetch property details"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
+  // State for tenants list
+  const [tenants, setTenants] = useState<LeaseInfo[]>([]);
+  const [tenantsLoading, setTenantsLoading] = useState(false);
+  const [tenantsError, setTenantsError] = useState<string | null>(null);
 
-      fetchProperty();
-
-      // Add event listener to refresh data when page becomes visible
-      const handleVisibilityChange = () => {
-        if (!document.hidden) {
-          fetchProperty();
-        }
-      };
-
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      // Cleanup event listener
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-      };
+  const fetchProperty = useCallback(async () => {
+    if (!propertyId) return;
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `/microestate/api/properties/${propertyId}`
+      );
+      setProperty(response.data);
+      setError(null);
+    } catch (err: any) {
+      console.error("Fetch error:", err);
+      setError(err.response?.data?.error || "Failed to fetch property details");
+    } finally {
+      setLoading(false);
     }
   }, [propertyId]);
+
+  const fetchTenants = useCallback(async () => {
+    if (!propertyId) return;
+    setTenantsLoading(true);
+    setTenantsError(null);
+    try {
+      const response = await axios.get(
+        `/microestate/api/properties/${propertyId}/tenant`
+      );
+      if (response.data.success) {
+        setTenants(response.data.data);
+      } else {
+        setTenantsError(response.data.message);
+        setTenants([]);
+      }
+    } catch (err: any) {
+      setTenantsError(
+        err.response?.data?.message || "Failed to fetch tenants."
+      );
+      setTenants([]);
+    } finally {
+      setTenantsLoading(false);
+    }
+  }, [propertyId]);
+
+  useEffect(() => {
+    fetchProperty();
+  }, [fetchProperty]);
+
+  useEffect(() => {
+    if (activeTab === "tenants") {
+      fetchTenants();
+    }
+  }, [activeTab, fetchTenants]);
+
+  const handleTenantAdded = () => {
+    fetchTenants(); // Re-fetch the tenants list
+    fetchProperty(); // Re-fetch property to update status if needed
+    setActiveTab("tenants"); // Switch back to the tenants tab
+  };
 
   const tabs = [
     { id: "overview", label: "Overview", icon: Eye },
@@ -213,7 +250,9 @@ export default function PropertyDetailsPage() {
                 <div className="lg:col-span-2">
                   <div className="aspect-[3/2] bg-gray-800 rounded-xl overflow-hidden shadow-lg">
                     <img
-                      src={property.images[0] || "/images/placeholder-property.jpg"}
+                      src={
+                        property.images[0] || "/images/placeholder-property.jpg"
+                      }
                       alt="Main property image"
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
@@ -221,21 +260,25 @@ export default function PropertyDetailsPage() {
                 </div>
                 {/* Thumbnail Images - Smaller */}
                 <div className="space-y-3">
-                  {property.images.slice(1, 4).map((image: string, index: number) => (
-                    <div
-                      key={index + 1}
-                      className="aspect-[3/2] bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
-                    >
-                      <img
-                        src={image}
-                        alt={`Property image ${index + 2}`}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  ))}
+                  {property.images
+                    .slice(1, 4)
+                    .map((image: string, index: number) => (
+                      <div
+                        key={index + 1}
+                        className="aspect-[3/2] bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+                      >
+                        <img
+                          src={image}
+                          alt={`Property image ${index + 2}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
                   {property.images.length === 1 && (
                     <div className="aspect-[3/2] bg-gray-800 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-500 text-sm">No additional images</span>
+                      <span className="text-gray-500 text-sm">
+                        No additional images
+                      </span>
                     </div>
                   )}
                 </div>
@@ -265,14 +308,18 @@ export default function PropertyDetailsPage() {
                       <Users className="w-4 h-4" />
                       Bedrooms:
                     </span>
-                    <span className="text-white font-medium">{property.bedrooms}</span>
+                    <span className="text-white font-medium">
+                      {property.bedrooms}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Building className="w-4 h-4" />
                       Bathrooms:
                     </span>
-                    <span className="text-white font-medium">{property.bathrooms}</span>
+                    <span className="text-white font-medium">
+                      {property.bathrooms}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
                     <span className="text-gray-400 flex items-center gap-2">
@@ -288,7 +335,13 @@ export default function PropertyDetailsPage() {
                       <CheckCircle className="w-4 h-4" />
                       Furnished:
                     </span>
-                    <span className={`font-medium ${property.features.furnished ? 'text-green-400' : 'text-gray-400'}`}>
+                    <span
+                      className={`font-medium ${
+                        property.features.furnished
+                          ? "text-green-400"
+                          : "text-gray-400"
+                      }`}
+                    >
                       {property.features.furnished ? "Yes" : "No"}
                     </span>
                   </div>
@@ -315,13 +368,17 @@ export default function PropertyDetailsPage() {
                       <div className="text-xl font-bold text-white mb-1">
                         ₹{property.securityDeposit.toLocaleString()}
                       </div>
-                      <div className="text-xs text-gray-400">Security Deposit</div>
+                      <div className="text-xs text-gray-400">
+                        Security Deposit
+                      </div>
                     </div>
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
                       <div className="text-xl font-bold text-white mb-1">
-                        {property.tenants?.length || 0}
+                        {tenants?.length || 0}
                       </div>
-                      <div className="text-xs text-gray-400">Active Tenants</div>
+                      <div className="text-xs text-gray-400">
+                        Active Tenants
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -335,21 +392,27 @@ export default function PropertyDetailsPage() {
                 Amenities & Features
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {Object.entries(property.features).map(([feature, available]) => (
-                  <div
-                    key={feature}
-                    className={`flex items-center gap-3 p-3 rounded-lg border ${
-                      available
-                        ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                        : 'bg-gray-800/50 border-gray-700/50 text-gray-500'
-                    }`}
-                  >
-                    <CheckCircle className={`w-4 h-4 ${available ? 'text-green-400' : 'text-gray-600'}`} />
-                    <span className="text-sm font-medium capitalize">
-                      {feature.replace(/([A-Z])/g, ' $1').trim()}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(property.features).map(
+                  ([feature, available]) => (
+                    <div
+                      key={feature}
+                      className={`flex items-center gap-3 p-3 rounded-lg border ${
+                        available
+                          ? "bg-green-500/10 border-green-500/20 text-green-400"
+                          : "bg-gray-800/50 border-gray-700/50 text-gray-500"
+                      }`}
+                    >
+                      <CheckCircle
+                        className={`w-4 h-4 ${
+                          available ? "text-green-400" : "text-gray-600"
+                        }`}
+                      />
+                      <span className="text-sm font-medium capitalize">
+                        {feature.replace(/([A-Z])/g, " $1").trim()}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
@@ -371,7 +434,6 @@ export default function PropertyDetailsPage() {
       case "tenants":
         return (
           <div className="space-y-8">
-            {/* Tenants List Section */}
             <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -386,35 +448,60 @@ export default function PropertyDetailsPage() {
                   Add Tenant
                 </Button>
               </div>
-              
-              {property.tenants && property.tenants.length > 0 ? (
+
+              {tenantsLoading ? (
+                <div className="text-center py-12">
+                  <Loader2 className="w-8 h-8 text-orange-500 mx-auto animate-spin" />
+                  <p className="text-gray-400 mt-2">Loading tenants...</p>
+                </div>
+              ) : tenantsError ? (
+                <div className="text-center py-12 text-red-400">
+                  <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
+                  <p>{tenantsError}</p>
+                </div>
+              ) : tenants.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {property.tenants.map((tenant: any, index: number) => (
-                    <div key={index} className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4">
+                  {tenants.map((lease) => (
+                    <div
+                      key={lease._id}
+                      className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4"
+                    >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
                           <User className="w-5 h-5 text-orange-400" />
                         </div>
                         <div>
                           <h4 className="text-white font-medium">
-                            {tenant.firstName} {tenant.lastName}
+                            {lease.tenantId.firstName} {lease.tenantId.lastName}
                           </h4>
-                          <p className="text-gray-400 text-sm">{tenant.email}</p>
+                          <p className="text-gray-400 text-sm">
+                            {lease.tenantId.email}
+                          </p>
                         </div>
                       </div>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Phone:</span>
-                          <span className="text-white">{tenant.phone}</span>
+                          <span className="text-white">
+                            {lease.tenantId.phone}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Rent:</span>
-                          <span className="text-white">₹{tenant.monthlyRent}</span>
+                          <span className="text-white">
+                            ₹{lease.monthlyRent.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Status:</span>
-                          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
-                            Active
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs capitalize ${
+                              lease.status === "active"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-yellow-500/20 text-yellow-400"
+                            }`}
+                          >
+                            {lease.status}
                           </span>
                         </div>
                       </div>
@@ -424,8 +511,12 @@ export default function PropertyDetailsPage() {
               ) : (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <h4 className="text-white font-medium mb-2">No Tenants Assigned</h4>
-                  <p className="text-gray-400 mb-4">This property currently has no tenants assigned.</p>
+                  <h4 className="text-white font-medium mb-2">
+                    No Tenants Assigned
+                  </h4>
+                  <p className="text-gray-400 mb-4">
+                    This property currently has no tenants assigned.
+                  </p>
                   <Button
                     onClick={() => setActiveTab("add-tenant")}
                     className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
@@ -440,7 +531,13 @@ export default function PropertyDetailsPage() {
         );
 
       case "add-tenant":
-        return <AddTenantForm propertyId={propertyId} onBack={() => setActiveTab("tenants")} />;
+        return (
+          <AddTenantForm
+            propertyId={propertyId}
+            onBack={() => setActiveTab("tenants")}
+            onTenantAdded={handleTenantAdded}
+          />
+        );
 
       case "documents":
         return (
@@ -486,11 +583,13 @@ export default function PropertyDetailsPage() {
 
   const handleDeleteProperty = async () => {
     if (!property) return;
-    
+
     try {
       setDeleteLoading(true);
-      const response = await axios.delete(`/microestate/api/properties/${propertyId}`);
-      
+      const response = await axios.delete(
+        `/microestate/api/properties/${propertyId}`
+      );
+
       if (response.data.success) {
         // Redirect to properties list after successful deletion
         router.push("/microestate/landlord/properties");
@@ -499,7 +598,10 @@ export default function PropertyDetailsPage() {
       }
     } catch (err: any) {
       console.error("Delete error:", err);
-      setError(err.response?.data?.error || "Failed to delete property. Please try again.");
+      setError(
+        err.response?.data?.error ||
+          "Failed to delete property. Please try again."
+      );
     } finally {
       setDeleteLoading(false);
       setShowDeleteConfirm(false);
@@ -647,10 +749,13 @@ export default function PropertyDetailsPage() {
               <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-red-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">Delete Property</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Delete Property
+              </h3>
             </div>
             <p className="text-gray-300 mb-6">
-              Are you sure you want to delete "{property?.title}"? This action cannot be undone.
+              Are you sure you want to delete "{property?.title}"? This action
+              cannot be undone.
             </p>
             <div className="flex gap-3">
               <Button
@@ -684,54 +789,103 @@ export default function PropertyDetailsPage() {
 }
 
 // AddTenantForm component
-function AddTenantForm({ propertyId, onBack }: { propertyId: string; onBack: () => void }) {
+function AddTenantForm({
+  propertyId,
+  onBack,
+  onTenantAdded,
+}: {
+  propertyId: string;
+  onBack: () => void;
+  onTenantAdded: () => void;
+}) {
   const [formData, setFormData] = useState({
-    tenantEmail: '',
-    tenantFirstName: '',
-    tenantLastName: '',
-    tenantPhone: '',
-    startDate: '',
-    endDate: '',
-    monthlyRent: '',
-    securityDeposit: '',
-    rentDueDate: '1',
-    terms: ''
+    tenantEmail: "",
+    tenantFirstName: "",
+    tenantLastName: "",
+    tenantPhone: "",
+    startDate: "",
+    endDate: "",
+    monthlyRent: "",
+    securityDeposit: "",
+    rentDueDate: "1",
+    terms: "",
   });
   const [errors, setErrors] = useState<any>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors: any = {};
-    if (!formData.tenantFirstName) newErrors.tenantFirstName = 'First name is required';
-    if (!formData.tenantLastName) newErrors.tenantLastName = 'Last name is required';
-    if (!formData.tenantEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.tenantEmail)) newErrors.tenantEmail = 'Valid email required';
-    if (!formData.tenantPhone || !/^\+?\d{10,15}$/.test(formData.tenantPhone)) newErrors.tenantPhone = 'Valid phone required';
-    if (!formData.startDate) newErrors.startDate = 'Start date required';
-    if (!formData.endDate) newErrors.endDate = 'End date required';
-    if (!formData.monthlyRent || parseFloat(formData.monthlyRent) <= 0) newErrors.monthlyRent = 'Valid monthly rent required';
-    if (!formData.securityDeposit || parseFloat(formData.securityDeposit) <= 0) newErrors.securityDeposit = 'Valid security deposit required';
-    if (!formData.rentDueDate || parseInt(formData.rentDueDate) < 1 || parseInt(formData.rentDueDate) > 31) newErrors.rentDueDate = 'Valid rent due date required (1-31)';
-    if (!formData.terms) newErrors.terms = 'Terms and conditions required';
-    
+    if (!formData.tenantFirstName)
+      newErrors.tenantFirstName = "First name is required";
+    if (!formData.tenantLastName)
+      newErrors.tenantLastName = "Last name is required";
+    if (
+      !formData.tenantEmail ||
+      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.tenantEmail)
+    )
+      newErrors.tenantEmail = "Valid email required";
+    if (!formData.tenantPhone || !/^\+?\d{10,15}$/.test(formData.tenantPhone))
+      newErrors.tenantPhone = "Valid phone required";
+    if (!formData.startDate) newErrors.startDate = "Start date required";
+    if (!formData.endDate) newErrors.endDate = "End date required";
+    if (!formData.monthlyRent || parseFloat(formData.monthlyRent) <= 0)
+      newErrors.monthlyRent = "Valid monthly rent required";
+    if (!formData.securityDeposit || parseFloat(formData.securityDeposit) <= 0)
+      newErrors.securityDeposit = "Valid security deposit required";
+    if (
+      !formData.rentDueDate ||
+      parseInt(formData.rentDueDate) < 1 ||
+      parseInt(formData.rentDueDate) > 31
+    )
+      newErrors.rentDueDate = "Valid rent due date required (1-31)";
+    if (!formData.terms) newErrors.terms = "Terms and conditions required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      try {
-        // TODO: Submit new tenant data to API with propertyId
-        console.log('Submitting tenant data for property:', propertyId, formData);
-        alert('Tenant added successfully!');
-        onBack(); // Go back to tenants list
-      } catch (error) {
-        console.error('Error adding tenant:', error);
-        alert('Error adding tenant. Please try again.');
+    if (!validate()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrors({});
+
+    const payload = {
+      ...formData,
+      monthlyRent: parseFloat(formData.monthlyRent),
+      securityDeposit: parseFloat(formData.securityDeposit),
+      rentDueDate: parseInt(formData.rentDueDate, 10),
+    };
+
+    try {
+      const response = await axios.post(
+        `/microestate/api/properties/${propertyId}/tenant`,
+        payload
+      );
+
+      if (response.data.success) {
+        alert("Tenant added successfully!");
+        onTenantAdded(); // Call the new handler to refresh and switch tab
+      } else {
+        setErrors({
+          api: response.data.message || "An unknown error occurred.",
+        });
       }
+    } catch (error: any) {
+      console.error("Error adding tenant:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to add tenant. Please check the console.";
+      setErrors({ api: errorMessage });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -749,7 +903,9 @@ function AddTenantForm({ propertyId, onBack }: { propertyId: string; onBack: () 
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-white">Add New Tenant</h1>
-          <p className="text-gray-400">Assign a tenant to this property with lease details</p>
+          <p className="text-gray-400">
+            Assign a tenant to this property with lease details
+          </p>
         </div>
       </div>
 
@@ -762,54 +918,98 @@ function AddTenantForm({ propertyId, onBack }: { propertyId: string; onBack: () 
               <User className="w-5 h-5 text-orange-500" />
               Tenant Information
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">First Name *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  First Name *
+                </label>
                 <input
                   type="text"
                   value={formData.tenantFirstName}
-                  onChange={e => handleInputChange('tenantFirstName', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.tenantFirstName ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("tenantFirstName", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.tenantFirstName
+                      ? "border-red-500"
+                      : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                   placeholder="Enter first name"
                 />
-                {errors.tenantFirstName && <div className="text-red-400 text-xs mt-1">{errors.tenantFirstName}</div>}
+                {errors.tenantFirstName && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.tenantFirstName}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Last Name *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Last Name *
+                </label>
                 <input
                   type="text"
                   value={formData.tenantLastName}
-                  onChange={e => handleInputChange('tenantLastName', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.tenantLastName ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("tenantLastName", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.tenantLastName
+                      ? "border-red-500"
+                      : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                   placeholder="Enter last name"
                 />
-                {errors.tenantLastName && <div className="text-red-400 text-xs mt-1">{errors.tenantLastName}</div>}
+                {errors.tenantLastName && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.tenantLastName}
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email *
+                </label>
                 <input
                   type="email"
                   value={formData.tenantEmail}
-                  onChange={e => handleInputChange('tenantEmail', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.tenantEmail ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("tenantEmail", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.tenantEmail ? "border-red-500" : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                   placeholder="Enter email address"
                 />
-                {errors.tenantEmail && <div className="text-red-400 text-xs mt-1">{errors.tenantEmail}</div>}
+                {errors.tenantEmail && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.tenantEmail}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Phone *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Phone *
+                </label>
                 <input
                   type="tel"
                   value={formData.tenantPhone}
-                  onChange={e => handleInputChange('tenantPhone', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.tenantPhone ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("tenantPhone", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.tenantPhone ? "border-red-500" : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                   placeholder="Enter phone number"
                 />
-                {errors.tenantPhone && <div className="text-red-400 text-xs mt-1">{errors.tenantPhone}</div>}
+                {errors.tenantPhone && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.tenantPhone}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -820,27 +1020,45 @@ function AddTenantForm({ propertyId, onBack }: { propertyId: string; onBack: () 
               <Calendar className="w-5 h-5 text-orange-500" />
               Lease Period
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Start Date *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Start Date *
+                </label>
                 <input
                   type="date"
                   value={formData.startDate}
-                  onChange={e => handleInputChange('startDate', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.startDate ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("startDate", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.startDate ? "border-red-500" : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                 />
-                {errors.startDate && <div className="text-red-400 text-xs mt-1">{errors.startDate}</div>}
+                {errors.startDate && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.startDate}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">End Date *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  End Date *
+                </label>
                 <input
                   type="date"
                   value={formData.endDate}
-                  onChange={e => handleInputChange('endDate', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.endDate ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) => handleInputChange("endDate", e.target.value)}
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.endDate ? "border-red-500" : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                 />
-                {errors.endDate && <div className="text-red-400 text-xs mt-1">{errors.endDate}</div>}
+                {errors.endDate && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.endDate}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -851,46 +1069,80 @@ function AddTenantForm({ propertyId, onBack }: { propertyId: string; onBack: () 
               <DollarSign className="w-5 h-5 text-orange-500" />
               Financial Details
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Monthly Rent *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Monthly Rent *
+                </label>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
                   value={formData.monthlyRent}
-                  onChange={e => handleInputChange('monthlyRent', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.monthlyRent ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("monthlyRent", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.monthlyRent ? "border-red-500" : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                   placeholder="0.00"
                 />
-                {errors.monthlyRent && <div className="text-red-400 text-xs mt-1">{errors.monthlyRent}</div>}
+                {errors.monthlyRent && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.monthlyRent}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Security Deposit *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Security Deposit *
+                </label>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
                   value={formData.securityDeposit}
-                  onChange={e => handleInputChange('securityDeposit', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.securityDeposit ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("securityDeposit", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.securityDeposit
+                      ? "border-red-500"
+                      : "border-[#2a2a2f]"
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
                   placeholder="0.00"
                 />
-                {errors.securityDeposit && <div className="text-red-400 text-xs mt-1">{errors.securityDeposit}</div>}
+                {errors.securityDeposit && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.securityDeposit}
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Rent Due Date *</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Rent Due Date *
+                </label>
                 <select
                   value={formData.rentDueDate}
-                  onChange={e => handleInputChange('rentDueDate', e.target.value)}
-                  className={`w-full p-3 bg-[#1a1a1f] border ${errors.rentDueDate ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white focus:outline-none focus:border-orange-500 transition-colors`}
+                  onChange={(e) =>
+                    handleInputChange("rentDueDate", e.target.value)
+                  }
+                  className={`w-full p-3 bg-[#1a1a1f] border ${
+                    errors.rentDueDate ? "border-red-500" : "border-[#2a2a2f]"
+                  } rounded-xl text-white focus:outline-none focus:border-orange-500 transition-colors`}
                 >
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                    <option key={day} value={day}>{day}</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
                   ))}
                 </select>
-                {errors.rentDueDate && <div className="text-red-400 text-xs mt-1">{errors.rentDueDate}</div>}
+                {errors.rentDueDate && (
+                  <div className="text-red-400 text-xs mt-1">
+                    {errors.rentDueDate}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -901,27 +1153,50 @@ function AddTenantForm({ propertyId, onBack }: { propertyId: string; onBack: () 
               <FileText className="w-5 h-5 text-orange-500" />
               Terms and Conditions
             </h3>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Lease Terms *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Lease Terms *
+              </label>
               <textarea
                 value={formData.terms}
-                onChange={e => handleInputChange('terms', e.target.value)}
+                onChange={(e) => handleInputChange("terms", e.target.value)}
                 rows={4}
-                className={`w-full p-3 bg-[#1a1a1f] border ${errors.terms ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors resize-none`}
+                className={`w-full p-3 bg-[#1a1a1f] border ${
+                  errors.terms ? "border-red-500" : "border-[#2a2a2f]"
+                } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors resize-none`}
                 placeholder="Enter lease terms and conditions..."
               />
-              {errors.terms && <div className="text-red-400 text-xs mt-1">{errors.terms}</div>}
+              {errors.terms && (
+                <div className="text-red-400 text-xs mt-1">{errors.terms}</div>
+              )}
             </div>
           </div>
+
+          {/* Display API error message */}
+          {errors.api && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              <strong>Error:</strong> {errors.api}
+            </div>
+          )}
 
           <div className="flex items-center justify-end mt-8 pt-6 border-t border-[#2a2a2f]">
             <Button
               type="submit"
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-4 h-4 mr-2" />
-              Add Tenant
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Add Tenant
+                </>
+              )}
             </Button>
           </div>
         </form>
