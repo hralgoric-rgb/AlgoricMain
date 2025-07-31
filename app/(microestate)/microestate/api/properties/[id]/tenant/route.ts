@@ -5,10 +5,7 @@ import Lease, { ILease } from "@/app/(microestate)/models/Lease";
 import { NextRequest, NextResponse } from "next/server";
 import Property from "@/app/(microestate)/models/Property";
 import User from "@/app/(microestate)/models/user";
-import {
-  getTenantWelcomeEmailTemplate,
-  sendEmail,
-} from "@/app/(microestate)/lib/utils";
+import { getTenantWelcomeEmailTemplate, sendEmail } from "@/app/(microestate)/lib/utils";
 
 // Request body interface
 interface AddTenantRequest {
@@ -24,388 +21,455 @@ interface AddTenantRequest {
   terms: string;
 }
 
-// POST method to add a tenant to a property
-export const POST = requireLandlord(
-  async (
-    request: NextRequest,
-    context: { params: { id: string }; userId: string; userEmail: string }
-  ) => {
-    try {
-      await dbConnect();
+//POST method to add a tenant to a property
+// This will create a new lease agreement and send a welcome email to the tenant
+export const POST = requireLandlord(async (request: NextRequest, userId: {userId: string}, userEmail: {userEmail: string}) => {
+  try {
+    await dbConnect();
 
-      // 1. FIX: Get propertyId and userId from the context object
-      const { id: propertyId } = context.params;
-      const { userId, userEmail } = context;
+    const url = new URL(request.url);
+    const propertyId = url.pathname.split("/")[4]; // Extract property ID from URL
 
-      if (!propertyId || !mongoose.Types.ObjectId.isValid(propertyId)) {
-        return NextResponse.json(
-          { success: false, message: "Invalid property ID provided" },
-          { status: 400 }
-        );
-      }
+    // if (!propertyId || !mongoose.Types.ObjectId.isValid(propertyId)) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: "Invalid property ID provided",
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
-      // Parse request body
-      const body = await request.json();
-      const {
-        tenantEmail,
-        tenantFirstName,
-        tenantLastName,
-        tenantPhone,
-        startDate,
-        endDate,
-        monthlyRent,
-        securityDeposit,
-        rentDueDate = 1,
-        terms,
-      } = body;
+    // Parse request body
+    const body: AddTenantRequest = await request.json();
+    const { 
+      tenantEmail,
+      tenantFirstName,
+      tenantLastName,
+      tenantPhone,
+      startDate, 
+      endDate, 
+      monthlyRent, 
+      securityDeposit, 
+      rentDueDate = 1,
+      terms 
+    } = body;
 
-      // Validate required fields
-      if (
-        !tenantEmail ||
-        !startDate ||
-        !endDate ||
-        !monthlyRent ||
-        !securityDeposit ||
-        !terms
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Missing required fields. Please provide tenantEmail, startDate, endDate, monthlyRent, securityDeposit, and terms.",
-          },
-          { status: 400 }
-        );
-      }
+     // Validate required fields
+    if (!tenantEmail || !startDate || !endDate || !monthlyRent || !securityDeposit || !terms) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Missing required fields. Please provide tenantEmail, startDate, endDate, monthlyRent, securityDeposit, and terms.'
+        },
+        { status: 400 }
+      );
+    }
 
-      const leaseStartDate = new Date(startDate);
-      const leaseEndDate = new Date(endDate);
+    // Validate dates
+    const leaseStartDate = new Date(startDate);
+    const leaseEndDate = new Date(endDate);
+    const currentDate = new Date();
 
-      if (isNaN(leaseStartDate.getTime()) || isNaN(leaseEndDate.getTime())) {
-        return NextResponse.json(
-          { success: false, message: "Invalid date format." },
-          { status: 400 }
-        );
-      }
+    if (isNaN(leaseStartDate.getTime()) || isNaN(leaseEndDate.getTime())) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid date format. Please use ISO date format (YYYY-MM-DD).'
+        },
+        { status: 400 }
+      );
+    }
 
-      if (leaseStartDate >= leaseEndDate) {
-        return NextResponse.json(
-          { success: false, message: "End date must be after start date." },
-          { status: 400 }
-        );
-      }
+    if (leaseStartDate >= leaseEndDate) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'End date must be after start date.'
+        },
+        { status: 400 }
+      );
+    }
 
-      // Check if property exists and belongs to the landlord
-      const property = await Property.findOne({
-        _id: propertyId,
-        landlordId: userId, // Use the correctly extracted userId
-      });
+    // Check if property exists and belongs to the landlord
+    const property = await Property.findOne({ 
+      _id: propertyId, 
+      landlordId: userId.userId 
+    });
 
-      if (!property) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Property not found or you do not have permission to manage this property.",
-          },
-          { status: 404 }
-        );
-      }
+    if (!property) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Property not found or you do not have permission to manage this property.'
+        },
+        { status: 404 }
+      );
+    }
 
-      if (property.status !== "available") {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `Property is currently ${property.status} and cannot have a new tenant assigned.`,
-          },
-          { status: 400 }
-        );
-      }
+    // Check if property is available
+    if (property.status !== 'available') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Property is currently ${property.status} and cannot have a new tenant assigned.`
+        },
+        { status: 400 }
+      );
+    }
 
-      // Find tenant by email
-      let tenant = await User.findOne({
+    // Find tenant by email
+    let tenant = await User.findOne({ 
+      email: tenantEmail.toLowerCase().trim(),
+      role: 'tenant'
+    });
+
+    let isNewTenant = false;
+    let generatedPassword = '123456'; // Default password for new tenants
+
+    //if not the create a new tenant
+    if (!tenant) {
+      tenant = new User({
         email: tenantEmail.toLowerCase().trim(),
-      });
+        password: generatedPassword,
+        firstName: tenantFirstName || "New",
+        lastName: tenantLastName || "Tenant",
+        phone: tenantPhone || "000-000-0000",
+        role: "tenant",
+      })
 
-      let isNewTenant = false;
-      const generatedPassword = Math.random().toString(36).slice(-8); // Generate a random password
+      await tenant.save();
+    }
+    else {
+      // Check if existing user is not a tenant
+      if (tenant.role !== 'tenant') {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'User exists but is not registered as a tenant. Please ask them to update their role or use a different email.'
+          },
+          { status: 400 }
+        );}
+    }
 
-      if (!tenant) {
-        // 2. FIX: Set isNewTenant to true when creating a new user
-        isNewTenant = true;
-        tenant = new User({
-          email: tenantEmail.toLowerCase().trim(),
-          password: generatedPassword, // Use the generated password
-          firstName: tenantFirstName || "New",
-          lastName: tenantLastName || "Tenant",
-          phone: tenantPhone || "000-000-0000",
-          role: "tenant",
-        });
-        await tenant.save();
-      } else {
-        if (tenant.role !== "tenant") {
-          return NextResponse.json(
-            {
-              success: false,
-              message:
-                "User exists but is not registered as a tenant. Please use a different email.",
-            },
-            { status: 400 }
-          );
-        }
-      }
-
-      // Check if tenant already has an active lease for this property
+    // Check if tenant already has an active lease for this property
       const existingLease = await Lease.findOne({
         propertyId,
         tenantId: tenant._id,
-        status: { $in: ["active", "draft"] },
+        status: { $in: ['active', 'draft'] }
       });
 
       if (existingLease) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "Tenant already has an active or draft lease for this property.",
+            message: 'Tenant already has an active or draft lease for this property.'
           },
           { status: 400 }
         );
       }
+    
+       // Create new lease agreement
+    const newLease = new Lease({
+      propertyId,
+      landlordId: userId.userId,
+      tenantId: tenant._id,
+      startDate: leaseStartDate,
+      endDate: leaseEndDate,
+      monthlyRent,
+      securityDeposit,
+      rentDueDate,
+      terms,
+      status: 'draft'
+    });
 
-      // Create new lease agreement
-      const newLease = new Lease({
-        propertyId,
-        landlordId: userId,
-        tenantId: tenant._id,
-        startDate: leaseStartDate,
-        endDate: leaseEndDate,
-        monthlyRent,
-        securityDeposit,
-        rentDueDate,
-        terms,
-        status: "draft",
-      });
+    await newLease.save();
 
-      await newLease.save();
+    // Update property status to rented
+    property.status = 'rented';
+    await property.save();
 
-      // Update property status to rented
-      property.status = "rented";
-      await property.save();
-
-      // Send welcome email to new tenant
-      if (isNewTenant) {
-        try {
-          const data = {
-            tenantEmail: tenant.email,
-            tenantName: `${tenant.firstName} ${tenant.lastName}`,
-            password: generatedPassword,
-            propertyTitle: property.title,
-            propertyAddress: `${property.address.street}, ${property.address.city}`,
-            landlordEmail: userEmail,
-            leaseStartDate: leaseStartDate.toLocaleDateString(),
-            monthlyRent: monthlyRent,
-          };
-          const emailTemplate = getTenantWelcomeEmailTemplate(data);
-          await sendEmail(
-            tenant.email,
-            `Welcome to ${property.title}`,
-            emailTemplate
-          );
-          console.log(`Welcome email sent to ${tenant.email}`);
-        } catch (emailError) {
-          console.error("Failed to send welcome email:", emailError);
+    // Send welcome email to new tenant
+    if (isNewTenant) {
+      try {
+        const data = {
+          tenantEmail: tenant.email,
+          tenantName: `${tenant.firstName} ${tenant.lastName}`,
+          password: generatedPassword,
+          propertyTitle: property.title,
+          propertyAddress: property.getFullAddress(),
+          landlordEmail: String(userEmail) || '', // You might want to get landlord name
+          leaseStartDate: leaseStartDate.toLocaleDateString(),
+          monthlyRent: monthlyRent
         }
+
+        const emailTemplate = getTenantWelcomeEmailTemplate(data);
+
+        await sendEmail(tenant.email, `Welcome to ${property.title}`, emailTemplate);
+
+        console.log(`Welcome email sent to ${tenant.email}`);
+        
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't fail the entire operation if email fails
       }
+    }
 
-      // Populate the lease with tenant and property details for response
-      const populatedLease = await Lease.findById(newLease._id)
-        .populate("tenantId", "firstName lastName email phone")
-        .populate("propertyId", "title address");
+    // Populate the lease with tenant and property details for response
+    const populatedLease = await Lease.findById(newLease._id)
+      .populate('tenantId', 'firstName lastName email phone')
+      .populate('propertyId', 'title address');
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: isNewTenant
-            ? "New tenant account created and added to property. Welcome email sent."
-            : "Existing tenant successfully added to property.",
-          data: { lease: populatedLease, isNewTenant },
-        },
-        { status: 201 }
-      );
-    } catch (error) {
-      console.error("Error in POST /api/properties/[id]/tenant:", error);
-      // Handle specific MongoDB errors
-      if (error instanceof mongoose.Error.ValidationError) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Validation error",
-            error: Object.values(error.errors)
-              .map((err) => err.message)
-              .join(", "),
+    return NextResponse.json(
+      {
+        success: true,
+        message: isNewTenant 
+          ? 'New tenant account created and added to property. Welcome email sent with login credentials.'
+          : 'Existing tenant successfully added to property. Lease agreement created.',
+        data: {
+          lease: {
+            _id: populatedLease!._id,
+            propertyId: populatedLease!.propertyId,
+            landlordId: populatedLease!.landlordId,
+            tenant: populatedLease!.tenantId,
+            startDate: populatedLease!.startDate,
+            endDate: populatedLease!.endDate,
+            monthlyRent: populatedLease!.monthlyRent,
+            securityDeposit: populatedLease!.securityDeposit,
+            rentDueDate: populatedLease!.rentDueDate,
+            terms: populatedLease!.terms,
+            status: populatedLease!.status,
+            signatures: populatedLease!.signatures,
+            createdAt: populatedLease!.createdAt
           },
-          { status: 400 }
-        );
-      }
-
-      if (error instanceof mongoose.Error.CastError) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Invalid data format provided",
+          property: {
+            _id: property._id,
+            title: property.title,
+            status: property.status
           },
-          { status: 400 }
-        );
-      }
+          isNewTenant,
+          ...(isNewTenant ? { 
+            temporaryPassword: generatedPassword // Include in response for testing/demo
+          } : {})
+        }
+      },
+      { status: 201 }
+    );
 
+  } catch (error) {
+    console.error("Error in POST /api/properties/[id]/tenant:", error);
+    // Handle specific MongoDB errors
+    if (error instanceof mongoose.Error.ValidationError) {
       return NextResponse.json(
         {
           success: false,
-          message: "An error occurred while adding tenant",
+          message: "Validation error",
+          error: Object.values(error.errors)
+            .map((err) => err.message)
+            .join(", "),
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
+
+    if (error instanceof mongoose.Error.CastError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid data format provided",
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "An error occurred while adding tenant to property",
+      },
+      { status: 500 }
+    );
   }
-);
+});
 
-// GET method to retrieve current tenant(s) for a property
-export const GET = requireLandlord(
-  async (
-    request: NextRequest,
-    context: { params: { id: string }; userId: string }
-  ) => {
-    try {
-      await dbConnect();
-      // 3. FIX: Standardize how params and userId are received
-      const { id: propertyId } = context.params;
-      const { userId } = context;
 
-      if (!propertyId || !mongoose.Types.ObjectId.isValid(propertyId)) {
-        return NextResponse.json(
-          { success: false, message: "Invalid property ID" },
-          { status: 400 }
-        );
-      }
+// GET method to retrieve current tenant for a property
+export const GET = requireLandlord(async (request: NextRequest, { userId }: { userId: string }) => {
+  try {
+    await dbConnect();
 
-      const property = await Property.findOne({
-        _id: propertyId,
-        landlordId: userId,
-      });
-      if (!property) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Property not found or permission denied",
-          },
-          { status: 404 }
-        );
-      }
+    // Get property ID from URL params
+    const url = new URL(request.url);
+    const propertyId = url.pathname.split('/')[4];
 
-      const leases = await Lease.find({
-        propertyId,
-        status: { $in: ["active", "draft"] },
-      }).populate("tenantId", "firstName lastName email phone");
+    // if (!propertyId || !mongoose.Types.ObjectId.isValid(propertyId)) {
+    //   return NextResponse.json(
+    //     { 
+    //       success: false, 
+    //       message: 'Invalid property ID provided' 
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
-      if (!leases || leases.length === 0) {
-        return NextResponse.json(
-          { success: true, message: "No current tenants found.", data: [] },
-          { status: 200 }
-        );
-      }
+    // Check if property belongs to the landlord
+    const property = await Property.findOne({ 
+      _id: propertyId, 
+      landlordId: userId 
+    });
 
+    if (!property) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Property not found or you do not have permission to view this property.'
+        },
+        { status: 404 }
+      );
+    }
+
+    // Find current active lease for the property
+    const currentLease = await Lease.findOne({
+      propertyId,
+      status: { $in: ['active', 'draft'] }
+    })
+    .populate('tenantId', 'firstName lastName email phone profileImage')
+    .populate('propertyId', 'title address');
+
+    if (!currentLease) {
       return NextResponse.json(
         {
           success: true,
-          message: "Tenants retrieved successfully.",
-          data: leases,
+          message: 'No current tenant found for this property.',
+          data: {
+            tenant: null,
+            lease: null
+          }
         },
         { status: 200 }
       );
-    } catch (error) {
-      console.error("Error in GET /api/properties/[id]/tenant:", error);
-      return NextResponse.json(
-        { success: false, message: "Server error" },
-        { status: 500 }
-      );
     }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Current tenant information retrieved successfully.',
+        data: {
+          tenant: currentLease.tenantId,
+          lease: {
+            _id: currentLease._id,
+            startDate: currentLease.startDate,
+            endDate: currentLease.endDate,
+            monthlyRent: currentLease.monthlyRent,
+            securityDeposit: currentLease.securityDeposit,
+            rentDueDate: currentLease.rentDueDate,
+            status: currentLease.status,
+            signatures: currentLease.signatures,
+            remainingDays: currentLease.getRemainingDays(),
+            isFullySigned: currentLease.isFullySigned()
+          }
+        }
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error('Error in GET /api/properties/[id]/tenant:', error);
+    return NextResponse.json(
+      { 
+        success: false,
+        message: 'An error occurred while retrieving tenant information'
+      },
+      { status: 500 }
+    );
   }
-);
+});
 
 // DELETE method to remove tenant from property (terminate lease)
-export const DELETE = requireLandlord(
-  async (
-    request: NextRequest,
-    context: { params: { id: string }; userId: string }
-  ) => {
-    try {
-      await dbConnect();
-      // 4. FIX: Standardize how params and userId are received
-      const { id: propertyId } = context.params;
-      const { userId } = context;
-      const { leaseId } = await request.json(); // Expect leaseId in the body to know which lease to terminate
+export const DELETE = requireLandlord(async (request: NextRequest, { userId }: { userId: string }) => {
+  try {
+    await dbConnect();
 
-      if (
-        !propertyId ||
-        !mongoose.Types.ObjectId.isValid(propertyId) ||
-        !leaseId ||
-        !mongoose.Types.ObjectId.isValid(leaseId)
-      ) {
-        return NextResponse.json(
-          { success: false, message: "Invalid property or lease ID" },
-          { status: 400 }
-        );
-      }
+    // Get property ID from URL params
+    const url = new URL(request.url);
+    const propertyId = url.pathname.split('/')[4];
 
-      const property = await Property.findOne({
-        _id: propertyId,
-        landlordId: userId,
-      });
-      if (!property) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Property not found or permission denied",
-          },
-          { status: 404 }
-        );
-      }
-
-      const leaseToTerminate = await Lease.findOne({
-        _id: leaseId,
-        propertyId,
-      });
-      if (!leaseToTerminate) {
-        return NextResponse.json(
-          { success: false, message: "Lease not found for this property" },
-          { status: 404 }
-        );
-      }
-
-      leaseToTerminate.status = "terminated";
-      await leaseToTerminate.save();
-
-      // Check if any other active leases exist for this property
-      const otherActiveLeases = await Lease.countDocuments({
-        propertyId,
-        status: "active",
-      });
-      if (otherActiveLeases === 0) {
-        property.status = "available";
-        await property.save();
-      }
-
+    if (!propertyId || !mongoose.Types.ObjectId.isValid(propertyId)) {
       return NextResponse.json(
-        { success: true, message: "Lease terminated successfully." },
-        { status: 200 }
-      );
-    } catch (error) {
-      console.error("Error in DELETE /api/properties/[id]/tenant:", error);
-      return NextResponse.json(
-        { success: false, message: "Server error" },
-        { status: 500 }
+        { 
+          success: false, 
+          message: 'Invalid property ID provided' 
+        },
+        { status: 400 }
       );
     }
+
+    // Check if property belongs to the landlord
+    const property = await Property.findOne({ 
+      _id: propertyId, 
+      landlordId: userId 
+    });
+
+    if (!property) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Property not found or you do not have permission to manage this property.'
+        },
+        { status: 404 }
+      );
+    }
+
+    // Find and terminate the active lease
+    const activeLease = await Lease.findOne({
+      propertyId,
+      status: { $in: ['active', 'draft'] }
+    });
+
+    if (!activeLease) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'No active lease found for this property.'
+        },
+        { status: 404 }
+      );
+    }
+
+    // Terminate the lease
+    activeLease.status = 'terminated';
+    await activeLease.save();
+
+    // Update property status to available
+    property.status = 'available';
+    await property.save();
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Tenant successfully removed from property. Lease terminated.',
+        data: {
+          lease: {
+            _id: activeLease._id,
+            status: activeLease.status
+          },
+          property: {
+            _id: property._id,
+            status: property.status
+          }
+        }
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error('Error in DELETE /api/properties/[id]/tenant:', error);
+    return NextResponse.json(
+      { 
+        success: false,
+        message: 'An error occurred while removing tenant from property'
+      },
+      { status: 500 }
+    );
   }
-);
+});
