@@ -31,25 +31,71 @@ export default function LandlordDashboard() {
   // Utility Bills State
   const [utilityBills, setUtilityBills] = useState({
     pending: [
-      { id: 1, tenantName: 'John Doe', property: 'Urban Loft', type: 'Electricity', amount: 2500, dueDate: '2024-02-15', responsibility: '100% Tenant' },
-      { id: 2, tenantName: 'Jane Smith', property: 'Family Home', type: 'Water', amount: 800, dueDate: '2024-02-20', responsibility: '50-50' }
+      { 
+        id: 1, 
+        tenantName: 'John Doe', 
+        property: 'Urban Loft', 
+        utilityType: 'electricity', 
+        amount: 2500, 
+        billingPeriod: { start: '2024-01-01', end: '2024-01-31' },
+        dueDate: '2024-02-15', 
+        responsibleParty: 'tenant',
+        billDocument: '',
+        notes: 'Monthly electricity bill'
+      },
+      { 
+        id: 2, 
+        tenantName: 'Jane Smith', 
+        property: 'Family Home', 
+        utilityType: 'water', 
+        amount: 800, 
+        billingPeriod: { start: '2024-01-01', end: '2024-01-31' },
+        dueDate: '2024-02-20', 
+        responsibleParty: 'landlord',
+        billDocument: '',
+        notes: 'Water bill for January'
+      }
     ],
     overdue: [
-      { id: 3, tenantName: 'Mike Johnson', property: 'City Apartment', type: 'Internet', amount: 1200, dueDate: '2024-02-10', responsibility: '100% Tenant' }
+      { 
+        id: 3, 
+        tenantName: 'Mike Johnson', 
+        property: 'City Apartment', 
+        utilityType: 'internet', 
+        amount: 1200, 
+        billingPeriod: { start: '2024-01-01', end: '2024-01-31' },
+        dueDate: '2024-02-10', 
+        responsibleParty: 'tenant',
+        billDocument: '',
+        notes: 'Internet service bill'
+      }
     ],
     paid: [
-      { id: 4, tenantName: 'Sarah Wilson', property: 'Garden Villa', type: 'Electricity', amount: 1800, dueDate: '2024-01-25', responsibility: '100% Tenant', paidDate: '2024-01-20' }
+      { 
+        id: 4, 
+        tenantName: 'Sarah Wilson', 
+        property: 'Garden Villa', 
+        utilityType: 'electricity', 
+        amount: 1800, 
+        billingPeriod: { start: '2023-12-01', end: '2023-12-31' },
+        dueDate: '2024-01-25', 
+        responsibleParty: 'tenant',
+        billDocument: '',
+        notes: 'December electricity bill',
+        paidDate: '2024-01-20',
+        status: 'paid'
+      }
     ]
   });
 
   const [showCreateBill, setShowCreateBill] = useState(false);
   const [newBill, setNewBill] = useState({
-    tenantId: '',
-    propertyId: '',
     utilityType: '',
     amount: '',
+    billingPeriod: { start: '', end: '' },
     dueDate: '',
-    responsibility: '100% Tenant',
+    responsibleParty: 'tenant',
+    billDocument: '',
     notes: ''
   });
   useEffect(() => {
@@ -75,22 +121,46 @@ export default function LandlordDashboard() {
       case 'water': return <Droplets className="w-4 h-4 text-blue-400" />;
       case 'internet': return <Wifi className="w-4 h-4 text-purple-400" />;
       case 'gas': return <AlertCircle className="w-4 h-4 text-orange-400" />;
+      case 'trash': return <Trash2 className="w-4 h-4 text-gray-400" />;
+      case 'other': return <Receipt className="w-4 h-4 text-gray-400" />;
       default: return <Receipt className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const handleCreateBill = async () => {
     try {
+      // Validate required fields
+      if (!newBill.utilityType || !newBill.amount || !newBill.billingPeriod.start || !newBill.billingPeriod.end || !newBill.dueDate || !newBill.responsibleParty) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Prepare data for API call
+      const billData = {
+        utilityType: newBill.utilityType,
+        amount: parseFloat(newBill.amount),
+        billingPeriod: {
+          start: newBill.billingPeriod.start,
+          end: newBill.billingPeriod.end
+        },
+        dueDate: newBill.dueDate,
+        responsibleParty: newBill.responsibleParty,
+        billDocument: newBill.billDocument,
+        notes: newBill.notes
+      };
+
       // TODO: API call to create bill
-      console.log('Creating bill:', newBill);
+      console.log('Creating bill:', billData);
+      
+      // Reset form
       setShowCreateBill(false);
       setNewBill({
-        tenantId: '',
-        propertyId: '',
         utilityType: '',
         amount: '',
+        billingPeriod: { start: '', end: '' },
         dueDate: '',
-        responsibility: '100% Tenant',
+        responsibleParty: 'tenant',
+        billDocument: '',
         notes: ''
       });
     } catch (error) {
@@ -454,10 +524,10 @@ export default function LandlordDashboard() {
                      <div className="flex items-center justify-between mb-3">
                        <div className="flex items-center gap-3">
                          <div className="p-2 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
-                           {getUtilityIcon(bill.type)}
+                           {getUtilityIcon(bill.utilityType)}
                          </div>
                          <div>
-                           <span className="text-white font-semibold">{bill.type}</span>
+                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
                            <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
                          </div>
                        </div>
@@ -465,7 +535,7 @@ export default function LandlordDashboard() {
                      </div>
                      <div className="flex items-center justify-between text-sm mb-4">
                        <span className="text-yellow-400 font-medium">Due: {new Date(bill.dueDate).toLocaleDateString()}</span>
-                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs">{bill.responsibility}</span>
+                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
                      </div>
                      <div className="flex gap-3">
                        <Button 
@@ -507,10 +577,10 @@ export default function LandlordDashboard() {
                      <div className="flex items-center justify-between mb-3">
                        <div className="flex items-center gap-3">
                          <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                           {getUtilityIcon(bill.type)}
+                           {getUtilityIcon(bill.utilityType)}
                          </div>
                          <div>
-                           <span className="text-white font-semibold">{bill.type}</span>
+                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
                            <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
                          </div>
                        </div>
@@ -518,7 +588,7 @@ export default function LandlordDashboard() {
                      </div>
                      <div className="flex items-center justify-between text-sm mb-4">
                        <span className="text-red-400 font-medium">Overdue since {new Date(bill.dueDate).toLocaleDateString()}</span>
-                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs">{bill.responsibility}</span>
+                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
                      </div>
                      <div className="flex gap-3">
                        <Button 
@@ -559,20 +629,20 @@ export default function LandlordDashboard() {
                    whileHover={{ scale: 1.02, y: -2 }}
                  >
                    <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center gap-3">
-                       <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                         {getUtilityIcon(bill.type)}
+                                            <div className="flex items-center gap-3">
+                         <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
+                           {getUtilityIcon(bill.utilityType)}
+                         </div>
+                         <div>
+                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
+                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                         </div>
                        </div>
-                       <div>
-                         <span className="text-white font-semibold">{bill.type}</span>
-                         <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
-                       </div>
-                     </div>
                      <span className="text-xl font-bold text-green-400">₹{bill.amount.toLocaleString()}</span>
                    </div>
                    <div className="flex items-center justify-between text-sm">
                      <span className="text-green-400 font-medium">Paid: {new Date(bill.paidDate!).toLocaleDateString()}</span>
-                     <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs">{bill.responsibility}</span>
+                     <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
                    </div>
                  </motion.div>
                ))}
@@ -591,7 +661,7 @@ export default function LandlordDashboard() {
              exit={{ opacity: 0 }}
            >
              <motion.div 
-               className="bg-gradient-to-br from-[#1a1a1f] to-[#2a2a2f] border border-orange-500/20 rounded-2xl shadow-2xl max-w-lg w-full max-h-[calc(100vh-140px)] overflow-hidden flex flex-col"
+               className="bg-gradient-to-br from-[#1a1a1f] to-[#2a2a2f] border border-orange-500/20 rounded-2xl shadow-2xl max-w-lg w-full max-h-[calc(100vh-160px)] overflow-hidden flex flex-col mx-4"
                initial={{ scale: 0.9, y: 20, opacity: 0 }}
                animate={{ scale: 1, y: 0, opacity: 1 }}
                exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -603,20 +673,20 @@ export default function LandlordDashboard() {
                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5"></div>
                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
                  
-                 <div className="flex items-center justify-between relative z-10">
-                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25">
+                 <div className="flex items-start justify-between relative z-10 gap-4">
+                   <div className="flex items-start gap-4 flex-1 min-w-0">
+                     <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
                        <Receipt className="w-6 h-6 text-white" />
                      </div>
-                     <div>
-                       <h3 className="text-2xl font-bold text-white drop-shadow-sm">Create Utility Bill</h3>
-                       <p className="text-sm text-gray-300 font-medium">Add a new utility bill for your tenant</p>
+                     <div className="flex-1 min-w-0">
+                       <h3 className="text-2xl font-bold text-white drop-shadow-sm mb-1">Create Utility Bill</h3>
+                       {/* <p className="text-sm text-gray-300 font-medium leading-relaxed break-words">Add a new utility bill for your tenant</p> */}
                      </div>
                    </div>
                    <Button 
                      variant="outline" 
                      onClick={() => setShowCreateBill(false)}
-                     className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 w-10 h-10 p-0 rounded-xl shadow-lg"
+                     className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 w-10 h-10 p-0 rounded-xl shadow-lg flex-shrink-0"
                    >
                      <span className="text-xl font-bold">×</span>
                    </Button>
@@ -624,7 +694,7 @@ export default function LandlordDashboard() {
                </div>
 
                              {/* Form Content */}
-               <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+               <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar min-h-0">
                 {/* Utility Type */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-white flex items-center gap-2">
@@ -638,11 +708,12 @@ export default function LandlordDashboard() {
                       className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none"
                     >
                       <option value="">Select utility type</option>
-                      <option value="Electricity">⚡ Electricity</option>
-                      <option value="Water">💧 Water</option>
-                      <option value="Internet">📶 Internet</option>
-                      <option value="Gas">🔥 Gas</option>
-                      <option value="Other">📄 Other</option>
+                      <option value="electricity">⚡ Electricity</option>
+                      <option value="water">💧 Water</option>
+                      <option value="gas">🔥 Gas</option>
+                      <option value="internet">📶 Internet</option>
+                      <option value="trash">🗑️ Trash</option>
+                      <option value="other">📄 Other</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -672,6 +743,28 @@ export default function LandlordDashboard() {
                   </div>
                 </div>
 
+                                 {/* Billing Period */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                     <label className="block text-sm font-semibold text-white">Billing Period Start</label>
+                     <input
+                       type="date"
+                       value={newBill.billingPeriod.start}
+                       onChange={(e) => setNewBill({...newBill, billingPeriod: {...newBill.billingPeriod, start: e.target.value}})}
+                       className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <label className="block text-sm font-semibold text-white">Billing Period End</label>
+                     <input
+                       type="date"
+                       value={newBill.billingPeriod.end}
+                       onChange={(e) => setNewBill({...newBill, billingPeriod: {...newBill.billingPeriod, end: e.target.value}})}
+                       className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+                     />
+                   </div>
+                 </div>
+
                 {/* Due Date */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-white flex items-center gap-2">
@@ -699,15 +792,12 @@ export default function LandlordDashboard() {
                   </label>
                   <div className="relative">
                     <select
-                      value={newBill.responsibility}
-                      onChange={(e) => setNewBill({...newBill, responsibility: e.target.value})}
+                      value={newBill.responsibleParty}
+                      onChange={(e) => setNewBill({...newBill, responsibleParty: e.target.value})}
                       className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none"
                     >
-                      <option value="100% Tenant">👤 100% Tenant</option>
-                      <option value="100% Landlord">🏠 100% Landlord</option>
-                      <option value="50-50">⚖️ 50-50 Split</option>
-                      <option value="70-30">📊 70-30 (Tenant-Landlord)</option>
-                      <option value="30-70">📊 30-70 (Tenant-Landlord)</option>
+                      <option value="tenant">👤 Tenant</option>
+                      <option value="landlord">🏠 Landlord</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -715,6 +805,28 @@ export default function LandlordDashboard() {
                       </svg>
                     </div>
                   </div>
+                </div>
+
+                {/* Bill Document */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                    <FileDown className="w-4 h-4 text-indigo-400" />
+                    Bill Document (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setNewBill(prev => ({ ...prev, billDocument: file.name }));
+                      }
+                    }}
+                    className="block w-full text-sm text-gray-400 border border-gray-700/50 rounded-xl cursor-pointer bg-gray-800/50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
+                  />
+                  {newBill.billDocument && (
+                    <p className="text-xs text-gray-400 mt-1">{newBill.billDocument}</p>
+                  )}
                 </div>
 
                 {/* Notes */}
@@ -735,7 +847,7 @@ export default function LandlordDashboard() {
 
                              {/* Footer */}
                <div className="bg-gradient-to-r from-orange-500/5 to-red-500/5 border-t border-orange-500/20 p-6 flex-shrink-0">
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <Button
                     variant="outline"
                     onClick={() => setShowCreateBill(false)}
