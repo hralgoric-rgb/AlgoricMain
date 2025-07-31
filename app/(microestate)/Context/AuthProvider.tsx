@@ -115,7 +115,7 @@ export default function AuthProvider({
   };
 
   return (
-    <SessionProvider basePath="/microestate/api/auth">
+    <SessionProvider>
       <AuthContext.Provider value={value}>
         {children}
       </AuthContext.Provider>
