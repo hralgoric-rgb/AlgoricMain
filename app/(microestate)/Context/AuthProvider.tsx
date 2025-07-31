@@ -1,26 +1,16 @@
 'use client'
 
-import { SessionProvider, signOut, getSession } from "next-auth/react"
+import { SessionProvider, signOut } from "next-auth/react"
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { useRouter, usePathname } from 'next/navigation';
 import { set } from "mongoose";
-// Update your User interface
+
 interface User {
   id: string;
-  _id: string;
   email: string;
   name: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
   role: 'landlord' | 'tenant' | 'user';
-  emailVerified?: boolean | Date;
-  verificationToken?: string;
-  verificationTokenExpiry?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-  profileImage?: string;
-  qrCode?: string;
+  emailVerified?: boolean;
 }
 
 interface AuthContextType {
@@ -53,36 +43,24 @@ export default function AuthProvider({
 
   // Recalculate auth state on mount and on route change
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const session = await getSession();
-        if (session?.user) {
-          const userData: User = {
-            id: session.user.id,
-            _id: session.user._id,
-            email: session.user.email,
-            name: session.user.name,
-            firstName: session.user.firstName,
-            lastName: session.user.lastName,
-            phone: session.user.phone,
-            role: session.user.role,
-            emailVerified: session.user.emailVerified
-          };
-          setUser(userData);
-          localStorage.setItem('microestate_user', JSON.stringify(userData));
-        } else {
-          // Fallback to localStorage if session not available
-          const storedUser = localStorage.getItem('microestate_user');
-          if (storedUser) setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('Error fetching session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    
 
-    fetchUser();
+      const storedUser = localStorage.getItem('microestate_user');
+
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          localStorage.removeItem('microestate_user');
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    
+    setLoading(false);
   }, [pathname]);
   const login = (userData: User) => {
     setUser(userData);
@@ -115,7 +93,7 @@ export default function AuthProvider({
   };
 
   return (
-    <SessionProvider>
+    <SessionProvider basePath="/microestate/api/auth" >
       <AuthContext.Provider value={value}>
         {children}
       </AuthContext.Provider>

@@ -153,10 +153,8 @@ export async function POST(request: NextRequest) {
       // Create token payload similar to NextAuth format
       const tokenPayload = {
         _id: newUser._id.toString(),
-  id: newUser._id.toString(),
   email: newUser.email,
   role: newUser.role,
-  name: `${newUser.firstName} ${newUser.lastName}`,
   firstName: newUser.firstName,
   lastName: newUser.lastName,
   phone: newUser.phone, // ADD THIS

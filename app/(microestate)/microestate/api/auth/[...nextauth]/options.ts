@@ -35,14 +35,11 @@ export const authOptions: NextAuthOptions = {
 
         return {
           id: user._id.toString(),
-          _id: user._id.toString(),
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
           role: user.role,
-          firstName: user.firstName, // Add this
-          lastName: user.lastName,   // Add this
-          phone: user.phone,         // Add this
-          emailVerified: user.emailVerified, // Add this
+          image: user.profileImage || null,
+          _id: user._id.toString(),
         };
       },
     }),
@@ -55,12 +52,6 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.role = user.role;
         token.email = user.email;
-      
-          // Add additional fields
-        token.phone = user.phone;
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
-        token.emailVerified = user.emailVerified;
       }
       return token;
     },
@@ -69,11 +60,6 @@ export const authOptions: NextAuthOptions = {
         session.user._id = token._id;
         session.user.role = token.role;
         session.user.email = token.email;
-         // Add additional fields to session
-        session.user.phone = token.phone;
-        session.user.firstName = token.firstName;
-        session.user.lastName = token.lastName;
-        session.user.emailVerified = token.emailVerified;
       }
       return session;
     },

@@ -85,14 +85,17 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
     // // Fallback: Use NextAuth to get token
     // console.log("🔄 Falling back to NextAuth token verification...");
 
+    // Use NextAuth's built-in token handling
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
-      cookieName: "microauth", // Use your custom cookie name
+      cookieName: "microauth",
     });
 
+    console.log("Token payload:", token);
+
     if (!token) {
-      console.log("❌ No valid NextAuth token found");
+      console.log("❌ No valid token found");
       return { success: false, error: "No valid authentication token found" };
     }
 
@@ -106,12 +109,10 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
     return {
       success: true,
       user: {
-        _id: (token._id || token.sub) as string,
+        _id: (token.sub as string) || (token._id as string), // Use standard sub claim
         email: token.email as string,
         role: token.role as "landlord" | "tenant",
         name: token.name as string,
-        // firstName: token.firstName as string,
-        // lastName: token.lastName as string,
       },
     };
   } catch (error) {
