@@ -285,6 +285,6 @@ const userSchema = new Schema<IUser>(
 );
 
 // Check if model exists already to prevent recompiling during hot reload in development
-const User = models.User || mongoose.model<IUser>("User", userSchema, "ad equity users");
+const User = models.User || mongoose.model<IUser>("User", userSchema, "users");
 
 export default User;

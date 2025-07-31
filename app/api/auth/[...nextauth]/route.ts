@@ -46,6 +46,7 @@ const handler = NextAuth({
               emailVerified: new Date(),
               role: "user", // Default role
               isAgent: false, // Default to false
+              isBuilder: false, // Default to false
               authMethod: "google",
               image: user?.image || (profile as any)?.picture,
             });
@@ -54,9 +55,26 @@ const handler = NextAuth({
             return false;
           }
         } else {
-          // Update last active time
+          // Update existing user with Google info if not already set
+          let needsUpdate = false;
+          
+          if (!existingUser.image && (user?.image || (profile as any)?.picture)) {
+            existingUser.image = user?.image || (profile as any)?.picture;
+            needsUpdate = true;
+          }
+          
+          if (!existingUser.emailVerified) {
+            existingUser.emailVerified = new Date();
+            needsUpdate = true;
+          }
+          
+          // Always update last active time
           existingUser.lastActive = new Date();
-          await existingUser.save();
+          needsUpdate = true;
+          
+          if (needsUpdate) {
+            await existingUser.save();
+          }
         }
 
         // Generate JWT token for verification

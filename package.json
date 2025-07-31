@@ -8,7 +8,8 @@
     "build:fast": "SKIP_TYPE_CHECK=true next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "merge-duplicates": "node scripts/merge-builder-duplicates.js"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.8.0",

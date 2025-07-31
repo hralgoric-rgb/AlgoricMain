@@ -769,12 +769,7 @@ export default function Navbar() {
                 </span>
               </Link>
               <div></div>
-              <Link
-                href="/equity"
-                className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
-              >
-                <Building2 className="h-5 w-5 mr-2 hover:text-orange-500" />
-              </Link>
+              
               <Link
                 href="/contact"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}

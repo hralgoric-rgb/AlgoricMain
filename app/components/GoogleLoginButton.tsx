@@ -6,7 +6,7 @@ import { toast } from "sonner";
 export default function GoogleLoginButton() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/equity";
+  const redirect = searchParams.get("redirect") || "/";
 
   const handleCredentialResponse = async (response: any) => {
   try {
