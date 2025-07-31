@@ -42,48 +42,48 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
     //   };
     // }
 
-    // Try to get the microauth cookie directly first
-    const microauthCookie = request.cookies.get("microauth");
+    // // Try to get the microauth cookie directly first
+    // const microauthCookie = request.cookies.get("microauth");
 
-    if (microauthCookie) {
-      // console.log("🔄 Found microauth cookie, verifying...");
+    // if (microauthCookie) {
+    //   // console.log("🔄 Found microauth cookie, verifying...");
 
-      try {
-        const jwtSecret = process.env.NEXTAUTH_SECRET;
-        if (!jwtSecret) {
-          throw new Error("NEXTAUTH_SECRET is not configured");
-        }
+    //   try {
+    //     const jwtSecret = process.env.NEXTAUTH_SECRET;
+    //     if (!jwtSecret) {
+    //       throw new Error("NEXTAUTH_SECRET is not configured");
+    //     }
 
-        const decoded = jwt.verify(microauthCookie.value, jwtSecret) as any;
+    //     const decoded = jwt.verify(microauthCookie.value, jwtSecret) as any;
 
-        console.log("✅ Microauth token verified:", {
-          id: decoded._id,
-          role: decoded.role,
-          email: decoded.email,
-          name: decoded.name,
-          firstName: decoded.firstName,
-          lastName: decoded.lastName,
-        });
+    //     console.log("✅ Microauth token verified:", {
+    //       id: decoded._id,
+    //       role: decoded.role,
+    //       email: decoded.email,
+    //       name: decoded.name,
+    //       firstName: decoded.firstName,
+    //       lastName: decoded.lastName,
+    //     });
 
-        return {
-          success: true,
-          user: {
-            _id: decoded._id,
-            email: decoded.email,
-            role: decoded.role,
-            name: decoded.name,
-            // firstName: decoded.firstName,
-            // lastName: decoded.lastName,
-          },
-        };
-      } catch (jwtError) {
-        console.error("❌ JWT verification failed:", jwtError);
-        // Continue to NextAuth fallback
-      }
-    }
+    //     return {
+    //       success: true,
+    //       user: {
+    //         _id: decoded._id,
+    //         email: decoded.email,
+    //         role: decoded.role,
+    //         name: decoded.name,
+    //         // firstName: decoded.firstName,
+    //         // lastName: decoded.lastName,
+    //       },
+    //     };
+    //   } catch (jwtError) {
+    //     console.error("❌ JWT verification failed:", jwtError);
+    //     // Continue to NextAuth fallback
+    //   }
+    // }
 
-    // Fallback: Use NextAuth to get token
-    console.log("🔄 Falling back to NextAuth token verification...");
+    // // Fallback: Use NextAuth to get token
+    // console.log("🔄 Falling back to NextAuth token verification...");
 
     const token = await getToken({
       req: request,

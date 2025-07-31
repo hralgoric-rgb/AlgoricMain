@@ -23,6 +23,7 @@ import {
   Clock,
   Loader2,
   Save,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,8 +31,9 @@ import Background from "../../../../_components/Background";
 import ProtectedRoute from "../../../../_components/ProtectedRoute";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
+import { toast } from "sonner";
 
-// Define a type for the property data from the API
+// Enhanced interfaces for better type safety
 interface Property {
   _id: string;
   title: string;
@@ -70,7 +72,6 @@ interface Property {
   status: "available" | "rented" | "maintenance" | "inactive";
 }
 
-// Interface for the tenant data returned by the API
 interface TenantInfo {
   _id: string;
   firstName: string;
@@ -82,28 +83,34 @@ interface TenantInfo {
 interface LeaseInfo {
   _id: string;
   tenantId: TenantInfo;
+  propertyId: string;
   startDate: string;
   endDate: string;
   monthlyRent: number;
+  securityDeposit: number;
+  rentDueDate: number;
   status: "draft" | "active" | "expired" | "terminated";
+  terms: string;
+  createdAt: string;
 }
 
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const propertyId = params.id as string;
+
+  // State management
   const [activeTab, setActiveTab] = useState("overview");
   const [property, setProperty] = useState<Property | null>(null);
+  const [tenants, setTenants] = useState<LeaseInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tenantsLoading, setTenantsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tenantsError, setTenantsError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // State for tenants list
-  const [tenants, setTenants] = useState<LeaseInfo[]>([]);
-  const [tenantsLoading, setTenantsLoading] = useState(false);
-  const [tenantsError, setTenantsError] = useState<string | null>(null);
-
+  // Fetch property details
   const fetchProperty = useCallback(async () => {
     if (!propertyId) return;
     try {
@@ -114,52 +121,59 @@ export default function PropertyDetailsPage() {
       setProperty(response.data);
       setError(null);
     } catch (err: any) {
-      console.error("Fetch error:", err);
+      console.error("Fetch property error:", err);
       setError(err.response?.data?.error || "Failed to fetch property details");
     } finally {
       setLoading(false);
     }
   }, [propertyId]);
 
+  // Fetch tenants for this property
   const fetchTenants = useCallback(async () => {
     if (!propertyId) return;
-    setTenantsLoading(true);
-    setTenantsError(null);
     try {
+      setTenantsLoading(true);
+      setTenantsError(null);
       const response = await axios.get(
         `/microestate/api/properties/${propertyId}/tenant`
       );
+
       if (response.data.success) {
         setTenants(response.data.data);
       } else {
-        setTenantsError(response.data.message);
         setTenants([]);
+        setTenantsError(response.data.message);
       }
     } catch (err: any) {
-      setTenantsError(
-        err.response?.data?.message || "Failed to fetch tenants."
-      );
+      console.error("Fetch tenants error:", err);
       setTenants([]);
+      setTenantsError(err.response?.data?.message || "Failed to fetch tenants");
     } finally {
       setTenantsLoading(false);
     }
   }, [propertyId]);
 
-  useEffect(() => {
-    fetchProperty();
-  }, [fetchProperty]);
+  // Handle successful tenant addition - FIXED: Removed circular dependency
+  const handleTenantAdded = useCallback(async () => {
+    toast.success("Tenant added successfully!");
+    // Call the functions directly instead of using refreshData
+    await Promise.all([fetchProperty(), fetchTenants()]);
+    setActiveTab("tenants"); // Switch back to tenants tab
+  }, [fetchProperty, fetchTenants]);
 
+  // Initial data fetch - FIXED: Only fetch on mount
   useEffect(() => {
-    if (activeTab === "tenants") {
+    if (propertyId) {
+      fetchProperty();
+    }
+  }, [propertyId, fetchProperty]);
+
+  // Fetch tenants when switching to tenants tab - FIXED: Removed circular dependency
+  useEffect(() => {
+    if (activeTab === "tenants" && propertyId) {
       fetchTenants();
     }
-  }, [activeTab, fetchTenants]);
-
-  const handleTenantAdded = () => {
-    fetchTenants(); // Re-fetch the tenants list
-    fetchProperty(); // Re-fetch property to update status if needed
-    setActiveTab("tenants"); // Switch back to the tenants tab
-  };
+  }, [activeTab, propertyId, fetchTenants]);
 
   const tabs = [
     { id: "overview", label: "Overview", icon: Eye },
@@ -203,24 +217,30 @@ export default function PropertyDetailsPage() {
     }
   };
 
-  const getPaymentStatusBadge = (status: string) => {
+  const getLeaseStatusBadge = (status: string) => {
     switch (status) {
-      case "paid":
+      case "active":
         return (
           <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">
-            Paid
+            Active
           </span>
         );
-      case "pending":
+      case "draft":
         return (
           <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">
-            Pending
+            Draft
           </span>
         );
-      case "overdue":
+      case "expired":
         return (
           <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium">
-            Overdue
+            Expired
+          </span>
+        );
+      case "terminated":
+        return (
+          <span className="px-2 py-1 bg-gray-500/20 text-gray-400 rounded-full text-xs font-medium">
+            Terminated
           </span>
         );
       default:
@@ -232,6 +252,19 @@ export default function PropertyDetailsPage() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    await Promise.all([fetchProperty(), fetchTenants()]);
+  };
+
   const renderTabContent = () => {
     if (!property) return null;
 
@@ -239,14 +272,13 @@ export default function PropertyDetailsPage() {
       case "overview":
         return (
           <div className="space-y-8">
-            {/* Property Images - Enhanced Gallery */}
+            {/* Property Images */}
             <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <Eye className="w-5 h-5 text-orange-400" />
                 Property Images
               </h3>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Featured Image - Reduced Size */}
                 <div className="lg:col-span-2">
                   <div className="aspect-[3/2] bg-gray-800 rounded-xl overflow-hidden shadow-lg">
                     <img
@@ -258,7 +290,6 @@ export default function PropertyDetailsPage() {
                     />
                   </div>
                 </div>
-                {/* Thumbnail Images - Smaller */}
                 <div className="space-y-3">
                   {property.images
                     .slice(1, 4)
@@ -285,9 +316,8 @@ export default function PropertyDetailsPage() {
               </div>
             </div>
 
-            {/* Property Details and Financial Summary - Side by Side */}
+            {/* Property Details and Financial Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Property Details - Enhanced */}
               <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                   <Building className="w-5 h-5 text-orange-400" />
@@ -348,7 +378,6 @@ export default function PropertyDetailsPage() {
                 </div>
               </div>
 
-              {/* Financial Summary - Enhanced */}
               <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-orange-400" />
@@ -385,7 +414,7 @@ export default function PropertyDetailsPage() {
               </div>
             </div>
 
-            {/* Amenities Section - New */}
+            {/* Amenities Section */}
             <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-orange-400" />
@@ -416,7 +445,7 @@ export default function PropertyDetailsPage() {
               </div>
             </div>
 
-            {/* Property Description - New */}
+            {/* Property Description */}
             {property.description && (
               <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -439,38 +468,71 @@ export default function PropertyDetailsPage() {
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                   <Users className="w-5 h-5 text-orange-400" />
                   Current Tenants
+                  {tenantsLoading && (
+                    <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                  )}
                 </h3>
-                <Button
-                  onClick={() => setActiveTab("add-tenant")}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Tenant
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={fetchTenants}
+                    disabled={tenantsLoading}
+                    variant="outline"
+                    className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                  >
+                    <RefreshCw
+                      className={`w-4 h-4 mr-2 ${
+                        tenantsLoading ? "animate-spin" : ""
+                      }`}
+                    />
+                    Refresh
+                  </Button>
+                  <Button
+                    onClick={() => setActiveTab("add-tenant")}
+                    disabled={property.status !== "available"}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Tenant
+                  </Button>
+                </div>
               </div>
 
-              {tenantsLoading ? (
-                <div className="text-center py-12">
-                  <Loader2 className="w-8 h-8 text-orange-500 mx-auto animate-spin" />
-                  <p className="text-gray-400 mt-2">Loading tenants...</p>
+              {property.status !== "available" && (
+                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm">
+                  <AlertTriangle className="w-4 h-4 inline mr-2" />
+                  Property is currently {property.status}. New tenants can only
+                  be added to available properties.
                 </div>
-              ) : tenantsError ? (
-                <div className="text-center py-12 text-red-400">
-                  <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
-                  <p>{tenantsError}</p>
+              )}
+
+              {tenantsError ? (
+                <div className="text-center py-12">
+                  <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                  <h4 className="text-white font-medium mb-2">
+                    Error Loading Tenants
+                  </h4>
+                  <p className="text-gray-400 mb-4">{tenantsError}</p>
+                  <Button
+                    onClick={fetchTenants}
+                    variant="outline"
+                    className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Try Again
+                  </Button>
                 </div>
               ) : tenants.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tenants.map((lease) => (
                     <div
                       key={lease._id}
-                      className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4"
+                      className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 hover:border-orange-500/30 transition-colors"
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
                           <User className="w-5 h-5 text-orange-400" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h4 className="text-white font-medium">
                             {lease.tenantId.firstName} {lease.tenantId.lastName}
                           </h4>
@@ -478,7 +540,9 @@ export default function PropertyDetailsPage() {
                             {lease.tenantId.email}
                           </p>
                         </div>
+                        {getLeaseStatusBadge(lease.status)}
                       </div>
+
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Phone:</span>
@@ -487,23 +551,41 @@ export default function PropertyDetailsPage() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Rent:</span>
+                          <span className="text-gray-400">Monthly Rent:</span>
                           <span className="text-white">
                             ₹{lease.monthlyRent.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-400">Status:</span>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs capitalize ${
-                              lease.status === "active"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-yellow-500/20 text-yellow-400"
-                            }`}
-                          >
-                            {lease.status}
+                          <span className="text-gray-400">Lease Period:</span>
+                          <span className="text-white text-xs">
+                            {formatDate(lease.startDate)} -{" "}
+                            {formatDate(lease.endDate)}
                           </span>
                         </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Rent Due:</span>
+                          <span className="text-white">
+                            {lease.rentDueDate} of each month
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-700/50 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 text-xs"
+                        >
+                          View Details
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-red-500 text-red-400 hover:bg-red-500 hover:text-white text-xs"
+                        >
+                          Terminate
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -519,7 +601,8 @@ export default function PropertyDetailsPage() {
                   </p>
                   <Button
                     onClick={() => setActiveTab("add-tenant")}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                    disabled={property.status !== "available"}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add First Tenant
@@ -534,6 +617,7 @@ export default function PropertyDetailsPage() {
         return (
           <AddTenantForm
             propertyId={propertyId}
+            property={property}
             onBack={() => setActiveTab("tenants")}
             onTenantAdded={handleTenantAdded}
           />
@@ -591,14 +675,14 @@ export default function PropertyDetailsPage() {
       );
 
       if (response.data.success) {
-        // Redirect to properties list after successful deletion
+        toast.success("Property deleted successfully!");
         router.push("/microestate/landlord/properties");
       } else {
-        setError("Failed to delete property. Please try again.");
+        toast.error("Failed to delete property. Please try again.");
       }
     } catch (err: any) {
       console.error("Delete error:", err);
-      setError(
+      toast.error(
         err.response?.data?.error ||
           "Failed to delete property. Please try again."
       );
@@ -788,13 +872,15 @@ export default function PropertyDetailsPage() {
   );
 }
 
-// AddTenantForm component
+// Enhanced AddTenantForm component
 function AddTenantForm({
   propertyId,
+  property,
   onBack,
   onTenantAdded,
 }: {
   propertyId: string;
+  property: Property;
   onBack: () => void;
   onTenantAdded: () => void;
 }) {
@@ -805,8 +891,8 @@ function AddTenantForm({
     tenantPhone: "",
     startDate: "",
     endDate: "",
-    monthlyRent: "",
-    securityDeposit: "",
+    monthlyRent: property.rent.amount.toString(),
+    securityDeposit: property.securityDeposit.toString(),
     rentDueDate: "1",
     terms: "",
   });
@@ -815,6 +901,7 @@ function AddTenantForm({
 
   const validate = () => {
     const newErrors: any = {};
+
     if (!formData.tenantFirstName)
       newErrors.tenantFirstName = "First name is required";
     if (!formData.tenantLastName)
@@ -840,17 +927,37 @@ function AddTenantForm({
       newErrors.rentDueDate = "Valid rent due date required (1-31)";
     if (!formData.terms) newErrors.terms = "Terms and conditions required";
 
+    // Date validation
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (startDate < today) {
+        newErrors.startDate = "Start date cannot be in the past";
+      }
+      if (endDate <= startDate) {
+        newErrors.endDate = "End date must be after start date";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev: any) => ({ ...prev, [field]: null }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) {
+      toast.error("Please fix all validation errors before submitting.");
       return;
     }
 
@@ -871,19 +978,20 @@ function AddTenantForm({
       );
 
       if (response.data.success) {
-        alert("Tenant added successfully!");
-        onTenantAdded(); // Call the new handler to refresh and switch tab
+        onTenantAdded(); // This will handle the success notification and navigation
       } else {
         setErrors({
           api: response.data.message || "An unknown error occurred.",
         });
+        toast.error(response.data.message || "Failed to add tenant.");
       }
     } catch (error: any) {
       console.error("Error adding tenant:", error);
       const errorMessage =
         error.response?.data?.message ||
-        "Failed to add tenant. Please check the console.";
+        "Failed to add tenant. Please try again.";
       setErrors({ api: errorMessage });
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -904,10 +1012,19 @@ function AddTenantForm({
         <div>
           <h1 className="text-3xl font-bold text-white">Add New Tenant</h1>
           <p className="text-gray-400">
-            Assign a tenant to this property with lease details
+            Assign a tenant to {property.title} with lease details
           </p>
         </div>
       </div>
+
+      {/* Property Status Check */}
+      {property.status !== "available" && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+          <AlertTriangle className="w-5 h-5 inline mr-2" />
+          <strong>Warning:</strong> This property is currently marked as "
+          {property.status}". You may encounter issues adding a new tenant.
+        </div>
+      )}
 
       {/* Add Tenant Form */}
       <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-8 animate-fadeIn">
@@ -1032,6 +1149,7 @@ function AddTenantForm({
                   onChange={(e) =>
                     handleInputChange("startDate", e.target.value)
                   }
+                  min={new Date().toISOString().split("T")[0]}
                   className={`w-full p-3 bg-[#1a1a1f] border ${
                     errors.startDate ? "border-red-500" : "border-[#2a2a2f]"
                   } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
@@ -1050,6 +1168,9 @@ function AddTenantForm({
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => handleInputChange("endDate", e.target.value)}
+                  min={
+                    formData.startDate || new Date().toISOString().split("T")[0]
+                  }
                   className={`w-full p-3 bg-[#1a1a1f] border ${
                     errors.endDate ? "border-red-500" : "border-[#2a2a2f]"
                   } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors`}
@@ -1180,7 +1301,16 @@ function AddTenantForm({
             </div>
           )}
 
-          <div className="flex items-center justify-end mt-8 pt-6 border-t border-[#2a2a2f]">
+          <div className="flex items-center justify-end mt-8 pt-6 border-t border-[#2a2a2f] gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onBack}
+              disabled={isSubmitting}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
@@ -1189,7 +1319,7 @@ function AddTenantForm({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
+                  Adding Tenant...
                 </>
               ) : (
                 <>
