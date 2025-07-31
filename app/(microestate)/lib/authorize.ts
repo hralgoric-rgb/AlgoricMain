@@ -42,57 +42,60 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
     //   };
     // }
 
-    // Try to get the microauth cookie directly first
-    const microauthCookie = request.cookies.get("microauth");
+    // // Try to get the microauth cookie directly first
+    // const microauthCookie = request.cookies.get("microauth");
 
-    if (microauthCookie) {
-      // console.log("🔄 Found microauth cookie, verifying...");
+    // if (microauthCookie) {
+    //   // console.log("🔄 Found microauth cookie, verifying...");
 
-      try {
-        const jwtSecret = process.env.NEXTAUTH_SECRET;
-        if (!jwtSecret) {
-          throw new Error("NEXTAUTH_SECRET is not configured");
-        }
+    //   try {
+    //     const jwtSecret = process.env.NEXTAUTH_SECRET;
+    //     if (!jwtSecret) {
+    //       throw new Error("NEXTAUTH_SECRET is not configured");
+    //     }
 
-        const decoded = jwt.verify(microauthCookie.value, jwtSecret) as any;
+    //     const decoded = jwt.verify(microauthCookie.value, jwtSecret) as any;
 
-        console.log("✅ Microauth token verified:", {
-          id: decoded._id,
-          role: decoded.role,
-          email: decoded.email,
-          name: decoded.name,
-          firstName: decoded.firstName,
-          lastName: decoded.lastName,
-        });
+    //     console.log("✅ Microauth token verified:", {
+    //       id: decoded._id,
+    //       role: decoded.role,
+    //       email: decoded.email,
+    //       name: decoded.name,
+    //       firstName: decoded.firstName,
+    //       lastName: decoded.lastName,
+    //     });
 
-        return {
-          success: true,
-          user: {
-            _id: decoded._id,
-            email: decoded.email,
-            role: decoded.role,
-            name: decoded.name,
-            // firstName: decoded.firstName,
-            // lastName: decoded.lastName,
-          },
-        };
-      } catch (jwtError) {
-        console.error("❌ JWT verification failed:", jwtError);
-        // Continue to NextAuth fallback
-      }
-    }
+    //     return {
+    //       success: true,
+    //       user: {
+    //         _id: decoded._id,
+    //         email: decoded.email,
+    //         role: decoded.role,
+    //         name: decoded.name,
+    //         // firstName: decoded.firstName,
+    //         // lastName: decoded.lastName,
+    //       },
+    //     };
+    //   } catch (jwtError) {
+    //     console.error("❌ JWT verification failed:", jwtError);
+    //     // Continue to NextAuth fallback
+    //   }
+    // }
 
-    // Fallback: Use NextAuth to get token
-    console.log("🔄 Falling back to NextAuth token verification...");
+    // // Fallback: Use NextAuth to get token
+    // console.log("🔄 Falling back to NextAuth token verification...");
 
+    // Use NextAuth's built-in token handling
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
-      cookieName: "microauth", // Use your custom cookie name
+      cookieName: "microauth",
     });
 
+    console.log("Token payload:", token);
+
     if (!token) {
-      console.log("❌ No valid NextAuth token found");
+      console.log("❌ No valid token found");
       return { success: false, error: "No valid authentication token found" };
     }
 
@@ -106,12 +109,10 @@ export async function getUserFromRequest(request: NextRequest): Promise<{
     return {
       success: true,
       user: {
-        _id: (token._id || token.sub) as string,
+        _id: (token.sub as string) || (token._id as string), // Use standard sub claim
         email: token.email as string,
         role: token.role as "landlord" | "tenant",
         name: token.name as string,
-        // firstName: token.firstName as string,
-        // lastName: token.lastName as string,
       },
     };
   } catch (error) {

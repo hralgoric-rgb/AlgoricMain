@@ -35,8 +35,4 @@ export const GET = requireLandlord(
       );
     }
   }
-<<<<<<< HEAD
 );
-=======
-);
->>>>>>> Priya
