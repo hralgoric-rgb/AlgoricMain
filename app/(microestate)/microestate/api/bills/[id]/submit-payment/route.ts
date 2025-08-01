@@ -1,7 +1,7 @@
 import { NextResponse , NextRequest } from "next/server";
 import UtilityBill from "@/app/(microestate)/models/Utility";
 import dbConnect from "@/app/(microestate)/lib/db";
-import { requireTenant } from "@/app/(microestate)/lib/authorize";
+import { requireTenant } from "@/app/(microestate)/middleware/auth";
 import { uploadToImageKit } from "@/app/(microestate)/lib/ImageUpload";
 
 

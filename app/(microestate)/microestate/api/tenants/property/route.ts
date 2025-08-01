@@ -1,7 +1,7 @@
 // properties id 
 import { NextRequest , NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
-import { requireTenant } from "@/app/(microestate)/lib/authorize";
+import { requireTenant } from "@/app/(microestate)/middleware/auth";
 import Lease from "@/app/(microestate)/models/Lease";
 
 export const GET = requireTenant( async (request: NextRequest, context: { userId: string; userEmail: string }) => {

@@ -90,6 +90,8 @@ const Login = () => {
         redirect: false,
       });
 
+      console.log("🔐 SignIn response:", response);
+
       if (response && response.ok) {
         setSuccess("Logged in successfully!");
 
@@ -97,37 +99,47 @@ const Login = () => {
         const session = await getSession();
 
         if (session && session.user) {
-          console.log("Session data:", session);
-          console.log("User data:", session.user);
-
           const { user } = session;
+          console.log("👤 User data:", user);
 
-          // Update your auth context if needed
-          login({
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
+          // Fix: Use user.id instead of user._id
+          const userData = {
+            id: user.id, // Changed from user._id to user.id
+            email: user.email!,
+            name: user.name!,
+            role: user.role as string,
             emailVerified: user.emailVerified || false,
-          });
+          };
+
+          console.log("✅ Processed user data:", userData);
+
+          // Update your auth context
+          login(userData);
 
           // Redirect based on role
           setTimeout(() => {
             if (user.role === "landlord") {
+              console.log("🏠 Redirecting to landlord dashboard");
               router.push("/microestate/landlord");
             } else if (user.role === "tenant") {
+              console.log("🏠 Redirecting to tenant dashboard");
               router.push("/microestate/tenant");
             } else {
+              console.log("🏠 Redirecting to home");
               router.push("/microestate");
             }
           }, 1000);
+        } else {
+          console.error("❌ No session or user data found");
+          setError("Failed to retrieve user session");
         }
       } else {
-        setError(response?.error || "Login failed");
+        console.error("❌ Login failed:", response);
+        setError(response?.error || "Invalid email or password");
       }
     } catch (error: any) {
-      console.error("Login error:", error);
-      setError("An error occurred during login");
+      console.error("❌ Login error:", error);
+      setError("An error occurred during login. Please try again.");
     } finally {
       setLoading(false);
     }

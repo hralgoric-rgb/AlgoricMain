@@ -1,5 +1,5 @@
 import dbConnect from "@/app/(microestate)/lib/db";
-import User from "@/app/(microestate)/models/user";
+import MicroestateUser from "@/app/(microestate)/models/user";
 import { generateVerificationCode } from "@/app/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Find user by email
     console.log("Searching for user...");
-    const user = await User.findOne({ email });
+    const user = await MicroestateUser.findOne({ email });
 
     if (!user) {
       console.log("User not found");

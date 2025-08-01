@@ -10,10 +10,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <ClientOnly>
       <SessionProvider>
-        <FavoritesProvider>
+        {/* <FavoritesProvider> */}
           {children}
           <Toaster />
-        </FavoritesProvider>
+        {/* </FavoritesProvider> */}
       </SessionProvider>
     </ClientOnly>
   );

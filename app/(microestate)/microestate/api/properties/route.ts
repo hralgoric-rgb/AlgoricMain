@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
 import Property from "@/app/(microestate)/models/Property";
-import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 
 // GET microestate/api/properties- get all properties of a landlord
 export const GET = requireLandlord(

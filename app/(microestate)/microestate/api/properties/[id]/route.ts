@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
 import Property from "@/app/(microestate)/models/Property";
 import mongoose from "mongoose";
-import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 
 // Helper function to validate ObjectId
 const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
@@ -11,20 +11,17 @@ const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 export const GET = requireLandlord(
   async (
     request: NextRequest, 
-    context: {
-      params: { id: string };
-      userId: string;
-      userRole: string;
-      userEmail: string;
-    }
+    context: { userId: string; userRole: string; userEmail: string }
   ) => {
-    const { id } = context.params;
+    // Extract property ID from URL
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").at(-1);
     const { userId } = context;
 
     try {
       console.log(`Fetching property with id: ${id} for landlord: ${userId}`);
 
-      if (!isValidObjectId(id)) {
+      if (!id || !isValidObjectId(id)) {
         return NextResponse.json(
           { error: "Invalid property ID format" },
           { status: 400 }
@@ -63,18 +60,15 @@ export const GET = requireLandlord(
 export const PUT = requireLandlord(
   async (
     request: NextRequest,
-    context: {
-      params: { id: string };
-      userId: string;
-      userRole: string;
-      userEmail: string;
-    }
+    context: { userId: string; userRole: string; userEmail: string }
   ) => {
     try {
-      const { id } = context.params;
+      // Extract property ID from URL
+      const url = new URL(request.url);
+      const id = url.pathname.split("/").at(-1);
       const { userId } = context;
 
-      if (!isValidObjectId(id)) {
+      if (!id || !isValidObjectId(id)) {
         return NextResponse.json(
           { error: 'Invalid property ID format' },
           { status: 400 }
@@ -175,22 +169,19 @@ export const PUT = requireLandlord(
   }
 );
 
-// DELETE /api/properties/[id] - Delete a property
+
 export const DELETE = requireLandlord(
   async (
     request: NextRequest,
-    context: {
-      params: { id: string };
-      userId: string;
-      userRole: string;
-      userEmail: string;
-    }
+    context: { userId: string; userRole: string; userEmail: string }
   ) => {
     try {
-      const { id } = context.params;
+      // Extract property ID from URL
+      const url = new URL(request.url);
+      const id = url.pathname.split("/").at(-1);
       const { userId } = context;
 
-      if (!isValidObjectId(id)) {
+      if (!id || !isValidObjectId(id)) {
         return NextResponse.json(
           { error: 'Invalid property ID format' },
           { status: 400 }

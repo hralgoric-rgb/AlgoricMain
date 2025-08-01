@@ -3,7 +3,7 @@
   import dbConnect from "@/app/(microestate)/lib/db";
   import { getServerSession } from "next-auth";
   import { authOptions } from "../../auth/[...nextauth]/options";
-import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 
 
   // for getting the whole bill details

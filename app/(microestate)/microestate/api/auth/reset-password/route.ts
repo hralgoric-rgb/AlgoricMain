@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import User from '@/app/(microestate)/models/user';
+import MicroestateUser from "@/app/(microestate)/models/user";
 import dbConnect from '@/app/(microestate)/lib/db';
 import bcrypt from 'bcryptjs';
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Update user and clear reset fields
-    const updatedUser = await User.findOneAndUpdate(
+    const updatedUser = await MicroestateUser.findOneAndUpdate(
       { email },
       {
         $set: { password: hashedPassword },

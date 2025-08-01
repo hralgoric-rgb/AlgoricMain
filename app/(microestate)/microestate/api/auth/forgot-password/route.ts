@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import User from '@/app/(microestate)/models/user';
+import MicroestateUser from "@/app/(microestate)/models/user";
 import dbConnect from '@/app/(microestate)/lib/db';
 import { 
   generateVerificationCode, 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const foundUser = await User.findOne({email})
+        const foundUser = await MicroestateUser.findOne({email})
         if (!foundUser) {
             return NextResponse.json(
                 {error: 'Email does not exist in our database'},
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         foundUser.resetPasswordExpires = resetTokenExpiry;
         
 
-        await User.updateOne(
+        await MicroestateUser.updateOne(
           { _id: foundUser._id },
           {
             $set: {

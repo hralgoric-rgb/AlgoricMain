@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/app/(microestate)/lib/db';
-import User from '@/app/(microestate)/models/user';
+import MicroestateUser from "@/app/(microestate)/models/user";
 import { 
   generateVerificationCode, 
   sendEmail, 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
 
-    const user = await User.findOne({ email });
+    const user = await MicroestateUser.findOne({ email });
     
     if (!user) {
       return NextResponse.json(

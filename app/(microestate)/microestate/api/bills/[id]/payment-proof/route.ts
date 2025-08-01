@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/app/(microestate)/lib/db";
 import UtilityBill from "@/app/(microestate)/models/Utility";
-import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 
 // for lanlords to see the ss of payment
 

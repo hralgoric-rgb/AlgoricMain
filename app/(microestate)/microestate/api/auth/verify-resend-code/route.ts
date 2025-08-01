@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import User from '@/app/(microestate)/models/user';
+import MicroestateUser from "@/app/(microestate)/models/user";
 import dbConnect from '@/app/(microestate)/lib/db';
 
 export async function POST(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ email });
+    const user = await MicroestateUser.findOne({ email });
 
     if (
       !user ||

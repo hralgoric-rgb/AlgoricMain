@@ -34,13 +34,7 @@ export default function VerifyEmailPage() {
         
         // Redirect based on role after a short delay
         setTimeout(() => {
-          if (userRole === "landlord") {
-            router.push("/microestate/landlord");
-          } else if (userRole === "tenant") {
-            router.push("/microestate/tenant");
-          } else {
-            router.push("/microestate");
-          }
+          router.push("/microestate/auth")
         }, 2000);
       } else {
         setError(response.data.error || "Verification failed");

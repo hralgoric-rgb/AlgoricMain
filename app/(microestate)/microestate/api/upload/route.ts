@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import imagekit from "@/app/(microestate)/lib/imagekit";
-import { requireAuth } from "@/app/(microestate)/lib/authorize";
+import { requireAuth } from "@/app/(microestate)/middleware/auth";
 
 export const POST = requireAuth(
   async (

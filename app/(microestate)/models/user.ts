@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 
 // TypeScript interface for User document
@@ -10,22 +10,17 @@ export interface IUser extends Document {
   phone: string;
   role: "landlord" | "tenant";
   profileImage?: string;
-  emailVerified?: boolean;
+  emailVerified: boolean;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
-  qrCode?: string; // Changed from 'qr' to 'qrCode' for consistency
+  qrCode?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  // Instance methods
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 // TypeScript interface for User model (static methods)
-export interface IUserModel extends Model<IUser> {
-  // Add any static methods here if needed
-}
+export interface IUserModel extends Model<IUser> {}
 
 // User Schema
 const userSchema = new Schema<IUser>(
@@ -63,7 +58,7 @@ const userSchema = new Schema<IUser>(
       required: [true, "Phone number is required"],
       validate: {
         validator: function (v: string) {
-          return /^\+?[\d\s\-\(\)]+$/.test(v);
+          return /^[\+]?[1-9][\d]{0,15}$/.test(v);
         },
         message: "Please enter a valid phone number",
       },
@@ -87,7 +82,6 @@ const userSchema = new Schema<IUser>(
       type: Date,
     },
     qrCode: {
-      // Changed from 'qr' to 'qrCode'
       type: String,
     },
     resetPasswordToken: {
@@ -106,10 +100,13 @@ const userSchema = new Schema<IUser>(
 
 // Password hashing middleware
 userSchema.pre<IUser>("save", async function (next) {
+  // Only hash the password if it has been modified (or is new)
   if (!this.isModified("password")) return next();
+
   try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    // Hash password with cost of 10
+    const hashedPassword = await bcrypt.hash(this.password, 10);
+    this.password = hashedPassword;
     next();
   } catch (error) {
     next(error as Error);
@@ -121,14 +118,19 @@ userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   try {
-    return await bcrypt.compare(candidatePassword, this.password);
+    if (!candidatePassword || !this.password) {
+      return false;
+    }
+    const result = await bcrypt.compare(candidatePassword, this.password);
+    // console.log('🔍 Password comparison result:', result);
+    return result;
   } catch (error) {
-    throw new Error("Password comparison failed");
+    console.error('❌ Password comparison error:', error);
+    return false;
   }
 };
 
-// Create and export the model with a unique name and collection to avoid conflicts
-const User =
-  mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema, "users");
+// IMPORTANT: Use a different model name to avoid conflicts with main User model
+const MicroestateUser = mongoose.models.MicroestateUser || mongoose.model<IUser, IUserModel>("MicroestateUser", userSchema);
 
-export default User;
+export default MicroestateUser;

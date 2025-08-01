@@ -1,29 +1,90 @@
 'use client'
 
-import { SessionProvider, signOut } from "next-auth/react"
-import React, { createContext, useContext, useState, useEffect } from "react"
-import { useRouter, usePathname } from 'next/navigation';
-import { set } from "mongoose";
+import { SessionProvider, useSession, signOut } from "next-auth/react"
+import React, { createContext, useContext } from "react"
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
   email: string;
   name: string;
-  role: 'landlord' | 'tenant' | 'user';
+  role: 'landlord' | 'tenant';
   emailVerified?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (userData: User) => void;
   logout: () => void;
+  login: (userData: User) => void;
   isAuthenticated: boolean;
   isLandlord: boolean;
   isTenant: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function AuthContent({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const loading = status === "loading";
+
+  console.log("🔄 Auth session:", session);
+  console.log("🔄 Auth status:", status);
+
+  const user: User | null = session?.user ? {
+    id: session.user.id!,
+    email: session.user.email!,
+    name: session.user.name!,
+    role: session.user.role as 'landlord' | 'tenant',
+    emailVerified: session.user.emailVerified || false,
+  } : null;
+
+  const logout = async () => {
+    console.log("🚪 Logging out...");
+    try {
+      await signOut({
+        redirect: false,
+        callbackUrl: "/microestate", 
+      });
+      router.push("/microestate");
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+    }
+  };
+
+  // Add the missing login function
+  const login = (userData: User) => {
+    console.log("🔄 Login function called with:", userData);
+
+    if(userData.emailVerified==true){
+      localStorage.removeItem("pendingEmail");
+    }
+
+    localStorage.setItem('microestate_user', JSON.stringify(userData));
+
+    // You could add additional client-side logic here if needed
+    console.log("✅ Login function completed successfully");
+  };
+
+  const value = {
+    user,
+    loading,
+    logout,
+    login, // Make sure this is included
+    isAuthenticated: !!user,
+    isLandlord: user?.role === 'landlord',
+    isTenant: user?.role === 'tenant',
+  };
+
+  console.log("🔄 Auth context value:", value);
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -33,70 +94,12 @@ export const useAuth = () => {
   return context;
 };
 
-export default function AuthProvider({
-  children,
-}: {children: React.ReactNode}) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Recalculate auth state on mount and on route change
-  useEffect(() => {
-    
-
-      const storedUser = localStorage.getItem('microestate_user');
-
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-        } catch (error) {
-          console.error('Error parsing stored user data:', error);
-          localStorage.removeItem('microestate_user');
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    
-    setLoading(false);
-  }, [pathname]);
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('microestate_user', JSON.stringify(userData));
-  };
-
-  const logout = async () => {
-    setUser(null);
-    localStorage.removeItem('microestate_user');
-    localStorage.removeItem('userRole');
-    await signOut({
-      redirect: false,
-      callbackUrl: "/microestate", 
-    })
-    router.push("/microestate");
-  };
-
-  const isAuthenticated = !!user;
-  const isLandlord = user?.role === 'landlord';
-  const isTenant = user?.role === 'tenant';
-
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-    isAuthenticated,
-    isLandlord,
-    isTenant,
-  };
-
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider basePath="/microestate/api/auth" >
-      <AuthContext.Provider value={value}>
+    <SessionProvider basePath="/microestate/api/auth">
+      <AuthContent>
         {children}
-      </AuthContext.Provider>
+      </AuthContent>
     </SessionProvider>
-  )
+  );
 }

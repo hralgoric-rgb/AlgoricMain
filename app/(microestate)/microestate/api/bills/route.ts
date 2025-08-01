@@ -3,8 +3,8 @@
 import { NextResponse , NextRequest } from "next/server";
 import UtilityBill from "@/app/(microestate)/models/Utility";
 import dbConnect from "@/app/(microestate)/lib/db";
-import User from "@/app/(microestate)/models/user";
-import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import MicroestateUser from "@/app/(microestate)/models/user";
+import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 import Lease from "@/app/(microestate)/models/Lease";
 
 // // get all bills
@@ -77,7 +77,7 @@ export const POST = requireLandlord(
 
       const UserId = context.userId;
 
-      const FoundUser = await User.findById(UserId);
+      const FoundUser = await MicroestateUser.findById(UserId);
       if (!FoundUser) {
         return NextResponse.json(
           { message: "User does not exist in our database" },
@@ -95,7 +95,7 @@ export const POST = requireLandlord(
       }
 
       // Find active tenant assigned to the property
-      const tenant = await User.findOne({
+      const tenant = await MicroestateUser.findOne({
         role: "Tenant",
         propertyId: property._id,
         status: "active",

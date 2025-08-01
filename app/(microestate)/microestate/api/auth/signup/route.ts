@@ -1,79 +1,73 @@
-import dbConnect from "@/app/(microestate)/lib/db";
-import { uploadToImageKit } from "@/app/(microestate)/lib/ImageUpload";
-import User from "@/app/(microestate)/models/user";
+import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/app/(microestate)/lib/db';
+import MicroestateUser from "@/app/(microestate)/models/user";
 import {
   generateVerificationCode,
   getVerificationEmailTemplate,
   sendEmail,
 } from "@/app/lib/utils";
-import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { uploadToImageKit } from '@/app/(microestate)/lib/ImageUpload';
+
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if database URI is configured
-    if (!process.env.MICRO_MONGODB_URI) {
-      console.error("MICRO_MONGODB_URI is not configured");
-      return NextResponse.json(
-        { error: "Database configuration is missing" },
-        { status: 500 }
-      );
-    }
-
     await dbConnect();
+
+    // Parse FormData instead of JSON
+    const formData = await request.formData();
     
-    // Test database connection
-    try {
-      await User.findOne({}).limit(1);
-      console.log("Database connection successful");
-    } catch (dbError) {
-      console.error("Database connection test failed:", dbError);
+    // Extract fields from FormData
+    const firstName = formData.get('firstName') as string;
+    const lastName = formData.get('lastName') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const phone = formData.get('phone') as string;
+    const role = formData.get('role') as 'landlord' | 'tenant';
+    
+    const profileImage = formData.get('profileImage') as File | null;
+    const qrCode = formData.get('qrCode') as File | null;
+
+    console.log('📝 Received signup data:', {
+      firstName,
+      lastName,
+      email,
+      phone,
+      role,
+      hasProfileImage: !!profileImage,
+      hasQrCode: !!qrCode
+    });
+
+    // Validation
+    if (!firstName || !lastName || !email || !password || !phone || !role) {
       return NextResponse.json(
-        { error: "Database connection failed" },
-        { status: 500 }
-      );
-    }
-
-    const form = await request.formData();
-    const email = form.get("email")?.toString().trim();
-    const password = form.get("password")?.toString();
-    const firstName = form.get("firstName")?.toString().trim();
-    const lastName = form.get("lastName")?.toString().trim();
-    const phone = form.get("phone")?.toString();
-    const role = form.get("role")?.toString() as "landlord" | "tenant";
-    const profileImageFile = form.get("profileImage") as File | null;
-
-    // Fixed: Get QR code with the correct field name
-    const qrFile = form.get("qrCode") as File | null;
-
-    if (!email || !password || !firstName || !lastName || !phone) {
-      return NextResponse.json(
-        { error: "Missing required fields." },
+        { success: false, message: 'All fields are required' },
         { status: 400 }
       );
     }
 
-    if (password.length < 8) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { error: "Password must be at least 8 characters." },
+        { success: false, message: 'Password must be at least 6 characters' },
         { status: 400 }
       );
     }
+
+    const normalizedEmail = email.toLowerCase().trim();
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await MicroestateUser.findOne({ email: normalizedEmail });
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists." },
+        { success: false, message: 'User with this email already exists' },
         { status: 400 }
       );
     }
 
     // Handle QR code upload for landlords
     let qrCodeUrl: string | undefined;
-    if (role === "landlord" && qrFile) {
+    if (role === "landlord" && qrCode) {
       try {
-        qrCodeUrl = await uploadToImageKit(qrFile);
+        qrCodeUrl = await uploadToImageKit(qrCode);
       } catch (uploadError) {
         console.warn('QR code upload failed:', uploadError);
         // Continue without QR code upload
@@ -82,60 +76,45 @@ export async function POST(request: NextRequest) {
 
     // Handle profile image upload
     let profileImageUrl: string | undefined;
-    if (profileImageFile) {
+    if (profileImage) {
       try {
-        profileImageUrl = await uploadToImageKit(profileImageFile);
+        profileImageUrl = await uploadToImageKit(profileImage);
       } catch (uploadError) {
         console.warn('Profile image upload failed:', uploadError);
         // Continue without profile image upload
       }
     }
 
-    // Generate verification code
+
+     // Generate verification code
     const verificationCode = generateVerificationCode();
     const verificationTokenExpiry = new Date();
     verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
 
-    // Create user object with correct field mapping for microestate User model
-    const userData = {
-      firstName,
-      lastName,
-      phone,
-      email,
+
+    // Create new user (password will be hashed by the schema middleware)
+    const newUser = new MicroestateUser({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: normalizedEmail,
       password,
+      phone: phone.trim(),
       role,
-      emailVerified: false, // Boolean, not Date
+      emailVerified: false,
       verificationToken: verificationCode,
       verificationTokenExpiry,
       ...(profileImageUrl && { profileImage: profileImageUrl }),
       ...(qrCodeUrl && { qrCode: qrCodeUrl }),
-    };
-
-    console.log("Creating user with data:", {
-      ...userData,
-      password: "[REDACTED]",
     });
 
-    console.log("User model schema:", User.schema.obj);
-    
-    const newUser = new User(userData);
-    console.log("User instance created:", newUser);
-    
-    // Validate the data before saving
-    const validationError = newUser.validateSync();
-    if (validationError) {
-      console.error("Validation error:", validationError);
-      return NextResponse.json(
-        { error: `Validation failed: ${validationError.message}` },
-        { status: 400 }
-      );
-    }
-    
     await newUser.save();
 
-    console.log("User created successfully:", newUser._id);
+    console.log("✅ New user created:", {
+      id: newUser._id.toString(),
+      email: newUser.email,
+      role: newUser.role
+    });
 
-    // Try to send verification email
     try {
       const emailTemplate = getVerificationEmailTemplate(verificationCode);
       await sendEmail(email, "Verify your email address", emailTemplate);
@@ -145,75 +124,22 @@ export async function POST(request: NextRequest) {
       // Continue with registration even if email fails
     }
 
-    // Generate NextAuth compatible JWT token
-    const jwtSecret = process.env.NEXTAUTH_SECRET;
-    let sessionToken = null;
-    
-    if (jwtSecret) {
-      // Create token payload similar to NextAuth format
-      const tokenPayload = {
-        _id: newUser._id.toString(),
-  email: newUser.email,
-  role: newUser.role,
-  firstName: newUser.firstName,
-  lastName: newUser.lastName,
-  phone: newUser.phone, // ADD THIS
-  emailVerified: newUser.emailVerified,
-  iat: Math.floor(Date.now() / 1000),
-  exp: Math.floor(Date.now() / 1000) + 3 * 24 * 60 * 60,
-      };
+    return NextResponse.json({
+      success: true,
+      message: 'Account created successfully',
+      user: {
+        id: newUser._id.toString(),
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        role: newUser.role,
+      }
+    });
 
-      sessionToken = jwt.sign(tokenPayload, jwtSecret);
-    } else {
-      console.warn("NEXTAUTH_SECRET is not configured, skipping JWT token generation");
-    }
-
-    const response = NextResponse.json(
-      {
-        success: true,
-        message:
-          "User registered successfully. Please check your email for verification code.",
-        userId: newUser._id,
-        user: {
-          id: newUser._id,
-          email: newUser.email,
-          name: `${newUser.firstName} ${newUser.lastName}`,
-          role: newUser.role,
-          emailVerified: newUser.emailVerified,
-        },
-        profileImageUrl,
-        qrCodeUrl,
-      },
-      { status: 201 }
-    );
-
-    // Set the same cookie that NextAuth would set
-    if (sessionToken) {
-      response.cookies.set("microauth", sessionToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 3 * 24 * 60 * 60, // 3 days
-        path: "/",
-      });
-    }
-
-    return response;
-  } catch (error: any) {
-    console.error("Registration Error:", error);
-   ;
-
-
-    if (error.code === 11000) {
-      return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
-      );
-    }
-
-    // Return the actual error message for debugging
+  } catch (error) {
+    console.error('❌ Signup error:', error);
     return NextResponse.json(
-      { error: error.message || "An error occurred during registration" },
+      { success: false, message: 'Failed to create account' },
       { status: 500 }
     );
   }

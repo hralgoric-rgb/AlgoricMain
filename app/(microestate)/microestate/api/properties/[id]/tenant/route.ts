@@ -1,10 +1,10 @@
-import { requireLandlord } from "@/app/(microestate)/lib/authorize";
+import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 import dbConnect from "@/app/(microestate)/lib/db";
 import mongoose from "mongoose";
-import Lease, { ILease } from "@/app/(microestate)/models/Lease";
+import Lease from "@/app/(microestate)/models/Lease";
 import { NextRequest, NextResponse } from "next/server";
 import Property from "@/app/(microestate)/models/Property";
-import User from "@/app/(microestate)/models/user";
+import MicroestateUser from "@/app/(microestate)/models/user";
 import { getTenantWelcomeEmailTemplate, sendEmail } from "@/app/(microestate)/lib/utils";
 
 // Request body interface
@@ -23,22 +23,14 @@ interface AddTenantRequest {
 
 //POST method to add a tenant to a property
 // This will create a new lease agreement and send a welcome email to the tenant
-export const POST = requireLandlord(async (request: NextRequest, userId: {userId: string}, userEmail: {userEmail: string}) => {
+export const POST = requireLandlord(async (request: NextRequest, context:{ userId: string; userEmail: string }) => {
   try {
     await dbConnect();
 
-    const url = new URL(request.url);
-    const propertyId = url.pathname.split("/")[4]; // Extract property ID from URL
+    const {userId, userEmail} = context;
 
-    // if (!propertyId || !mongoose.Types.ObjectId.isValid(propertyId)) {
-    //   return NextResponse.json(
-    //     {
-    //       success: false,
-    //       message: "Invalid property ID provided",
-    //     },
-    //     { status: 400 }
-    //   );
-    // }
+    const url = new URL(request.url);
+    const propertyId = url.pathname.split("/")[4]; 
 
     // Parse request body
     const body: AddTenantRequest = await request.json();
@@ -119,7 +111,7 @@ export const POST = requireLandlord(async (request: NextRequest, userId: {userId
     }
 
     // Find tenant by email
-    let tenant = await User.findOne({ 
+    let tenant = await MicroestateUser.findOne({ 
       email: tenantEmail.toLowerCase().trim(),
       role: 'tenant'
     });
@@ -129,7 +121,7 @@ export const POST = requireLandlord(async (request: NextRequest, userId: {userId
 
     //if not the create a new tenant
     if (!tenant) {
-      tenant = new User({
+      tenant = new MicroestateUser({
         email: tenantEmail.toLowerCase().trim(),
         password: generatedPassword,
         firstName: tenantFirstName || "New",
