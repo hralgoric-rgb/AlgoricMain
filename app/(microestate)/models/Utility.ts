@@ -64,17 +64,17 @@ const utilityBillSchema = new Schema<IUtilityBill>(
   {
     propertyId: {
       type: Schema.Types.ObjectId,
-      ref: "Property",
+      ref: "MicroProperty",
       required: [true, "Property ID is required"],
     },
     landlordId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUser",
       required: [true, "Landlord ID is required"],
     },
     tenantId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUser",
       validate: {
         validator: function(this: IUtilityBill, value: mongoose.Schema.Types.ObjectId) {
           // Tenant ID is required if tenant is responsible

@@ -77,17 +77,17 @@ const maintenanceRequestSchema = new Schema<IMaintenanceRequest>(
   {
     propertyId: {
       type: Schema.Types.ObjectId,
-      ref: "Property",
+      ref: "MicroProperty",
       required: [true, "Property ID is required"],
     },
     tenantId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUser",
       required: [true, "Tenant ID is required"],
     },
     landlordId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUser",
       required: [true, "Landlord ID is required"],
     },
     title: {

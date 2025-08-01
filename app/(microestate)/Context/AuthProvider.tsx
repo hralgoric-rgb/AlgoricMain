@@ -29,8 +29,8 @@ function AuthContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const loading = status === "loading";
 
-  console.log("🔄 Auth session:", session);
-  console.log("🔄 Auth status:", status);
+  // console.log("🔄 Auth session:", session);
+  // console.log("🔄 Auth status:", status);
 
   const user: User | null = session?.user ? {
     id: session.user.id!,
@@ -41,7 +41,7 @@ function AuthContent({ children }: { children: React.ReactNode }) {
   } : null;
 
   const logout = async () => {
-    console.log("🚪 Logging out...");
+    // console.log("🚪 Logging out...");
     try {
       await signOut({
         redirect: false,
@@ -64,7 +64,7 @@ function AuthContent({ children }: { children: React.ReactNode }) {
     
 
     // You could add additional client-side logic here if needed
-    console.log("✅ Login function completed successfully");
+    // console.log("✅ Login function completed successfully");
   };
 
   const value = {
@@ -77,7 +77,7 @@ function AuthContent({ children }: { children: React.ReactNode }) {
     isTenant: user?.role === 'tenant',
   };
 
-  console.log("🔄 Auth context value:", value);
+  // console.log("🔄 Auth context value:", value);
 
   return (
     <AuthContext.Provider value={value}>

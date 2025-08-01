@@ -119,7 +119,7 @@ const propertySchema = new Schema<IProperty>(
   {
     landlordId: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'MicroestateUser',
       required: [true, 'Landlord ID is required'],
       index: true,
     },
