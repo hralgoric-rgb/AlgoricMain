@@ -111,6 +111,8 @@ const Login = () => {
             emailVerified: user.emailVerified || false,
           };
 
+          localStorage.setItem('microestate_user', JSON.stringify(userData));
+
           console.log("✅ Processed user data:", userData);
 
           // Update your auth context

@@ -61,7 +61,7 @@ function AuthContent({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("pendingEmail");
     }
 
-    localStorage.setItem('microestate_user', JSON.stringify(userData));
+    
 
     // You could add additional client-side logic here if needed
     console.log("✅ Login function completed successfully");
