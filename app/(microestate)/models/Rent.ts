@@ -50,12 +50,12 @@ const rentPaymentSchema = new Schema<IRentPayment>(
     },
     tenantId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUser",
       required: [true, "Tenant ID is required"],
     },
     landlordId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUser",
       required: [true, "Landlord ID is required"],
     },
     amount: {

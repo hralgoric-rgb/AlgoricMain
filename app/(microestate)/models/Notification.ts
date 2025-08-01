@@ -70,7 +70,7 @@ const notificationSchema = new Schema<INotification>(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MicroestateUserr",
       required: [true, "User ID is required"],
       index: true,
     },
