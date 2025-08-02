@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -13,48 +13,35 @@ import {
   UserPlus,
   Coffee,
   Building2,
-  MapPin,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PropertyCard from "../components/PropertyCard";
+import { PropertyCard } from "../components";
 import EquityNavigation from "../components/EquityNavigation";
 import BackgroundVideo from "../components/BackgroundVideo";
 import EquityAnimatedBackground from "../EquityAnimatedBackground";
 
 interface Property {
-  _id: string;
+  id: string;
   title: string;
   propertyType: string;
-  address: {
-    street: string;
-    city: string;
-    locality: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  price: number;
-  area: number;
-  bedrooms?: number;
-  bathrooms?: number;
-  description: string;
+  location: string;
+  totalShares: number;
+  availableShares: number;
+  pricePerShare: number;
+  currentYield: number;
+  predictedAppreciation: number;
+  riskLevel: "Low" | "Medium" | "High";
   images: string[];
-  amenities: string[];
+  description: string;
+  monthlyRental: number;
+  currentOccupancy: number;
+  totalValue: number;
+  aiScore: number;
   features: string[];
-  status: string;
-  views: number;
-  favorites: number;
-  createdAt: string;
-  ownerDetails: {
-    name: string;
-    phone: string;
-    email?: string;
-  };
+  keyTenants: string[];
 }
 
-const PropertyListingPage: React.FC = () => {
-  console.log("PropertyListingPage component loaded");
+export default function PropertyListingPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,13 +57,12 @@ const PropertyListingPage: React.FC = () => {
 
   const propertyTypes = [
     { value: "all", label: "All Types", icon: Building2 },
-    { value: "apartment", label: "Residential Apartment", icon: Building2 },
-    { value: "villa", label: "Residential Villa", icon: Building2 },
-    { value: "office", label: "Commercial Office", icon: Briefcase },
-    { value: "commercial", label: "Commercial Retail", icon: Store },
-    { value: "land", label: "Land", icon: Building2 },
-    { value: "house", label: "House", icon: Building2 },
-    { value: "other", label: "Other", icon: Building2 },
+    { value: "Office", label: "Office Buildings", icon: Briefcase },
+    { value: "Warehouse", label: "Warehouses", icon: Warehouse },
+    { value: "Retail", label: "Retail", icon: Store },
+    { value: "Data Center", label: "Data Centers", icon: Server },
+    { value: "Co-working", label: "Co-working", icon: UserPlus },
+    { value: "Industrial", label: "Industrial", icon: Coffee },
   ];
 
   const riskLevels = [
@@ -158,14 +144,14 @@ const PropertyListingPage: React.FC = () => {
       router.replace(`?${params.toString()}`);
 
       try {
-        const res = await fetch(`/api/properties?${params.toString()}`, {
+        const res = await fetch(`/api/commercial/search?${params.toString()}`, {
           signal: controller.signal,
         });
 
         const data = await res.json();
         if (data.success) {
-          setProperties(data.properties);
-          setFilteredProperties(data.properties);
+          setProperties(data.data);
+          setFilteredProperties(data.data);
         }
       } catch (error: any) {
         if (error.name !== "AbortError") {
@@ -220,7 +206,7 @@ const PropertyListingPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              Properties{" "}
+              Commercial Properties{" "}
               <span className="text-[#a78bfa]">Marketplace</span>
             </motion.h1>
           </div>
@@ -427,78 +413,10 @@ const PropertyListingPage: React.FC = () => {
 
                   return (
                     <div
-                      key={property._id}
-                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800/50 group h-full flex flex-col"
+                      key={property.id}
+                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800/50 group h-full flex"
                     >
-                      {/* Property Image */}
-                      <div className="relative h-48 bg-gradient-to-br from-gray-800/50 to-gray-900/50 overflow-hidden">
-                        {property.images && property.images.length > 0 ? (
-                          <img
-                            src={property.images[0]}
-                            alt={property.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Building2 className="w-16 h-16 text-gray-400" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
-                        
-                        {/* Property Type Badge */}
-                        <div className="absolute top-4 left-4">
-                          <span className="px-3 py-1 bg-purple-500/80 backdrop-blur-sm text-white text-xs font-medium rounded-full">
-                            {property.propertyType}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Property Details */}
-                      <div className="p-6 flex-1 flex flex-col">
-                        <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">
-                          {property.title}
-                        </h3>
-                        
-                        <div className="flex items-center text-gray-300 mb-3">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          <span className="text-sm">
-                            {property.address?.locality}, {property.address?.city}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <p className="text-gray-400 text-sm">Price</p>
-                            <p className="text-white font-semibold">₹{property.price?.toLocaleString()}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-400 text-sm">Area</p>
-                            <p className="text-white font-semibold">{property.area} sq ft</p>
-                          </div>
-                        </div>
-
-                        {property.bedrooms && property.bathrooms && (
-                          <div className="flex items-center gap-4 mb-4 text-sm text-gray-300">
-                            <span>{property.bedrooms} Beds</span>
-                            <span>{property.bathrooms} Baths</span>
-                          </div>
-                        )}
-
-                        <p className="text-gray-300 text-sm line-clamp-2 mb-4 flex-1">
-                          {property.description}
-                        </p>
-
-                        <div className="flex items-center justify-between mt-auto">
-                          <span className="text-purple-400 text-sm font-medium">
-                            {property.status}
-                          </span>
-                          <Link href={`/equity/property/${property._id}`}>
-                            <Button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
-                              View Details
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
+                      <PropertyCard property={property} />
                     </div>
                   );
                 })}
@@ -525,6 +443,4 @@ const PropertyListingPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default PropertyListingPage;
+}
