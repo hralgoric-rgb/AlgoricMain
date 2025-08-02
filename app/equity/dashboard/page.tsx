@@ -475,12 +475,7 @@ Platform: 100GAJ Equity Investment
             {/* Post Property Button */}
             <Button
               onClick={() => {
-                const token = localStorage.getItem("authToken");
-                if (token) {
                   router.push('/equity/property/post');
-                } else {
-                  router.push('/equity/login-signup?redirect=/equity/property/post');
-                }
               }}
               className="bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 group"
             >

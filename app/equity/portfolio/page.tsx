@@ -15,14 +15,13 @@ import {
 	Grid3X3,
 	List,
 	Plus,
+	Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PortfolioSummary } from "../components";
-import { toast } from "sonner";
+import { AuthModal } from "../components";
 import EquityNavigation from "../components/EquityNavigation";
-import BackgroundVideo from "../components/BackgroundVideo";
-import EquityAnimatedBackground from "../EquityAnimatedBackground";
 
 interface PortfolioProperty {
 	id: string;
@@ -67,6 +66,7 @@ export default function PortfolioPage() {
 	const [selectedFilter, setSelectedFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("value");
 	const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+	const [showAuthModal, setShowAuthModal] = useState(false);
 
 	const filterOptions = [
 		{ value: "all", label: "All Properties" },
@@ -88,6 +88,20 @@ export default function PortfolioPage() {
 	];
 
 	useEffect(() => {
+		const token =
+			typeof window !== "undefined"
+				? sessionStorage.getItem("authToken") ||
+				  localStorage.getItem("authToken")
+				: null;
+
+		if (!token) {
+			setShowAuthModal(true);
+			setIsLoading(false);
+			return;
+		}
+
+		// Only fetch portfolio data if authenticated
+		setShowAuthModal(false);
 		const fetchPortfolioData = async () => {
 			try {
 				// Get user profile for authentication
@@ -263,6 +277,12 @@ export default function PortfolioPage() {
 		}
 	};
 
+	const handleAuthSuccess = () => {
+		setShowAuthModal(false);
+		// Reload the page to fetch portfolio data with the new auth token
+		window.location.reload();
+	};
+
 	if (isLoading) {
 		return (
 			<div className='min-h-screen bg-black flex items-center justify-center'>
@@ -274,10 +294,63 @@ export default function PortfolioPage() {
 		);
 	}
 
+	// Block access completely if not authenticated - only show auth modal
+	if (showAuthModal) {
+		return (
+			<div className='min-h-screen bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa] relative overflow-hidden'>
+				{/* Animated Background Elements */}
+				<div className='absolute inset-0 overflow-hidden'>
+					<div className='absolute -top-40 -left-40 w-80 h-80 bg-purple-500 rounded-full opacity-20 blur-3xl animate-pulse'></div>
+					<div className='absolute top-20 -right-20 w-60 h-60 bg-blue-500 rounded-full opacity-15 blur-2xl animate-bounce'></div>
+					<div className='absolute bottom-20 left-20 w-72 h-72 bg-pink-500 rounded-full opacity-10 blur-3xl animate-pulse'></div>
+					<div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full opacity-5 blur-3xl animate-spin'></div>
+				</div>
+
+				<EquityNavigation />
+
+				<div className='container mx-auto px-4 py-8 pt-24 relative z-10 flex items-center justify-center min-h-[calc(100vh-6rem)]'>
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						className='max-w-md mx-auto text-center'
+					>
+						<div className='backdrop-blur-xl bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl'>
+							<Shield className='w-16 h-16 text-purple-400 mx-auto mb-4' />
+							<h1 className='text-3xl font-bold text-white mb-4 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent'>
+								Authentication Required
+							</h1>
+							<p className='text-purple-200 mb-6'>
+								Please sign in to access your portfolio dashboard
+							</p>
+							<Button
+								onClick={() => setShowAuthModal(true)}
+								className='backdrop-blur-xl bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 text-white px-6 py-3 rounded-xl border border-white/20 transition-all duration-300 shadow-lg shadow-purple-500/25'
+							>
+								Sign In
+							</Button>
+						</div>
+					</motion.div>
+				</div>
+
+				{/* Auth Modal - Only UI element accessible when not authenticated */}
+				<AuthModal
+					isOpen={showAuthModal}
+					onClose={() => {
+						// Prevent closing modal when not authenticated - redirect to home instead
+						window.location.href = "/equity";
+					}}
+					onAuthSuccess={handleAuthSuccess}
+				/>
+			</div>
+		);
+	}
+
 	return (
 		<div className='min-h-screen bg-black'>
+			<EquityNavigation />
+
 			{/* Header */}
-			<div className='bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800'>
+			<div className='bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800 pt-20'>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
