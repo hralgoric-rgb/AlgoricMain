@@ -5,7 +5,7 @@ import {
 	Home,
 	Building2,
 	Target,
-	BarChart3,
+	Landmark,
 	Menu,
 	X,
 	User,
@@ -47,10 +47,11 @@ export default function EquityNavigation() {
 	};
 
 	const navItems = [
+				{ href: "/", label: "Home", icon: Landmark},
+
 		{ href: "/equity", label: "Dashboard", icon: Home },
 		{ href: "/equity/property", label: "Properties", icon: Building2 },
 		{ href: "/equity/portfolio", label: "Portfolio", icon: Target },
-		{ href: "/equity/dashboard", label: "Analytics", icon: BarChart3 },
 	];
 
 	return (
