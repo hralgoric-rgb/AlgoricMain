@@ -50,7 +50,7 @@ export default function KycPage() {
     }
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
       if (!token) {
         setError("You must be logged in to complete KYC.");
         setSubmitting(false);

@@ -168,7 +168,7 @@ export default function PostPropertyPage() {
 		setSubmitting(true);
 
 		try {
-			const token = localStorage.getItem("authToken");
+			const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
 			if (!token) {
 				setError("You must be logged in to post a property.");
 				setSubmitting(false);
