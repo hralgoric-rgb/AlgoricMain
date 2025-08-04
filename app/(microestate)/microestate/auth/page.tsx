@@ -56,7 +56,7 @@ const Login = () => {
       placeholder: "Enter your email",
       value: formData.email,
       required: true,
-    },  
+    },
     {
       id: "password",
       label: "Password",
@@ -100,37 +100,35 @@ const Login = () => {
 
         if (session && session.user) {
           const { user } = session;
-          console.log("👤 User data:", user);
+          // console.log("👤 User data:", user);
 
-          // Fix: Use user.id instead of user._id
           const userData = {
-            id: user.id, // Changed from user._id to user.id
+            id: user.id,
             email: user.email!,
             name: user.name!,
             role: user.role as string,
             emailVerified: user.emailVerified || false,
           };
 
-          localStorage.setItem('microestate_user', JSON.stringify(userData));
-
           console.log("✅ Processed user data:", userData);
 
-          // Update your auth context
+          // Update your auth context immediately
           login(userData);
 
-          // Redirect based on role
-          setTimeout(() => {
-            if (user.role === "landlord") {
-              console.log("🏠 Redirecting to landlord dashboard");
-              router.push("/microestate/landlord");
-            } else if (user.role === "tenant") {
-              console.log("🏠 Redirecting to tenant dashboard");
-              router.push("/microestate/tenant");
-            } else {
-              console.log("🏠 Redirecting to home");
-              router.push("/microestate");
-            }
-          }, 1000);
+          // IMPORTANT: Wait a brief moment for state to update
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Redirect based on role without delay
+          if (user.role === "landlord") {
+            console.log("🏠 Redirecting to landlord dashboard");
+            router.push("/microestate/landlord");
+          } else if (user.role === "tenant") {
+            console.log("🏠 Redirecting to tenant dashboard");
+            router.push("/microestate/tenant");
+          } else {
+            console.log("🏠 Redirecting to home");
+            router.push("/microestate");
+          }
         } else {
           console.error("❌ No session or user data found");
           setError("Failed to retrieve user session");
@@ -168,14 +166,13 @@ const Login = () => {
           email: forgotPasswordEmail,
         }
       );
-      
 
       console.log("Forgot password response:", response.data);
 
       if (response.data.success) {
         setSuccess(
           response.data.message ||
-          "Password reset instructions have been sent to your email address. Please check your inbox."
+            "Password reset instructions have been sent to your email address. Please check your inbox."
         );
 
         // Store email for reset password view
@@ -213,13 +210,13 @@ const Login = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Changes made by Priya - Adding verification code validation for enhanced security
     if (!verificationCode || verificationCode.length !== 6) {
       setError("Please enter the 6-digit verification code");
       return;
     }
-    
+
     if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -228,35 +225,43 @@ const Login = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Changes made by Priya - Updated API call to include verification code for secure password reset
-      const response = await axios.post('/microestate/api/auth/reset-password', {
-        email: resetEmail,
-        code: verificationCode,
-        password: resetPasswordData.newPassword
-      });
-      
+      const response = await axios.post(
+        "/microestate/api/auth/reset-password",
+        {
+          email: resetEmail,
+          code: verificationCode,
+          password: resetPasswordData.newPassword,
+        }
+      );
+
       if (response.data.success) {
         setSuccess("Password reset successfully! Redirecting to login...");
-        
+
         // Clear form data
         setResetPasswordData({
           newPassword: "",
           confirmPassword: "",
         });
         setVerificationCode(""); // Changes made by Priya - Clear verification code after successful reset
-        
+
         // Redirect to login after success
         setTimeout(() => {
           setCurrentView("main");
           setSuccess(null);
         }, 2000);
       } else {
-        setError(response.data.error || "Failed to reset password. Please try again.");
+        setError(
+          response.data.error || "Failed to reset password. Please try again."
+        );
       }
     } catch (error: any) {
       console.error("Reset password error:", error);
-      setError(error.response?.data?.error || "Failed to reset password. Please try again.");
+      setError(
+        error.response?.data?.error ||
+          "Failed to reset password. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -518,7 +523,10 @@ const Login = () => {
         </p>
       </div>
       <div className="p-8">
-        <form onSubmit={handleResetPassword} className="space-y-4 animate-slideIn">
+        <form
+          onSubmit={handleResetPassword}
+          className="space-y-4 animate-slideIn"
+        >
           <div className="space-y-4">
             {/* Changes made by Priya - Adding verification code field for enhanced security */}
             <div className="group">
@@ -533,14 +541,18 @@ const Login = () => {
                   minLength={6}
                   pattern="[0-9]{6}"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) =>
+                    setVerificationCode(e.target.value.replace(/\D/g, ""))
+                  }
                   placeholder="Enter 6-digit code"
                   className="w-full px-4 py-3 rounded-2xl bg-gray-800/50 border border-orange-500/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300 backdrop-blur-sm hover:border-orange-500/40 h-auto text-center tracking-widest text-lg"
                   required
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
-              <div className="text-xs text-gray-400 mt-1 text-center">{verificationCode.length}/6 digits</div>
+              <div className="text-xs text-gray-400 mt-1 text-center">
+                {verificationCode.length}/6 digits
+              </div>
             </div>
 
             {/* New Password Field */}
@@ -553,10 +565,10 @@ const Login = () => {
                 <Input
                   type={showNewPassword ? "text" : "password"}
                   value={resetPasswordData.newPassword}
-                  onChange={(e) => 
-                    setResetPasswordData(prev => ({
+                  onChange={(e) =>
+                    setResetPasswordData((prev) => ({
                       ...prev,
-                      newPassword: e.target.value
+                      newPassword: e.target.value,
                     }))
                   }
                   placeholder="Enter your new password"
@@ -587,10 +599,10 @@ const Login = () => {
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   value={resetPasswordData.confirmPassword}
-                  onChange={(e) => 
-                    setResetPasswordData(prev => ({
+                  onChange={(e) =>
+                    setResetPasswordData((prev) => ({
                       ...prev,
-                      confirmPassword: e.target.value
+                      confirmPassword: e.target.value,
                     }))
                   }
                   placeholder="Confirm your new password"
@@ -605,7 +617,11 @@ const Login = () => {
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-orange-400 transition-colors duration-200 hover:bg-transparent h-auto"
                   tabIndex={-1}
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </Button>
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>

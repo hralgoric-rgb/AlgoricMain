@@ -2,62 +2,67 @@
 
 import { useAuth } from "../Context/AuthProvider";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('landlord' | 'tenant' | 'user')[];
-  redirectTo?: string;
+  allowedRoles?: string[];
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  allowedRoles = ['landlord', 'tenant', 'user'], 
-  redirectTo = "/microestate/auth" 
+export default function ProtectedRoute({
+  children,
+  allowedRoles = [],
 }: ProtectedRouteProps) {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
-      // If not authenticated, redirect to login/register
-      if (!isAuthenticated) {
-        router.push("/microestate/auth");
-        return;
-      }
 
-      // If user has a role but it's not in allowed roles, redirect
-      if (user?.role && !allowedRoles.includes(user.role as any)) {
-        if (user.role === 'landlord') {
-          router.push("/microestate/landlord");
-        } else if (user.role === 'tenant') {
-          router.push("/microestate/tenant");
+    // Add a small delay to ensure auth context is fully initialized
+    const checkAuth = setTimeout(() => {
+      if (!isLoading) {
+        if (!user) {
+          router.push("/microestate/auth");
+        } else if (
+          allowedRoles.length > 0 &&
+          !allowedRoles.includes(user.role)
+        ) {
+          router.push("/microestate/auth");
         } else {
-          router.push("/microestate");
+          console.log("✅ User authenticated:", user.email, user.role);
         }
-        return;
+        setIsChecking(false);
       }
-    }
-  }, [isAuthenticated, user, loading, allowedRoles, router, redirectTo]);
+    }, 100); 
+
+    return () => clearTimeout(checkAuth);
+  }, [user, isLoading, allowedRoles, router]);
 
   // Show loading while checking authentication
-  if (loading) {
+  if (isLoading || isChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-white">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // If not authenticated, don't render children
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // If user role is not allowed, don't render children
-  if (user?.role && !allowedRoles.includes(user.role as any)) {
-    return null;
+  // Don't render anything if redirecting
+  if (!user || (allowedRoles.length > 0 && !allowedRoles.includes(user.role))) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-white">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
-} 
+}
