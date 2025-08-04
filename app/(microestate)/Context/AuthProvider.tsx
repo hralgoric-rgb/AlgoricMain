@@ -1,105 +1,208 @@
-'use client'
+"use client";
 
-import { SessionProvider, useSession, signOut } from "next-auth/react"
-import React, { createContext, useContext } from "react"
-import { useRouter } from 'next/navigation';
+import { SessionProvider, useSession, signOut, getSession } from "next-auth/react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
   email: string;
   name: string;
-  role: 'landlord' | 'tenant';
+  role: "landlord" | "tenant";
   emailVerified?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
-  logout: () => void;
   login: (userData: User) => void;
-  isAuthenticated: boolean;
-  isLandlord: boolean;
-  isTenant: boolean;
+  logout: () => void;
+  isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function AuthContent({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const loading = status === "loading";
+  const { data: session, status } = useSession();
 
-  // console.log("🔄 Auth session:", session);
-  // console.log("🔄 Auth status:", status);
+  // Initialize user from localStorage and session on component mount
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        setIsLoading(true);
 
-  const user: User | null = session?.user ? {
-    id: session.user.id!,
-    email: session.user.email!,
-    name: session.user.name!,
-    role: session.user.role as 'landlord' | 'tenant',
-    emailVerified: session.user.emailVerified || false,
-  } : null;
+        if (session?.user) {
+          const userData = {
+            id: session.user.id,
+            email: session.user.email!,
+            name: session.user.name!,
+            role: session.user.role as "landlord" | "tenant",
+            emailVerified: session.user.emailVerified || false,
+          };
+          
+          setUser(userData);
+          localStorage.setItem("microestate_user", JSON.stringify(userData));
+          return;
+        }
 
-  const logout = async () => {
-    // console.log("🚪 Logging out...");
+        // Fallback to localStorage if no session
+        const storedUser = localStorage.getItem("microestate_user");
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          
+          // Verify with session if available
+          const currentSession = await getSession();
+          if (!currentSession) {
+            // Session expired, clear stored data
+            setUser(null);
+            localStorage.removeItem("microestate_user");
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error parsing stored user data:", error);
+        localStorage.removeItem("microestate_user");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (status !== "loading") {
+      initializeAuth();
+    }
+  }, [session, status]);
+
+  // Listen for storage changes (useful for multi-tab scenarios)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "microestate_user") {
+        if (e.newValue) {
+          try {
+            const userData = JSON.parse(e.newValue);
+            console.log("🔄 Storage changed, updating user:", userData);
+            setUser(userData);
+          } catch (error) {
+            console.error("❌ Error parsing updated user data:", error);
+            setUser(null);
+          }
+        } else {
+          console.log("🔄 Storage cleared, removing user");
+          setUser(null);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Listen for custom events from other components
+  useEffect(() => {
+    const handleUserLogin = (event: CustomEvent) => {
+      console.log("🔄 User login event received:", event.detail);
+      setUser(event.detail);
+    };
+
+    const handleUserLogout = () => {
+      console.log("🔄 User logout event received");
+      setUser(null);
+    };
+
+    window.addEventListener("userLogin" as any, handleUserLogin);
+    window.addEventListener("userLogout" as any, handleUserLogout);
+
+    return () => {
+      window.removeEventListener("userLogin" as any, handleUserLogin);
+      window.removeEventListener("userLogout" as any, handleUserLogout);
+    };
+  }, []);
+
+  const refreshUser = async () => {
     try {
-      await signOut({
-        redirect: false,
-        callbackUrl: "/microestate", 
-      });
-      router.push("/microestate");
+      const currentSession = await getSession();
+      if (currentSession?.user) {
+        const userData = {
+          id: currentSession.user.id,
+          email: currentSession.user.email!,
+          name: currentSession.user.name!,
+          role: currentSession.user.role as "landlord" | "tenant",
+          emailVerified: currentSession.user.emailVerified || false,
+        };
+        
+        setUser(userData);
+        localStorage.setItem("microestate_user", JSON.stringify(userData));
+        console.log("🔄 User data refreshed:", userData);
+      } else {
+        setUser(null);
+        localStorage.removeItem("microestate_user");
+        console.log("🔄 No session found, user cleared");
+      }
     } catch (error) {
-      console.error("❌ Logout error:", error);
+      console.error("❌ Error refreshing user data:", error);
     }
   };
 
-  // Add the missing login function
   const login = (userData: User) => {
-    console.log("🔄 Login function called with:", userData);
+    console.log("🔐 AuthProvider: Setting user data:", userData);
+    setUser(userData);
+    localStorage.setItem("microestate_user", JSON.stringify(userData));
 
-    if(userData.emailVerified==true){
-      localStorage.removeItem("pendingEmail");
-    }
-
+    // Dispatch a custom event to notify other components
+    window.dispatchEvent(new CustomEvent("userLogin", { detail: userData }));
     
+    // Force a small delay to ensure all components receive the event
+    setTimeout(() => {
+      console.log("🔄 Login state update completed");
+    }, 50);
+  };
 
-    // You could add additional client-side logic here if needed
-    // console.log("✅ Login function completed successfully");
+  const logout = async () => {
+    console.log("🔓 AuthProvider: Logging out user");
+    setUser(null);
+    localStorage.removeItem("microestate_user");
+
+    // Sign out from NextAuth
+    await signOut({ redirect: false });
+
+    // Dispatch a custom event to notify other components
+    window.dispatchEvent(new CustomEvent("userLogout"));
+
+    // Redirect to login
+    router.push("/microestate/auth");
   };
 
   const value = {
     user,
-    loading,
+    login,
     logout,
-    login, // Make sure this is included
-    isAuthenticated: !!user,
-    isLandlord: user?.role === 'landlord',
-    isTenant: user?.role === 'tenant',
+    isLoading: isLoading || status === "loading",
+    refreshUser,
   };
 
-  // console.log("🔄 Auth context value:", value);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
+// Wrapper component that includes SessionProvider
+export default function AuthProviderWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <SessionProvider basePath="/microestate/api/auth">
-      <AuthContent>
-        {children}
-      </AuthContent>
+      <AuthProvider>{children}</AuthProvider>
     </SessionProvider>
   );
 }

@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import Background from "../../../_components/Background";
 import ProtectedRoute from "../../../_components/ProtectedRoute";
 import axios from "axios";
+import { useAuth } from "@/app/(microestate)/Context/AuthProvider";
 
 // Define a type for the property data coming from the API
 interface Property {
@@ -51,6 +52,7 @@ export default function PropertiesPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const {user}=  useAuth();
 
   const fetchProperties = async () => {
     try {
@@ -83,8 +85,12 @@ export default function PropertiesPage() {
   };
 
   useEffect(() => {
-    fetchProperties();
-  }, []);
+    if(!user || user.role !== "landlord") {
+      router.push("/microestate/auth");
+    } else {
+      fetchProperties();
+    }
+  }, [user, router]);
 
   // Listen for route changes to refresh data when returning from edit page
   useEffect(() => {
