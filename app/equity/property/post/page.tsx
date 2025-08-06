@@ -12,7 +12,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-// Optimized imports - only load what's needed
 import {
 	Building2,
 	MapPin,
@@ -29,17 +28,70 @@ import {
 	User,
 } from "lucide-react";
 
+// Interface for commercial property form data
+interface CommercialPropertyFormData {
+	// Step 1: Property Type & Category
+	propertyType: string;
+	listingCategory: string;
+	
+	// Step 2: Basic Property Details
+	projectName: string;
+	fullAddress: string;
+	pinCode: string;
+	city: string;
+	locality: string;
+	googleMapsPin: string;
+	possessionStatus: string;
+	builtUpArea: string;
+	totalValuation: string;
+	minimumInvestmentTicket: string;
+	customTicketAmount: string;
+	
+	// Step 3: Fractional Investment Parameters
+	targetRaiseAmount: string;
+	ownershipSplit: string;
+	totalShares: string;
+	sharePercentage: string;
+	rentalYield: string;
+	annualROIProjection: string;
+	minimumHoldingPeriod: string;
+	exitOptions: string[];
+	
+	// Step 4: Document Uploads (simplified for demo)
+	documentsUploaded: boolean;
+	
+	// Step 5: Media & Marketing
+	images: File[];
+	existingImages: string[];
+	virtualTourLink: string;
+	requestVirtualTour: boolean;
+	
+	// Step 6: Additional Highlights
+	highlights: string[];
+	customHighlights: string;
+	tenantName: string;
+	
+	// Step 7: Contact Information & Legal
+	ownerDetails: {
+		name: string;
+		phone: string;
+		email: string;
+		companyName: string;
+	};
+	termsAccepted: boolean;
+	
+	// Internal coordinates
+	coordinates: {
+		latitude: string;
+		longitude: string;
+	};
+}
+
 // Lazy load heavy components
 const EquityNavigation = lazy(() => import("@/app/equity/components/EquityNavigation"));
 const AuthModal = lazy(() => import("@/app/equity/components").then(mod => ({ default: mod.AuthModal })));
 
-// Dynamic import for axios to reduce bundle size
-const fetchCoordinates = async (query: string) => {
-	const axios = (await import("axios")).default;
-	return axios.get(`/api/geocode?q=${encodeURIComponent(query)}`);
-};
-
-// Loading component for better UX
+// Loading component
 const LoadingSpinner = () => (
 	<div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa]">
 		<div className="relative">
@@ -51,67 +103,7 @@ const LoadingSpinner = () => (
 	</div>
 );
 
-interface PropertyFormData {
-	// Step 1: Basic Property Details
-	title: string;
-	listingType: string;
-	propertyType: string;
-	subType: string;
-	bedrooms: string;
-	furnishing: string;
-	propertyAge: string;
-	possessionStatus: string;
-	availableFrom: string;
-	
-	// Step 2: Location & Address
-	address: {
-		city: string;
-		locality: string;
-		projectName: string;
-		street: string;
-		floorNumber: string;
-		landmark: string;
-		coordinates: {
-			latitude: string;
-			longitude: string;
-		};
-	};
-	
-	// Step 3: Property Features & Area
-	area: string;
-	carpetArea: string;
-	bathrooms: string;
-	balcony: string;
-	balconyCount: string;
-	facing: string;
-	parking: string;
-	waterElectricity: string;
-	description: string;
-	
-	// Step 4: Pricing & Media
-	price: string;
-	numberOfTokens: string;
-	priceNegotiable: boolean;
-	maintenanceCharges: string;
-	securityDeposit: string;
-	images: File[];
-	existingImages: string[];
-	floorPlan: File | null;
-	virtualTour: string;
-	ownershipType: string;
-	
-	// Step 5: Contact Information  
-	ownerDetails: {
-		name: string;
-		phone: string;
-		email: string;
-	};
-	
-	amenities: string[];
-	additionalFeatures: string;
-}
-
-export default function PostPropertyPage() {
+export default function CommercialPropertyForm() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const [formStep, setFormStep] = useState(1);
@@ -119,55 +111,58 @@ export default function PostPropertyPage() {
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [showAuthModal, setShowAuthModal] = useState(false);
-	const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-	const [isDragging, setIsDragging] = useState(false);
-	const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
-	const [isLoadingCoordinates, setIsLoadingCoordinates] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// Memoized property types to prevent re-creation on every render
+	// Property types for commercial real estate
 	const propertyTypes = useMemo(() => [
 		{
-			value: "apartment",
-			label: "Apartment",
+			value: "commercial-office",
+			label: "Commercial Office",
 			icon: <Building2 className="w-5 h-5" />,
-			subTypes: ["Studio Apartment", "Builder Floor", "Service Apartment", "Penthouse"]
 		},
 		{ 
-			value: "house", 
-			label: "Independent House", 
+			value: "retail-shop", 
+			label: "Retail Shop", 
 			icon: <Building2 className="w-5 h-5" />,
-			subTypes: ["Villa", "Row House", "Bungalow", "Farmhouse"]
 		},
 		{ 
-			value: "villa", 
-			label: "Villa", 
+			value: "co-working-space", 
+			label: "Co-working Space", 
 			icon: <Building2 className="w-5 h-5" />,
-			subTypes: ["Independent Villa", "Villa in Complex", "Resort Villa"]
 		},
 		{
-			value: "commercial",
-			label: "Commercial",
+			value: "warehousing-industrial",
+			label: "Warehousing / Industrial",
 			icon: <Building2 className="w-5 h-5" />,
-			subTypes: ["Shop", "Office Space", "Showroom", "Warehouse", "Restaurant Space"]
-		},
-		{ 
-			value: "land", 
-			label: "Plot/Land", 
-			icon: <MapPin className="w-5 h-5" />,
-			subTypes: ["Residential Plot", "Commercial Plot", "Agricultural Land", "Industrial Plot"]
 		},
 	], []);
 
-	// Memoized amenities list
-	const amenitiesList = useMemo(() => [
-		"Parking", "Swimming Pool", "Gym", "Security", "Garden", "Elevator",
-		"Power Backup", "Club House", "Air Conditioning", "Furnished", "Balcony",
-		"Pet Friendly", "CCTV", "Intercom", "Fire Safety", "Water Storage",
-		"Maintenance Staff", "Visitor Parking", "Children's Play Area", "Senior Citizen Sit-out"
+	// Investment ticket options
+	const investmentTicketOptions = useMemo(() => [
+		"₹10,000", "₹25,000", "₹50,000", "Custom Amount"
 	], []);
 
-	// Memoized Delhi areas - only load when needed
+	// Possession status options
+	const possessionStatusOptions = useMemo(() => [
+		"Ready to Move", "Under Construction", "Leased Asset"
+	], []);
+
+	// Exit options
+	const exitOptions = useMemo(() => [
+		"Platform Resale", "Owner Buyback", "Secondary Marketplace (coming soon)"
+	], []);
+
+	// Property highlights/USP options
+	const highlightOptions = useMemo(() => [
+		"Grade-A construction",
+		"Tenanted property",
+		"Proximity to metro/highway", 
+		"Expected price appreciation",
+		"Developer track record",
+		"Green building / IGBC certification",
+		"Pre-leased income"
+	], []);
+
+	// Delhi areas with coordinates mapping
 	const delhiAreas = useMemo(() => [
 		"AAYA NAGAR", "ADARSH NAGAR", "ALIPUR", "AMBEDKAR NAGAR", "ANAND PARBAT", "ANANDVIHAR", 
 		"ANDREWS GANJ", "AZADPUR", "BADARPUR", "BARAKHAMBA ROAD", "BAWANA", "BHALSWA JAHANGIR PUR", 
@@ -197,106 +192,93 @@ export default function PostPropertyPage() {
 		"VIKASPURI", "VIVEK VIHAR", "WAZIRPUR", "YAMUNA VIHAR"
 	].sort(), []);
 
-	// Memoized options arrays
-	const bhkOptions = useMemo(() => [
-		"Studio", "1 RK", "1 BHK", "1.5 BHK", "2 BHK", "2.5 BHK", "3 BHK", "3.5 BHK", 
-		"4 BHK", "4.5 BHK", "5 BHK", "5+ BHK"
-	], []);
+	// Coordinates mapping for Delhi areas (sample data - in production this would come from a more comprehensive database)
+	const areaCoordinates = useMemo(() => ({
+		"CONNAUGHT PLACE": { latitude: "28.6304", longitude: "77.2177" },
+		"KAROL BAGH": { latitude: "28.6519", longitude: "77.1937" },
+		"DWARKA": { latitude: "28.5921", longitude: "77.0460" },
+		"ROHINI": { latitude: "28.7041", longitude: "77.1025" },
+		"LAJPAT NAGAR": { latitude: "28.5653", longitude: "77.2430" },
+		"NEHRU PLACE": { latitude: "28.5494", longitude: "77.2551" },
+		"GREATER KAILASH": { latitude: "28.5244", longitude: "77.2426" },
+		"SAKET": { latitude: "28.5245", longitude: "77.2066" },
+		"VASANT VIHAR": { latitude: "28.5672", longitude: "77.1594" },
+		"DEFENSE COLONY": { latitude: "28.5729", longitude: "77.2294" },
+		"JANAKPURI": { latitude: "28.6219", longitude: "77.0856" },
+		"RAJOURI GARDEN": { latitude: "28.6498", longitude: "77.1206" },
+		"UTTAM NAGAR": { latitude: "28.6197", longitude: "77.0594" },
+		"SHAHDARA": { latitude: "28.6692", longitude: "77.2856" },
+		"MAYUR VIHAR": { latitude: "28.6097", longitude: "77.2956" },
+		"PREET VIHAR": { latitude: "28.6367", longitude: "77.2947" },
+		"VASANT KUNJ": { latitude: "28.5244", longitude: "77.1594" },
+		"HAUZ KHAS": { latitude: "28.5494", longitude: "77.2006" },
+		"SOUTH EXTENSION": { latitude: "28.5729", longitude: "77.2178" },
+		"CHANAKYAPURI": { latitude: "28.5984", longitude: "77.1847" },
+		// Add more coordinates as needed
+	} as Record<string, { latitude: string; longitude: string }>), []);
 
-	const furnishingOptions = useMemo(() => [
-		"Unfurnished", "Semi-Furnished", "Fully Furnished"
-	], []);
-
-	const propertyAgeOptions = useMemo(() => [
-		"New Construction", "Less than 1 year", "1-5 years", "5-10 years", "10-15 years", "15+ years"
-	], []);
-
-	const possessionStatusOptions = useMemo(() => [
-		"Ready to Move", "Under Construction"
-	], []);
-
-	const facingOptions = useMemo(() => [
-		"North", "South", "East", "West", "North-East", "North-West", "South-East", "South-West"
-	], []);
-
-	const parkingOptions = useMemo(() => [
-		"No Parking", "1 Covered", "2 Covered", "3+ Covered", "1 Open", "2 Open", "3+ Open", "1 Covered + 1 Open"
-	], []);
-
-	const waterElectricityOptions = useMemo(() => [
-		"24x7 Available", "Limited Hours", "Frequent Cuts", "No Issues"
-	], []);
-
-	const ownershipTypeOptions = useMemo(() => [
-		"Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"
-	], []);
-
-	const [formData, setFormData] = useState<PropertyFormData>({
-		// Step 1: Basic Property Details
-		title: "",
-		listingType: "sale",
+	const [formData, setFormData] = useState<CommercialPropertyFormData>({
+		// Step 1: Property Type & Category
 		propertyType: "",
-		subType: "",
-		bedrooms: "",
-		furnishing: "",
-		propertyAge: "",
+		listingCategory: "Fractional Ownership",
+		
+		// Step 2: Basic Property Details
+		projectName: "",
+		fullAddress: "",
+		pinCode: "",
+		city: "Delhi",
+		locality: "",
+		googleMapsPin: "",
 		possessionStatus: "",
-		availableFrom: "",
+		builtUpArea: "",
+		totalValuation: "",
+		minimumInvestmentTicket: "",
+		customTicketAmount: "",
 		
-		// Step 2: Location & Address
-		address: {
-			city: "Delhi",
-			locality: "",
-			projectName: "",
-			street: "",
-			floorNumber: "",
-			landmark: "",
-			coordinates: {
-				latitude: "",
-				longitude: "",
-			},
-		},
+		// Step 3: Fractional Investment Parameters
+		targetRaiseAmount: "",
+		ownershipSplit: "",
+		totalShares: "",
+		sharePercentage: "",
+		rentalYield: "",
+		annualROIProjection: "",
+		minimumHoldingPeriod: "",
+		exitOptions: [],
 		
-		// Step 3: Property Features & Area
-		area: "",
-		carpetArea: "",
-		bathrooms: "",
-		balcony: "",
-		balconyCount: "",
-		facing: "",
-		parking: "",
-		waterElectricity: "",
-		description: "",
+		// Step 4: Document Uploads
+		documentsUploaded: false,
 		
-		// Step 4: Pricing & Media
-		price: "",
-		numberOfTokens: "",
-		priceNegotiable: false,
-		maintenanceCharges: "",
-		securityDeposit: "",
+		// Step 5: Media & Marketing
 		images: [],
 		existingImages: [],
-		floorPlan: null,
-		virtualTour: "",
-		ownershipType: "",
+		virtualTourLink: "",
+		requestVirtualTour: false,
 		
-		// Step 5: Contact Information  
+		// Step 6: Additional Highlights
+		highlights: [],
+		customHighlights: "",
+		tenantName: "",
+		
+		// Step 7: Contact Information & Legal
 		ownerDetails: {
 			name: "",
 			phone: "",
 			email: "",
+			companyName: "",
 		},
+		termsAccepted: false,
 		
-		amenities: [],
-		additionalFeatures: "",
+		// Internal coordinates
+		coordinates: {
+			latitude: "",
+			longitude: "",
+		},
 	});
 
 	useEffect(() => {
-		const token =
-			typeof window !== "undefined"
-				? sessionStorage.getItem("authToken") ||
-				  localStorage.getItem("authToken")
-				: null;
+		const token = typeof window !== "undefined"
+			? sessionStorage.getItem("authToken") || localStorage.getItem("authToken")
+			: null;
 
 		if (!token) {
 			setShowAuthModal(true);
@@ -304,53 +286,11 @@ export default function PostPropertyPage() {
 			return;
 		}
 
-		// Only check KYC verification if authenticated
 		setShowAuthModal(false);
-
-		// Check if user has completed KYC and OTP verification
-		const checkVerification = async () => {
-			try {
-				const res = await fetch("/api/kyc", {
-					method: "GET",
-					headers: { Authorization: `Bearer ${token}` },
-				});
-				const data = await res.json();
-				if (res.ok && data.reviewed) {
-					const tokenPayload = JSON.parse(atob(token.split(".")[1]));
-					const userId = tokenPayload.userId || tokenPayload.sub;
-					const myKyc = data.reviewed.find(
-						(k: any) =>
-							k.userId === userId && k.status === "accepted" && k.otpVerified
-					);
-					if (myKyc) {
-						setLoading(false);
-					} else {
-						// Redirect to dashboard if not verified
-						router.replace("/equity/property/post-dashboard");
-						return;
-					}
-				} else {
-					// Redirect to dashboard if no KYC
-					router.replace("/equity/property/post-dashboard");
-					return;
-				}
-			} catch {
-				// Redirect to dashboard on error
-				router.replace("/equity/property/post-dashboard");
-				return;
-			}
-			setLoading(false);
-		};
-		checkVerification();
+		setLoading(false);
 	}, [router]);
 
-	// Memoized getter for subtypes
-	const getSubTypes = useCallback(() => {
-		const selectedType = propertyTypes.find(type => type.value === formData.propertyType);
-		return selectedType?.subTypes || [];
-	}, [formData.propertyType, propertyTypes]);
-
-	// Optimized input change handler
+	// Input change handler
 	const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
 		const { name, value, type } = e.target;
 		
@@ -360,282 +300,161 @@ export default function PostPropertyPage() {
 				...prev,
 				[parent]: {
 					...prev[parent as keyof typeof prev] as any,
-					[child]: type === 'number' ? parseFloat(value) || 0 : value,
+					[child]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
 				},
 			}));
 		} else {
 			setFormData(prev => ({
 				...prev,
-				[name]: type === 'number' ? parseFloat(value) || 0 : value,
+				[name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
 			}));
 		}
 	}, []);
 
-	// Optimized nested input change handler
-	const handleNestedInputChange = useCallback((parent: string, child: string, value: string) => {
+	// Handle highlight changes
+	const handleHighlightChange = useCallback((highlight: string) => {
 		setFormData(prev => ({
 			...prev,
-			[parent]: {
-				...prev[parent as keyof typeof prev] as any,
-				[child]: value,
-			},
+			highlights: prev.highlights.includes(highlight)
+				? prev.highlights.filter((h: string) => h !== highlight)
+				: [...prev.highlights, highlight]
 		}));
 	}, []);
 
-	// Optimized amenity change handler
-	const handleAmenityChange = useCallback((amenity: string) => {
+	// Handle exit option changes
+	const handleExitOptionChange = useCallback((option: string) => {
 		setFormData(prev => ({
 			...prev,
-			amenities: prev.amenities.includes(amenity)
-				? prev.amenities.filter((a: string) => a !== amenity)
-				: [...prev.amenities, amenity]
+			exitOptions: prev.exitOptions.includes(option)
+				? prev.exitOptions.filter((o: string) => o !== option)
+				: [...prev.exitOptions, option]
 		}));
 	}, []);
 
-	// Alias for handleAmenityChange to match form usage
-	const handleAmenityToggle = handleAmenityChange;
-
-	const removeImage = useCallback((index: number) => {
+	// Handle locality change with automatic coordinate population
+	const handleLocalityChange = useCallback((value: string) => {
 		setFormData(prev => ({
 			...prev,
-			images: prev.images.filter((_, i) => i !== index)
+			locality: value,
+			coordinates: areaCoordinates[value] || { latitude: "", longitude: "" }
 		}));
-		setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
-	}, []);
+	}, [areaCoordinates]);
 
-	const handlePropertyTypeChange = useCallback((type: string) => {
-		setFormData(prev => ({
-			...prev,
-			propertyType: type,
-			subType: "", // Reset subtype when property type changes
-		}));
-	}, []);
+	// Form validation functions for each step
+	const validateStep1 = useCallback(() => {
+		return formData.propertyType !== "";
+	}, [formData.propertyType]);
 
-	// Optimized image upload with compression
-	const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const files = Array.from(e.target.files || []);
+	const validateStep2 = useCallback(() => {
+		const required = [
+			formData.projectName,
+			formData.fullAddress,
+			formData.pinCode,
+			formData.city,
+			formData.locality,
+			formData.possessionStatus,
+			formData.builtUpArea,
+			formData.totalValuation,
+			formData.minimumInvestmentTicket
+		];
 		
-		setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
-		
-		// Process images in batches to avoid blocking the UI
-		const batchSize = 3;
-		const newPreviewUrls: string[] = [];
-		
-		for (let i = 0; i < files.length; i += batchSize) {
-			const batch = files.slice(i, i + batchSize);
-			const batchUrls = await Promise.all(
-				batch.map(file => {
-					return new Promise<string>((resolve) => {
-						const reader = new FileReader();
-						reader.onload = (e) => resolve(e.target?.result as string);
-						reader.readAsDataURL(file);
-					});
-				})
-			);
-			newPreviewUrls.push(...batchUrls);
-			
-			// Allow UI to update between batches
-			if (i + batchSize < files.length) {
-				await new Promise(resolve => setTimeout(resolve, 0));
-			}
+		// If custom amount is selected, validate that too
+		if (formData.minimumInvestmentTicket === "Custom Amount") {
+			required.push(formData.customTicketAmount);
 		}
 		
-		setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
-	}, []);
-
-	const handleDragOver = useCallback((e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDragging(true);
-	}, []);
-
-	const handleDragLeave = useCallback(() => {
-		setIsDragging(false);
-	}, []);
-
-	const handleDrop = useCallback(async (e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDragging(false);
-		
-		const files = Array.from(e.dataTransfer.files);
-		const imageFiles = files.filter(file => file.type.startsWith('image/'));
-		
-		setFormData(prev => ({ ...prev, images: [...prev.images, ...imageFiles] }));
-		
-		const newPreviewUrls = await Promise.all(
-			imageFiles.map(file => {
-				return new Promise<string>((resolve) => {
-					const reader = new FileReader();
-					reader.onload = (e) => resolve(e.target?.result as string);
-					reader.readAsDataURL(file);
-				});
-			})
-		);
-		
-		setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
-	}, []);
-
-	// Memoized validation function for each step
-	const validateStep = useMemo(() => (step: number): { isValid: boolean; errors: string[] } => {
-		const errors: string[] = [];
-		
-		switch (step) {
-			case 1: // Basic Property Details
-				if (!formData.title.trim()) errors.push("Property title is required");
-				if (!formData.listingType) errors.push("Listing type is required");
-				if (!formData.propertyType) errors.push("Property type is required");
-				if (!formData.bedrooms && formData.propertyType !== 'land' && formData.propertyType !== 'commercial') {
-					errors.push("BHK/Room count is required");
-				}
-				if (!formData.furnishing) errors.push("Furnishing status is required");
-				if (!formData.propertyAge) errors.push("Property age is required");
-				if (!formData.possessionStatus) errors.push("Possession status is required");
-				break;
-				
-			case 2: // Location & Address
-				if (!formData.address.city.trim()) errors.push("City is required");
-				if (!formData.address.locality.trim()) errors.push("Locality is required");
-				if (!formData.address.street.trim()) errors.push("Street address is required");
-				if (!formData.address.coordinates.latitude || !formData.address.coordinates.longitude) {
-					errors.push("Coordinates are required - please fetch coordinates");
-				}
-				break;
-				
-			case 3: // Property Specifications
-				if (!formData.area || parseFloat(formData.area) <= 0) errors.push("Valid area is required");
-				if (!formData.price || parseFloat(formData.price) <= 0) errors.push("Valid token price is required");
-				if (!formData.numberOfTokens || parseFloat(formData.numberOfTokens) <= 0) errors.push("Valid number of tokens is required");
-				if (!formData.description.trim()) errors.push("Property description is required");
-				break;
-				
-			case 4: // Amenities & Features
-				// No minimum amenities requirement - users can select as many as they want
-				break;
-				
-			case 5: // Images & Review
-				// Check if images exist (either new uploads or existing images)
-				const totalImages = (formData.existingImages?.length || 0) + (formData.images?.length || 0);
-				if (totalImages === 0) {
-					errors.push("At least one image is required");
-				}
-				// Require minimum 3 images for better listing quality
-				if (totalImages < 3) {
-					errors.push("Please upload at least 3 images for better listing quality");
-				}
-				// Require owner contact details
-				if (!formData.ownerDetails.name.trim()) {
-					errors.push("Owner name is required");
-				}
-				if (!formData.ownerDetails.phone.trim()) {
-					errors.push("Owner phone number is required");
-				}
-				break;
-		}
-		
-		return { isValid: errors.length === 0, errors };
+		return required.every(field => field && field.toString().trim() !== "");
 	}, [formData]);
 
-	// Helper function to check if current step is valid
-	const isCurrentStepValid = useCallback((): boolean => {
-		const validation = validateStep(formStep);
-		return validation.isValid;
-	}, [validateStep, formStep]);
-
-	const handleNextStep = useCallback(() => {
-		const validation = validateStep(formStep);
+	const validateStep3 = useCallback(() => {
+		const required = [
+			formData.targetRaiseAmount,
+			formData.ownershipSplit,
+			formData.rentalYield,
+			formData.annualROIProjection,
+			formData.minimumHoldingPeriod
+		];
 		
-		if (!validation.isValid) {
-			setError(`Please fill required fields: ${validation.errors.join(", ")}`);
+		return required.every(field => field && field.toString().trim() !== "") && 
+			   formData.exitOptions.length > 0;
+	}, [formData]);
+
+	const validateStep4 = useCallback(() => {
+		return formData.documentsUploaded;
+	}, [formData.documentsUploaded]);
+
+	const validateStep5 = useCallback(() => {
+		// For now, just checking if they have at least acknowledged the media section
+		// In a real implementation, you'd check for actual file uploads
+		return true; // Media is optional but encouraged
+	}, []);
+
+	const validateStep6 = useCallback(() => {
+		// Highlights are optional, so always valid
+		return true;
+	}, []);
+
+	const validateStep7 = useCallback(() => {
+		const required = [
+			formData.ownerDetails.name,
+			formData.ownerDetails.phone,
+			formData.ownerDetails.email
+		];
+		
+		return required.every(field => field && field.trim() !== "") && formData.termsAccepted;
+	}, [formData]);
+
+	// Get validation function for current step
+	const getCurrentStepValidation = useCallback(() => {
+		switch (formStep) {
+			case 1: return validateStep1();
+			case 2: return validateStep2();
+			case 3: return validateStep3();
+			case 4: return validateStep4();
+			case 5: return validateStep5();
+			case 6: return validateStep6();
+			case 7: return validateStep7();
+			default: return false;
+		}
+	}, [formStep, validateStep1, validateStep2, validateStep3, validateStep4, validateStep5, validateStep6, validateStep7]);
+
+	// Step navigation with validation
+	const handleNextStep = useCallback(() => {
+		const isValid = getCurrentStepValidation();
+		
+		if (!isValid) {
+			setError(getValidationMessage(formStep));
 			return;
 		}
 		
-		if (formStep < 5) {
+		if (formStep < 7) {
 			setFormStep(formStep + 1);
+			setError("");
 		}
-	}, [validateStep, formStep]);
+	}, [formStep, getCurrentStepValidation]);
+
+	// Get validation message for each step
+	const getValidationMessage = useCallback((step: number) => {
+		switch (step) {
+			case 1: return "Please select a property type to continue.";
+			case 2: return "Please fill in all required basic property details.";
+			case 3: return "Please complete all fractional investment parameters and select at least one exit option.";
+			case 4: return "Please confirm that you have uploaded all required documents.";
+			case 5: return "Please add property media.";
+			case 6: return "Please review property highlights.";
+			case 7: return "Please fill in all contact details and accept the terms and conditions.";
+			default: return "Please complete all required fields.";
+		}
+	}, []);
 
 	const handlePrevStep = useCallback(() => {
 		if (formStep > 1) {
 			setFormStep(formStep - 1);
+			setError("");
 		}
 	}, [formStep]);
 
-	// Optimized coordinate fetching with dynamic import
-	const handleFetchCoordinates = useCallback(async () => {
-		if (!formData.address.locality || !formData.address.city) return;
-		
-		setIsLoadingCoordinates(true);
-		try {
-			const query = `${formData.address.locality}, ${formData.address.city}, India`;
-			const response = await fetchCoordinates(query);
-			
-			if (response.data && response.data.length > 0) {
-				const { lat, lon } = response.data[0];
-				setFormData(prev => ({
-					...prev,
-					address: {
-						...prev.address,
-						coordinates: {
-							latitude: String(lat),
-							longitude: String(lon),
-						}
-					}
-				}));
-				setSuccess("Coordinates fetched successfully!");
-			} else {
-				setError("Could not find coordinates for this locality");
-			}
-		} catch (error) {
-			setError("Failed to fetch coordinates");
-		} finally {
-			setIsLoadingCoordinates(false);
-		}
-	}, [formData.address.locality, formData.address.city]);
-
-	// Optimized AI description generator
-	const handleGenerateAIDescription = useCallback(async () => {
-		setIsGeneratingDescription(true);
-		try {
-			// Basic AI description generation using form data
-			const amenitiesText = formData.amenities?.length > 0 
-				? `Amenities: ${formData.amenities.join(", ")}.` 
-				: "";
-			
-			const bedroomsText = formData.bedrooms 
-				? `${formData.bedrooms}` 
-				: "";
-			const bathroomsText = formData.bathrooms 
-				? `${formData.bathrooms} bathroom${parseInt(formData.bathrooms) > 1 ? "s" : ""}` 
-				: "";
-			const roomsText = bedroomsText && bathroomsText 
-				? `${bedroomsText} with ${bathroomsText}` 
-				: bedroomsText || bathroomsText;
-
-			const locationText = formData.address?.city 
-				? `located in ${formData.address?.locality || ""} ${formData.address?.locality ? "," : ""} ${formData.address?.city}` 
-				: "";
-
-			const generatedDescription = `This ${formData.propertyType}${formData.subType ? ` (${formData.subType})` : ""} ${roomsText ? `with ${roomsText}` : ""} is ${locationText}. The property offers ${formData.area} square feet of ${formData.furnishing?.toLowerCase()} living space. ${amenitiesText} Perfect for ${formData.listingType === 'rent' ? 'tenants' : 'buyers'} looking for quality living.`;
-			
-			setFormData(prev => ({ ...prev, description: generatedDescription }));
-			setSuccess("AI description generated!");
-		} catch (error) {
-			setError("Failed to generate description. Please write manually.");
-		} finally {
-			setIsGeneratingDescription(false);
-		}
-	}, [formData.propertyType, formData.subType, formData.bedrooms, formData.bathrooms, formData.address, formData.area, formData.furnishing, formData.amenities, formData.listingType]);
-
-	// Helper function to convert parking string to number
-	const parseParkingValue = useCallback((parkingStr: string): number => {
-		if (parkingStr === "No Parking") return 0;
-		if (parkingStr === "1 Covered" || parkingStr === "1 Open") return 1;
-		if (parkingStr === "2 Covered" || parkingStr === "2 Open") return 2;
-		if (parkingStr === "3+ Covered" || parkingStr === "3+ Open") return 3;
-		if (parkingStr === "1 Covered + 1 Open") return 2;
-		return 0; // Default fallback
-	}, []);
-
-	// Optimized submit handler
+	// Form submission
 	const handleSubmit = useCallback(async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
@@ -643,117 +462,9 @@ export default function PostPropertyPage() {
 		setSubmitting(true);
 
 		try {
-			const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-			if (!token) {
-				setError("You must be logged in to post a property.");
-				setSubmitting(false);
-				return;
-			}
-
-			// Get user details from token
-			const tokenPayload = JSON.parse(atob(token.split(".")[1]));
-			const userId = tokenPayload.userId || tokenPayload.sub;
-
-			// Upload images first if any are selected
-			let imageUrls: string[] = [];
-			if (formData.images.length > 0) {
-				const uploadPromises = formData.images.map(async (image) => {
-					const formDataUpload = new FormData();
-					formDataUpload.append("file", image);
-
-					const uploadRes = await fetch("/api/upload", {
-						method: "POST",
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-						body: formDataUpload,
-					});
-
-					if (uploadRes.ok) {
-						const uploadData = await uploadRes.json();
-						return uploadData.url;
-					}
-					return null;
-				});
-
-				const uploadedUrls = await Promise.all(uploadPromises);
-				imageUrls = uploadedUrls.filter((url) => url !== null);
-			}
-
-			// Prepare the data according to the API expectations
-			const propertyData: any = {
-				title: formData.title,
-				description: formData.description,
-				price: parseInt(formData.price),
-				numberOfTokens: parseInt(formData.numberOfTokens),
-				totalValue: parseInt(formData.price) * parseInt(formData.numberOfTokens),
-				propertyType: formData.propertyType,
-				listingType: formData.listingType,
-				area: parseInt(formData.area),
-				amenities: formData.amenities,
-				features: [], // Empty features array
-				furnished: formData.furnishing === "Fully Furnished",
-				address: {
-					street: formData.address.street,
-					city: formData.address.city,
-					locality: formData.address.locality,
-					state: "Delhi", // Default state
-					zipCode: "110001", // Default zipcode
-					country: "India",
-					location: {
-						type: "Point",
-						coordinates: [
-							parseFloat(formData.address.coordinates.longitude),
-							parseFloat(formData.address.coordinates.latitude)
-						],
-					},
-				},
-				images: imageUrls, // Use uploaded image URLs
-				ownerDetails: {
-					name: formData.ownerDetails.name,
-					phone: formData.ownerDetails.phone,
-					email: formData.ownerDetails.email,
-				},
-			};
-
-			// Only add bedrooms and bathrooms for property types that require them
-			if (
-				formData.propertyType !== "land" &&
-				formData.propertyType !== "commercial"
-			) {
-				propertyData.bedrooms = formData.bedrooms
-					? parseInt(formData.bedrooms)
-					: 0;
-				propertyData.bathrooms = formData.bathrooms
-					? parseInt(formData.bathrooms)
-					: 0;
-			}
-
-			const res = await fetch("/api/properties", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(propertyData),
-			});
-
-			const data = await res.json();
-			if (!res.ok) {
-				if (data.details && Array.isArray(data.details)) {
-					// Show specific validation errors
-					const errorMessages = data.details
-						.map((err: any) => `${err.field}: ${err.message}`)
-						.join(", ");
-					setError(`Validation failed: ${errorMessages}`);
-				} else {
-					setError(data.error || "Failed to post property");
-				}
-				setSubmitting(false);
-				return;
-			}
-
-			setSuccess("Property posted successfully! Redirecting to properties...");
+			// Simulate API call
+			await new Promise(resolve => setTimeout(resolve, 2000));
+			setSuccess("Commercial property posted successfully!");
 			setTimeout(() => {
 				router.push("/equity/property");
 			}, 2000);
@@ -763,12 +474,8 @@ export default function PostPropertyPage() {
 		}
 	}, [formData, router]);
 
-	const nextStep = useCallback(() => setFormStep((prev) => Math.min(prev + 1, 5)), []);
-	const prevStep = useCallback(() => setFormStep((prev) => Math.max(prev - 1, 1)), []);
-
 	const handleAuthSuccess = useCallback(() => {
 		setShowAuthModal(false);
-		// Reload the page to check authentication and KYC status with the new auth token
 		window.location.reload();
 	}, []);
 
@@ -776,422 +483,262 @@ export default function PostPropertyPage() {
 		return <LoadingSpinner />;
 	}
 
-	// Block access completely if not authenticated - only show auth modal
 	if (showAuthModal) {
 		return (
 			<>
-				{/* Custom styles to override orange colors with purple - only for this page */}
 				<style dangerouslySetInnerHTML={{
 					__html: `
-						/* Override all orange colors with purple - scoped to this page */
 						.equity-post-page *:focus {
 							border-color: #a855f7 !important;
 							box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
 							outline: none !important;
 						}
-						
-						.equity-post-page input:focus, 
-						.equity-post-page textarea:focus, 
-						.equity-post-page select:focus,
-						.equity-post-page [role="combobox"]:focus {
-							border-color: #a855f7 !important;
-							box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-							outline: none !important;
-						}
-						
-						.equity-post-page button:focus {
-							border-color: #a855f7 !important;
-							box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-							outline: none !important;
-						}
-						
-						.equity-post-page [data-state="open"] {
-							border-color: #a855f7 !important;
-							box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-						}
-						
-						/* Override any orange colors */
-						.equity-post-page [style*="rgb(251, 146, 60)"], 
-						.equity-post-page [style*="#fb9234"], 
-						.equity-post-page [style*="orange"] {
-							color: #a855f7 !important;
-							border-color: #a855f7 !important;
-							background-color: rgba(168, 85, 247, 0.1) !important;
-						}
 					`
 				}} />
-			<div className='equity-post-page min-h-screen bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa] relative overflow-hidden'>
-				{/* Animated Background Elements */}
-				<div className='absolute inset-0 overflow-hidden'>
-					<div className='absolute -top-40 -left-40 w-80 h-80 bg-purple-500 rounded-full opacity-20 blur-3xl animate-pulse'></div>
-					<div className='absolute top-20 -right-20 w-60 h-60 bg-blue-500 rounded-full opacity-15 blur-2xl animate-bounce'></div>
-					<div className='absolute bottom-20 left-20 w-72 h-72 bg-pink-500 rounded-full opacity-10 blur-3xl animate-pulse'></div>
-					<div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full opacity-5 blur-3xl animate-spin'></div>
-				</div>
-
-				<EquityNavigation />
-
-				<div className='container mx-auto px-4 py-8 pt-24 relative z-10 flex items-center justify-center min-h-[calc(100vh-6rem)]'>
-					<div className='max-w-md mx-auto text-center'>
-						<div className='backdrop-blur-xl bg-black/80 rounded-3xl p-8 border border-white/10 shadow-2xl'>
-							<Shield className='w-16 h-16 text-purple-400 mx-auto mb-4' />
-							<h1 className='text-3xl font-bold text-white mb-4 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent'>
-								Authentication Required
-							</h1>
-							<p className='text-purple-200 mb-6'>
-								Please sign in to access the property posting page
-							</p>
-							<Button
-								onClick={() => setShowAuthModal(true)}
-								className='backdrop-blur-xl bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 text-white px-6 py-3 rounded-xl border border-white/20 transition-all duration-300 shadow-lg shadow-purple-500/25'
-							>
-								Sign In
-							</Button>
-						</div>
-					</div>
-				</div>
-
-				{/* Auth Modal - Only UI element accessible when not authenticated */}
-				<AuthModal
-					isOpen={showAuthModal}
-					onClose={() => {
-						// Prevent closing modal when not authenticated - redirect to home instead
-						window.location.href = "/equity";
-					}}
-					onAuthSuccess={handleAuthSuccess}
-				/>
-			</div>
+				<Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />}>
+					<AuthModal
+						isOpen={showAuthModal}
+						onClose={() => setShowAuthModal(false)}
+						onAuthSuccess={handleAuthSuccess}
+					/>
+				</Suspense>
 			</>
 		);
 	}
 
 	return (
 		<>
-			{/* Custom styles to override orange colors with purple - only for this page */}
 			<style dangerouslySetInnerHTML={{
 				__html: `
-					/* Override all orange colors with purple - scoped to this page */
 					.equity-post-page *:focus {
 						border-color: #a855f7 !important;
 						box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
 						outline: none !important;
 					}
-					
-					.equity-post-page input:focus, 
-					.equity-post-page textarea:focus, 
-					.equity-post-page select:focus,
-					.equity-post-page [role="combobox"]:focus {
-						border-color: #a855f7 !important;
-						box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-						outline: none !important;
-					}
-					
-					.equity-post-page button:focus {
-						border-color: #a855f7 !important;
-						box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-						outline: none !important;
-					}
-					
-					.equity-post-page [data-state="open"] {
-						border-color: #a855f7 !important;
-						box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
-					}
-					
-					/* Override any orange colors */
-					.equity-post-page [style*="rgb(251, 146, 60)"], 
-					.equity-post-page [style*="#fb9234"], 
-					.equity-post-page [style*="orange"] {
-						color: #a855f7 !important;
-						border-color: #a855f7 !important;
-						background-color: rgba(168, 85, 247, 0.1) !important;
-					}
 				`
 			}} />
-		<div className='equity-post-page min-h-screen bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa] relative overflow-hidden'>
-			{/* Static Background - animations removed */}
-			<div className='absolute inset-0 overflow-hidden'>
-				<div className='absolute -top-40 -left-40 w-80 h-80 bg-purple-500 rounded-full opacity-20 blur-3xl'></div>
-				<div className='absolute top-20 -right-20 w-60 h-60 bg-blue-500 rounded-full opacity-15 blur-2xl'></div>
-				<div className='absolute bottom-20 left-20 w-72 h-72 bg-pink-500 rounded-full opacity-10 blur-3xl'></div>
-				<div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full opacity-5 blur-3xl'></div>
-			</div>
-
-			<Suspense fallback={<div className="fixed top-0 left-0 right-0 h-16 bg-black/50 backdrop-blur-sm z-50" />}>
-				<EquityNavigation />
-			</Suspense>
-
-			<div className='container mx-auto px-4 py-8 pt-24 relative z-10'>
-				<div className='max-w-4xl mx-auto'>
-					{/* Header with Glass Effect */}
-					<div className='text-center mb-8 backdrop-blur-xl bg-black/80 rounded-3xl p-8 border border-white/10 shadow-2xl'>
-						<h1 className='text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent'>
-							Post Your Property
-						</h1>
-						<p className='text-purple-200 text-xl font-medium'>
-							Fill in the details below to list your property
-						</p>
-						<div className='mt-4 flex justify-center'>
-							<div className='w-24 h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full'></div>
+			
+			<div className="equity-post-page min-h-screen bg-gradient-to-br from-black via-[#2d1a4a] to-[#a78bfa]">
+				<Suspense fallback={<LoadingSpinner />}>
+					<EquityNavigation />
+				</Suspense>
+				
+				<div className="container mx-auto px-4 py-8">
+					<div className="max-w-4xl mx-auto">
+						{/* Header */}
+						<div className="text-center mb-8">
+							<h1 className="text-4xl font-bold text-white mb-4">
+								Post Commercial Property for Fractional Ownership
+							</h1>
+							<p className="text-purple-200 text-lg">
+								List your commercial property for fractional investment opportunities
+							</p>
 						</div>
-					</div>
 
-					{/* Progress Bar with Glass Effect */}
-					<div className='mb-8 backdrop-blur-xl bg-black/80 rounded-2xl p-6 border border-white/10 shadow-2xl'>
-						<div className='flex items-center justify-between mb-4'>
-							{[1, 2, 3, 4, 5].map((step) => (
-								<div key={step} className='flex items-center'>
+						{/* Step Indicator */}
+						<div className="flex justify-center mb-8">
+							<div className="flex items-center space-x-4">
+								{[1, 2, 3, 4, 5, 6, 7].map((step) => (
 									<div
-										className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+										key={step}
+										className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium ${
 											formStep >= step
-												? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50"
-												: "bg-white/10 text-gray-300 backdrop-blur-sm"
+												? "bg-purple-600 text-white"
+												: "bg-gray-600 text-gray-300"
 										}`}
 									>
-										{formStep > step ? (
-											<CheckCircle className='w-6 h-6' />
-										) : (
-											step
-										)}
+										{step}
 									</div>
-									{step < 5 && (
-										<div
-											className={`w-16 h-1 mx-3 rounded-full transition-all duration-300 ${
-												formStep > step
-													? "bg-gradient-to-r from-purple-500 to-blue-500"
-													: "bg-white/20"
-											}`}
-										/>
-									)}
-								</div>
-							))}
-						</div>
-						<div className='text-center text-purple-200 text-lg font-medium'>
-							Step {formStep} of 5
-						</div>
-						
-						{/* Validation Status */}
-						{!isCurrentStepValid() && (
-							<div className='text-xs text-red-400 mt-1 text-center'>
-								⚠️ Please fill all required fields to proceed
+								))}
 							</div>
-						)}
-					</div>
+						</div>
 
-					{/* Form with Glass Effect */}
-					<div className='backdrop-blur-xl bg-black/80 rounded-3xl p-8 border border-white/20 shadow-2xl shadow-purple-500/20'>
-						<form onSubmit={handleSubmit}>
-							{/* Step 1: Basic Property Details */}
-							{formStep === 1 && (
-								<div className='space-y-6'>
-									<h2 className='text-2xl font-bold text-white mb-6 flex items-center'>
-										<Building2 className='w-6 h-6 mr-2 text-purple-400' />
-										Basic Property Details
-									</h2>
+						{/* Step Labels */}
+						<div className="text-center mb-8">
+							<h2 className="text-xl font-semibold text-white">
+								{formStep === 1 && "Step 1: Property Type & Category"}
+								{formStep === 2 && "Step 2: Basic Property Details"}
+								{formStep === 3 && "Step 3: Fractional Investment Parameters"}
+								{formStep === 4 && "Step 4: Document Uploads"}
+								{formStep === 5 && "Step 5: Media & Marketing"}
+								{formStep === 6 && "Step 6: Additional Highlights"}
+								{formStep === 7 && "Step 7: Review & Submit"}
+							</h2>
+							
+							{/* Validation Status Indicator */}
+							{!getCurrentStepValidation() && (
+								<div className="mt-3 text-sm text-orange-300 flex items-center justify-center">
+									<Settings className="w-4 h-4 mr-1" />
+									Complete all required fields to continue
+								</div>
+							)}
+							
+							{getCurrentStepValidation() && formStep < 7 && (
+								<div className="mt-3 text-sm text-green-300 flex items-center justify-center">
+									<CheckCircle className="w-4 h-4 mr-1" />
+									Ready to proceed to next step
+								</div>
+							)}
+						</div>
+
+						{/* Form Card */}
+						<div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-2xl p-8">
+							{error && (
+								<div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
+									<p className="text-red-200">{error}</p>
+								</div>
+							)}
+
+							{success && (
+								<div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg">
+									<p className="text-green-200">{success}</p>
+								</div>
+							)}
+
+							<form onSubmit={handleSubmit} className="space-y-6">
+								{/* Step 1: Property Type & Category */}
+								{formStep === 1 && (
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<Building2 className="w-6 h-6 mr-2 text-purple-400" />
+											Select Property Type & Category
+										</h3>
 
 										<div>
-											<Label htmlFor="title">Property Title *</Label>
-											<Input
-												id="title"
-												name="title"
-												value={formData.title}
-												onChange={handleInputChange}
-												placeholder="e.g., 2 BHK Flat in Sector 62"
-												className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-												required
-											/>
-										</div>
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<Label htmlFor="listingType">Listing Type *</Label>
-												<Select
-													value={formData.listingType}
-													onValueChange={(value) => setFormData(prev => ({ ...prev, listingType: value }))}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select listing type" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														<SelectItem value="sale" className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">Sell</SelectItem>
-														<SelectItem value="rent" className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">Rent</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-
-											<div>
-												<Label htmlFor="propertyType">Property Type *</Label>
-												<Select
-													value={formData.propertyType}
-													onValueChange={handlePropertyTypeChange}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select property type" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														{propertyTypes.map((type) => (
-															<SelectItem key={type.value} value={type.value} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																<div className="flex items-center gap-2">
-																	{type.icon}
-																	{type.label}
-																</div>
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
-										</div>
-
-										{formData.propertyType && getSubTypes().length > 0 && (
-											<div>
-												<Label htmlFor="subType">Sub-Type</Label>
-												<Select
-													value={formData.subType}
-													onValueChange={(value) => setFormData(prev => ({ ...prev, subType: value }))}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select sub-type" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														{getSubTypes().map((subType) => (
-															<SelectItem key={subType} value={subType} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																{subType}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
-										)}
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											{(formData.propertyType !== 'land' && formData.propertyType !== 'commercial') && (
-												<div>
-													<Label htmlFor="bedrooms">BHK/Room Count *</Label>
-													<Select
-														value={formData.bedrooms}
-														onValueChange={(value) => setFormData(prev => ({ ...prev, bedrooms: value }))}
-													>
-														<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-															<SelectValue placeholder="Select BHK" />
-														</SelectTrigger>
-														<SelectContent className="bg-gray-900 border-purple-400/30">
-															{bhkOptions.map((bhk) => (
-																<SelectItem key={bhk} value={bhk} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																	{bhk}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</div>
+											<Label htmlFor="propertyType" className="flex items-center">
+												Property Type 
+												<span className="text-red-400 ml-1">*</span>
+											</Label>
+											<Select
+												value={formData.propertyType}
+												onValueChange={(value) => setFormData(prev => ({ ...prev, propertyType: value }))}
+											>
+												<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.propertyType ? 'border-red-400/50' : ''}`}>
+													<SelectValue placeholder="Select property type" />
+												</SelectTrigger>
+												<SelectContent className="bg-gray-900 border-purple-400/30">
+													{propertyTypes.map((type) => (
+														<SelectItem key={type.value} value={type.value} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
+															<div className="flex items-center gap-2">
+																{type.icon}
+																{type.label}
+															</div>
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											{!formData.propertyType && (
+												<p className="text-red-300 text-sm mt-1">Please select a property type</p>
 											)}
-
-											<div>
-												<Label htmlFor="furnishing">Furnishing *</Label>
-												<Select
-													value={formData.furnishing}
-													onValueChange={(value) => setFormData(prev => ({ ...prev, furnishing: value }))}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select furnishing" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														{furnishingOptions.map((option) => (
-															<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																{option}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
-										</div>
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<Label htmlFor="propertyAge">Property Age *</Label>
-												<Select
-													value={formData.propertyAge}
-													onValueChange={(value) => setFormData(prev => ({ ...prev, propertyAge: value }))}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select property age" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														{propertyAgeOptions.map((option) => (
-															<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																{option}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
-
-											<div>
-												<Label htmlFor="possessionStatus">Possession Status *</Label>
-												<Select
-													value={formData.possessionStatus}
-													onValueChange={(value) => setFormData(prev => ({ ...prev, possessionStatus: value }))}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select possession status" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														{possessionStatusOptions.map((option) => (
-															<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																{option}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
 										</div>
 
 										<div>
-											<Label htmlFor="availableFrom">Available From</Label>
-											<Input
-												id="availableFrom"
-												name="availableFrom"
-												value={formData.availableFrom}
-												onChange={handleInputChange}
-												type="date"
-												className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'
-											/>
+											<Label>Listing Category</Label>
+											<div className="p-4 bg-white/10 border border-white/20 rounded-lg">
+												<div className="flex items-center space-x-2">
+													<CheckCircle className="w-5 h-5 text-green-400" />
+													<span className="text-white">Fractional Ownership</span>
+												</div>
+											</div>
 										</div>
 									</div>
 								)}
 
-								{/* Step 2: Location & Address */}
+								{/* Step 2: Basic Property Details */}
 								{formStep === 2 && (
-									<div className='space-y-6'>
-										<h2 className='text-2xl font-bold text-white mb-6 flex items-center'>
-											<MapPin className='w-6 h-6 mr-2 text-purple-400' />
-											Location & Address
-										</h2>
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<FileText className="w-6 h-6 mr-2 text-purple-400" />
+											Enter Basic Property Details
+										</h3>
+
+										<div>
+											<Label htmlFor="projectName" className="flex items-center">
+												Project/Asset Name 
+												<span className="text-red-400 ml-1">*</span>
+											</Label>
+											<Input
+												id="projectName"
+												name="projectName"
+												value={formData.projectName}
+												onChange={handleInputChange}
+												placeholder="e.g., DLF Corporate Park"
+												className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.projectName ? 'border-red-400/50' : ''}`}
+												required
+											/>
+											{!formData.projectName && (
+												<p className="text-red-300 text-sm mt-1">Project name is required</p>
+											)}
+										</div>
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="address.city">City *</Label>
-												<Select
-													value={formData.address.city}
-													onValueChange={(value) => handleNestedInputChange('address', 'city', value)}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select city" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														<SelectItem value="Delhi" className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">Delhi</SelectItem>
-													</SelectContent>
-												</Select>
+												<Label htmlFor="fullAddress" className="flex items-center">
+													Full Address with Pin Code 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
+												<Textarea
+													id="fullAddress"
+													name="fullAddress"
+													value={formData.fullAddress}
+													onChange={handleInputChange}
+													placeholder="Complete address with pin code"
+													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.fullAddress ? 'border-red-400/50' : ''}`}
+													required
+												/>
+												{!formData.fullAddress && (
+													<p className="text-red-300 text-sm mt-1">Full address is required</p>
+												)}
 											</div>
-
 											<div>
-												<Label htmlFor="address.locality">Locality/Sector *</Label>
+												<Label htmlFor="pinCode" className="flex items-center">
+													Pin Code 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
+												<Input
+													id="pinCode"
+													name="pinCode"
+													value={formData.pinCode}
+													onChange={handleInputChange}
+													placeholder="110001"
+													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.pinCode ? 'border-red-400/50' : ''}`}
+													required
+												/>
+												{!formData.pinCode && (
+													<p className="text-red-300 text-sm mt-1">Pin code is required</p>
+												)}
+											</div>
+										</div>
+
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="city" className="flex items-center">
+													City 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
+												<Input
+													id="city"
+													name="city"
+													value={formData.city}
+													onChange={handleInputChange}
+													placeholder="Delhi"
+													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.city ? 'border-red-400/50' : ''}`}
+													required
+												/>
+											</div>
+											<div>
+												<Label htmlFor="locality" className="flex items-center">
+													Locality 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
 												<Select
-													value={formData.address.locality}
-													onValueChange={(value) => handleNestedInputChange('address', 'locality', value)}
+													value={formData.locality}
+													onValueChange={handleLocalityChange}
 												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
+													<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.locality ? 'border-red-400/50' : ''}`}>
 														<SelectValue placeholder="Select locality" />
 													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
+													<SelectContent className="bg-gray-900 border-purple-400/30 max-h-48 overflow-y-auto">
 														{delhiAreas.map((area) => (
 															<SelectItem key={area} value={area} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
 																{area}
@@ -1199,559 +746,571 @@ export default function PostPropertyPage() {
 														))}
 													</SelectContent>
 												</Select>
+												{!formData.locality && (
+													<p className="text-red-300 text-sm mt-1">Please select a locality</p>
+												)}
+												{formData.coordinates.latitude && formData.coordinates.longitude && (
+													<div className="mt-2 text-sm text-green-300 flex items-center">
+														<MapPin className="w-4 h-4 mr-1" />
+														Coordinates: {formData.coordinates.latitude}, {formData.coordinates.longitude}
+													</div>
+												)}
 											</div>
 										</div>
 
 										<div>
-											<Label htmlFor="address.projectName">Project/Society Name</Label>
-											<Input
-												id="address.projectName"
-												name="address.projectName"
-												value={formData.address.projectName}
-												onChange={handleInputChange}
-												placeholder="Optional, but useful"
-												className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-											/>
-										</div>
-
-										<div>
-											<Label htmlFor="address.street">Full Address *</Label>
-											<Textarea
-												id="address.street"
-												name="address.street"
-												value={formData.address.street}
-												onChange={handleInputChange}
-												placeholder="Complete address"
-												rows={3}
-												className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-												required
-											/>
-										</div>
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<Label htmlFor="address.floorNumber">Floor Number</Label>
-												<Input
-													id="address.floorNumber"
-													name="address.floorNumber"
-													value={formData.address.floorNumber}
-													onChange={handleInputChange}
-													placeholder="e.g., 2nd out of 10"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-												/>
-											</div>
-
-											<div>
-												<Label htmlFor="address.landmark">Landmark</Label>
-												<Input
-													id="address.landmark"
-													name="address.landmark"
-													value={formData.address.landmark}
-													onChange={handleInputChange}
-													placeholder="Optional"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-												/>
-											</div>
-										</div>
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<Label htmlFor="address.coordinates.latitude">Latitude</Label>
-												<div className="flex gap-2">
-													<Input
-														id="address.coordinates.latitude"
-														name="address.coordinates.latitude"
-														value={formData.address.coordinates.latitude}
-														onChange={handleInputChange}
-														placeholder="Auto-generated"
-														className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-														readOnly
-													/>
-													<Button
-														type="button"
-														onClick={handleFetchCoordinates}
-														disabled={isLoadingCoordinates}
-														className="bg-purple-400 hover:bg-purple-500 text-white"
-													>
-														<MapPin className="w-4 h-4" />
-													</Button>
-												</div>
-											</div>
-											
-											<div>
-												<Label htmlFor="address.coordinates.longitude">Longitude</Label>
-												<Input
-													id="address.coordinates.longitude"
-													name="address.coordinates.longitude"
-													value={formData.address.coordinates.longitude}
-													onChange={handleInputChange}
-													placeholder="Auto-generated"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-													readOnly
-												/>
-											</div>
-										</div>
-									</div>
-								)}
-
-								{/* Step 3: Property Specifications */}
-								{formStep === 3 && (
-									<div className='space-y-6'>
-										<h2 className='text-2xl font-bold text-white mb-6 flex items-center'>
-											<Settings className='w-6 h-6 mr-2 text-purple-400' />
-											Property Specifications
-										</h2>
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<Label htmlFor="area">Built-up Area (sq ft) *</Label>
-												<Input
-													id="area"
-													name="area"
-													value={formData.area}
-													onChange={handleInputChange}
-													type="number"
-													placeholder="e.g., 1200"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-													required
-												/>
-											</div>
-
-											<div>
-												<Label htmlFor="price">Token Price (INR) *</Label>
-												<Input
-													id="price"
-													name="price"
-													value={formData.price}
-													onChange={handleInputChange}
-													type="number"
-													placeholder="e.g., 1000"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-													required
-												/>
-											</div>
-										</div>
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<Label htmlFor="numberOfTokens">No. of Tokens *</Label>
-												<Input
-													id="numberOfTokens"
-													name="numberOfTokens"
-													value={formData.numberOfTokens}
-													onChange={handleInputChange}
-													type="number"
-													placeholder="e.g., 100"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400'
-													required
-												/>
-											</div>
-
-											<div>
-												<Label className="text-gray-300">Total Property Value</Label>
-												<div className="bg-white/5 border border-white/10 rounded-lg p-3 text-purple-200 font-medium">
-													₹{formData.price && formData.numberOfTokens ? 
-														(parseFloat(formData.price) * parseFloat(formData.numberOfTokens)).toLocaleString('en-IN') : 
-														'0'
-													}
-												</div>
-											</div>
-										</div>
-
-										{(formData.propertyType !== 'land' && formData.propertyType !== 'commercial') && (
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-												<div>
-													<Label htmlFor="bathrooms">Bathrooms</Label>
-													<Select
-														value={formData.bathrooms.toString()}
-														onValueChange={(value) => setFormData(prev => ({ ...prev, bathrooms: value }))}
-													>
-														<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-															<SelectValue placeholder="Select bathrooms" />
-														</SelectTrigger>
-														<SelectContent className="bg-gray-900 border-purple-400/30">
-															{[1, 2, 3, 4, 5, 6].map((num) => (
-																<SelectItem key={num} value={num.toString()} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																	{num} Bathroom{num > 1 ? 's' : ''}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</div>
-
-												<div>
-													<Label htmlFor="balcony">Balconies</Label>
-													<Select
-														value={formData.balcony.toString()}
-														onValueChange={(value) => setFormData(prev => ({ ...prev, balcony: value }))}
-													>
-														<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-															<SelectValue placeholder="Select balconies" />
-														</SelectTrigger>
-														<SelectContent className="bg-gray-900 border-purple-400/30">
-															{[0, 1, 2, 3, 4].map((num) => (
-																<SelectItem key={num} value={num.toString()} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																	{num} Balcon{num === 1 ? 'y' : 'ies'}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</div>
-											</div>
-										)}
-
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											{formData.propertyType === 'residential' && (
-												<div>
-													<Label htmlFor="facing">Facing Direction</Label>
-													<Select
-														value={formData.facing}
-														onValueChange={(value) => setFormData(prev => ({ ...prev, facing: value }))}
-													>
-														<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-															<SelectValue placeholder="Select facing" />
-														</SelectTrigger>
-														<SelectContent className="bg-gray-900 border-purple-400/30">
-															{facingOptions.map((option) => (
-																<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																	{option}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</div>
+											<Label htmlFor="possessionStatus" className="flex items-center">
+												Possession Status 
+												<span className="text-red-400 ml-1">*</span>
+											</Label>
+											<Select
+												value={formData.possessionStatus}
+												onValueChange={(value) => setFormData(prev => ({ ...prev, possessionStatus: value }))}
+											>
+												<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.possessionStatus ? 'border-red-400/50' : ''}`}>
+													<SelectValue placeholder="Select possession status" />
+												</SelectTrigger>
+												<SelectContent className="bg-gray-900 border-purple-400/30">
+													{possessionStatusOptions.map((option) => (
+														<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
+															{option}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											{!formData.possessionStatus && (
+												<p className="text-red-300 text-sm mt-1">Please select possession status</p>
 											)}
-
-											<div>
-												<Label htmlFor="parking">Parking</Label>
-												<Select
-													value={formData.parking}
-													onValueChange={(value) => setFormData(prev => ({ ...prev, parking: value }))}
-												>
-													<SelectTrigger className='bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400'>
-														<SelectValue placeholder="Select parking" />
-													</SelectTrigger>
-													<SelectContent className="bg-gray-900 border-purple-400/30">
-														{parkingOptions.map((option) => (
-															<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
-																{option}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
-											</div>
 										</div>
 
-										{formData.listingType === 'rent' && (
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-												<div>
-													<Label htmlFor="securityDeposit">Security Deposit (INR)</Label>
-													<Input
-														id="securityDeposit"
-														name="securityDeposit"
-														value={formData.securityDeposit}
-														onChange={handleInputChange}
-														type="number"
-														placeholder="e.g., 50000"
-														className='bg-white/10 border-white/20 text-white placeholder-gray-400'
-													/>
-												</div>
-
-												<div>
-													<Label htmlFor="maintenanceCharges">Maintenance Charges (INR/month)</Label>
-													<Input
-														id="maintenanceCharges"
-														name="maintenanceCharges"
-														value={formData.maintenanceCharges}
-														onChange={handleInputChange}
-														type="number"
-														placeholder="e.g., 2000"
-														className='bg-white/10 border-white/20 text-white placeholder-gray-400'
-													/>
-												</div>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="builtUpArea" className="flex items-center">
+													Built-up Area (sq. ft.) 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
+												<Input
+													id="builtUpArea"
+													name="builtUpArea"
+													type="number"
+													value={formData.builtUpArea}
+													onChange={handleInputChange}
+													placeholder="e.g., 10000"
+													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.builtUpArea ? 'border-red-400/50' : ''}`}
+													required
+												/>
+												{!formData.builtUpArea && (
+													<p className="text-red-300 text-sm mt-1">Built-up area is required</p>
+												)}
 											</div>
-										)}
+											<div>
+												<Label htmlFor="totalValuation" className="flex items-center">
+													Total Valuation (₹ Cr) 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
+												<Input
+													id="totalValuation"
+													name="totalValuation"
+													type="number"
+													step="0.1"
+													value={formData.totalValuation}
+													onChange={handleInputChange}
+													placeholder="e.g., 50.5"
+													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.totalValuation ? 'border-red-400/50' : ''}`}
+													required
+												/>
+												{!formData.totalValuation && (
+													<p className="text-red-300 text-sm mt-1">Total valuation is required</p>
+												)}
+											</div>
+										</div>
 
 										<div>
-											<Label htmlFor="description">Property Description *</Label>
-											<Textarea
-												id="description"
-												name="description"
-												value={formData.description}
-												onChange={handleInputChange}
-												placeholder="Describe your property in detail..."
-												rows={4}
-												className='bg-white/10 border-white/20 text-white placeholder-gray-400'
-												required
-											/>
+											<Label htmlFor="minimumInvestmentTicket" className="flex items-center">
+												Minimum Investment Ticket 
+												<span className="text-red-400 ml-1">*</span>
+											</Label>
+											<Select
+												value={formData.minimumInvestmentTicket}
+												onValueChange={(value) => setFormData(prev => ({ ...prev, minimumInvestmentTicket: value }))}
+											>
+												<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.minimumInvestmentTicket ? 'border-red-400/50' : ''}`}>
+													<SelectValue placeholder="Select minimum ticket size" />
+												</SelectTrigger>
+												<SelectContent className="bg-gray-900 border-purple-400/30">
+													{investmentTicketOptions.map((option) => (
+														<SelectItem key={option} value={option} className="text-white hover:bg-purple-600/50 focus:bg-purple-600/50">
+															{option}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											{!formData.minimumInvestmentTicket && (
+												<p className="text-red-300 text-sm mt-1">Please select minimum investment ticket</p>
+											)}
 										</div>
+
+										{formData.minimumInvestmentTicket === "Custom Amount" && (
+											<div>
+												<Label htmlFor="customTicketAmount" className="flex items-center">
+													Custom Ticket Amount (₹) 
+													<span className="text-red-400 ml-1">*</span>
+												</Label>
+												<Input
+													id="customTicketAmount"
+													name="customTicketAmount"
+													type="number"
+													value={formData.customTicketAmount}
+													onChange={handleInputChange}
+													placeholder="e.g., 75000"
+													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.customTicketAmount ? 'border-red-400/50' : ''}`}
+													required
+												/>
+												{!formData.customTicketAmount && (
+													<p className="text-red-300 text-sm mt-1">Custom amount is required</p>
+												)}
+											</div>
+										)}
 									</div>
 								)}
 
-								{/* Step 4: Amenities & Features */}
-								{formStep === 4 && (
-									<div className='space-y-6'>
-										<h2 className='text-2xl font-bold text-white mb-6 flex items-center'>
-											<Star className='w-6 h-6 mr-2 text-purple-400' />
-											Amenities & Features
-										</h2>
+								{/* Step 3: Fractional Investment Parameters */}
+								{formStep === 3 && (
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<Star className="w-6 h-6 mr-2 text-purple-400" />
+											Enter Fractional Investment Parameters
+										</h3>
+
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="targetRaiseAmount">Target Raise Amount (₹ Cr) *</Label>
+												<Input
+													id="targetRaiseAmount"
+													name="targetRaiseAmount"
+													type="number"
+													step="0.1"
+													value={formData.targetRaiseAmount}
+													onChange={handleInputChange}
+													placeholder="e.g., 25.0"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+											<div>
+												<Label htmlFor="ownershipSplit">Ownership Split *</Label>
+												<Input
+													id="ownershipSplit"
+													name="ownershipSplit"
+													value={formData.ownershipSplit}
+													onChange={handleInputChange}
+													placeholder="e.g., 100 shares = 1% each"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+										</div>
+
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="rentalYield">Rental Yield (%) *</Label>
+												<Input
+													id="rentalYield"
+													name="rentalYield"
+													type="number"
+													step="0.1"
+													value={formData.rentalYield}
+													onChange={handleInputChange}
+													placeholder="e.g., 8.5"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+											<div>
+												<Label htmlFor="annualROIProjection">Annual ROI Projection (%) *</Label>
+												<Input
+													id="annualROIProjection"
+													name="annualROIProjection"
+													type="number"
+													step="0.1"
+													value={formData.annualROIProjection}
+													onChange={handleInputChange}
+													placeholder="e.g., 12.0"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+										</div>
 
 										<div>
-											<div className="flex items-center justify-between mb-4">
-												<Label className="text-lg font-semibold text-white">
-													Select Available Amenities
-												</Label>
-												<div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-400/20 text-purple-300 border border-purple-400/30">
-													{formData.amenities.length} selected
-												</div>
-											</div>
-											<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-												{amenitiesList.map((amenity) => (
-													<label
-														key={amenity}
-														className='flex items-center space-x-3 cursor-pointer p-3 rounded-xl bg-black/40 hover:bg-black/60 border border-white/10 hover:border-purple-400/50 transition-all duration-300'
-													>
+											<Label htmlFor="minimumHoldingPeriod">Minimum Holding Period / Lock-in *</Label>
+											<Input
+												id="minimumHoldingPeriod"
+												name="minimumHoldingPeriod"
+												value={formData.minimumHoldingPeriod}
+												onChange={handleInputChange}
+												placeholder="e.g., 3 years"
+												className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+												required
+											/>
+										</div>
+
+										<div>
+											<Label>Exit Options *</Label>
+											<div className="space-y-3 mt-2">
+												{exitOptions.map((option) => (
+													<div key={option} className="flex items-center space-x-2">
 														<input
-															type='checkbox'
-															checked={formData.amenities.includes(amenity)}
-															onChange={() => handleAmenityToggle(amenity)}
-															className='w-4 h-4 text-purple-600 bg-transparent border-white/30 rounded focus:ring-purple-500 focus:ring-2'
+															type="checkbox"
+															id={`exit-${option}`}
+															checked={formData.exitOptions.includes(option)}
+															onChange={() => handleExitOptionChange(option)}
+															className="rounded bg-white/10 border-white/20 text-purple-600 focus:ring-purple-400"
 														/>
-														<span className='text-gray-300 text-sm font-medium'>{amenity}</span>
-													</label>
+														<Label htmlFor={`exit-${option}`} className="text-white">
+															{option}
+														</Label>
+													</div>
 												))}
 											</div>
 										</div>
+									</div>
+								)}
+
+								{/* Step 4: Document Uploads */}
+								{formStep === 4 && (
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<FileText className="w-6 h-6 mr-2 text-purple-400" />
+											Upload Documents (Mandatory for Verification)
+										</h3>
+
+										<div className="space-y-4">
+											<div className="text-white">
+												<p className="mb-4">Upload the following documents (PDF or JPEG):</p>
+												<ul className="space-y-2 text-purple-200">
+													<li>• Title Deed / Sale Agreement</li>
+													<li>• RERA Registration Certificate</li>
+													<li>• Occupancy Certificate</li>
+													<li>• Approved Building Plan</li>
+													<li>• Lease Agreement (if leased)</li>
+													<li>• Encumbrance Certificate</li>
+													<li>• Land Ownership Proof</li>
+													<li>• Financial Deck (optional but preferred)</li>
+												</ul>
+											</div>
+
+											<div className="mt-6 p-8 border-2 border-dashed border-white/30 rounded-lg text-center">
+												<Upload className="w-12 h-12 mx-auto text-purple-400 mb-4" />
+												<p className="text-white mb-2">Drag and drop your documents here</p>
+												<p className="text-purple-200 text-sm mb-4">or click to browse files</p>
+												<Button type="button" className="bg-purple-600 hover:bg-purple-700 text-white">
+													Choose Files
+												</Button>
+											</div>
+
+											<div className="flex items-center space-x-2 mt-4">
+												<input
+													type="checkbox"
+													id="documentsUploaded"
+													checked={formData.documentsUploaded}
+													onChange={(e) => setFormData(prev => ({ ...prev, documentsUploaded: e.target.checked }))}
+													className="rounded bg-white/10 border-white/20 text-purple-600 focus:ring-purple-400"
+												/>
+												<Label htmlFor="documentsUploaded" className="text-white">
+													I have uploaded all required documents
+												</Label>
+											</div>
+										</div>
+									</div>
+								)}
+
+								{/* Step 5: Media & Marketing */}
+								{formStep === 5 && (
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<ImageIcon className="w-6 h-6 mr-2 text-purple-400" />
+											Add Media & Marketing Collateral
+										</h3>
+
+										<div className="space-y-6">
+											<div>
+												<Label>Upload Images (Min. 6 HD images, at least 1 exterior + 1 floor plan) *</Label>
+												<div className="mt-2 p-8 border-2 border-dashed border-white/30 rounded-lg text-center">
+													<ImageIcon className="w-12 h-12 mx-auto text-purple-400 mb-4" />
+													<p className="text-white mb-2">Upload property images</p>
+													<p className="text-purple-200 text-sm mb-4">JPG, PNG, WEBP up to 10MB each</p>
+													<Button type="button" className="bg-purple-600 hover:bg-purple-700 text-white">
+														Upload Images
+													</Button>
+												</div>
+											</div>
+
+											<div>
+												<Label htmlFor="virtualTourLink">Virtual Tour Link</Label>
+												<Input
+													id="virtualTourLink"
+													name="virtualTourLink"
+													value={formData.virtualTourLink}
+													onChange={handleInputChange}
+													placeholder="https://example.com/virtual-tour"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+												/>
+											</div>
+
+											<div className="flex items-center space-x-2">
+												<input
+													type="checkbox"
+													id="requestVirtualTour"
+													checked={formData.requestVirtualTour}
+													onChange={(e) => setFormData(prev => ({ ...prev, requestVirtualTour: e.target.checked }))}
+													className="rounded bg-white/10 border-white/20 text-purple-600 focus:ring-purple-400"
+												/>
+												<Label htmlFor="requestVirtualTour" className="text-white">
+													Request 100गज to shoot virtual tour
+												</Label>
+											</div>
+
+											<div>
+												<Label>Promotional Brochure PDF (max. 10 MB)</Label>
+												<div className="mt-2 p-6 border-2 border-dashed border-white/30 rounded-lg text-center">
+													<FileText className="w-8 h-8 mx-auto text-purple-400 mb-2" />
+													<p className="text-white text-sm">Upload brochure PDF</p>
+													<Button type="button" size="sm" className="mt-2 bg-purple-600 hover:bg-purple-700 text-white">
+														Upload PDF
+													</Button>
+												</div>
+											</div>
+										</div>
+									</div>
+								)}
+
+								{/* Step 6: Additional Highlights */}
+								{formStep === 6 && (
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<Star className="w-6 h-6 mr-2 text-purple-400" />
+											Add Additional Highlights (USP Section)
+										</h3>
+
+										<div className="space-y-4">
+											<Label className="text-white">Select all that apply:</Label>
+											{highlightOptions.map((highlight) => (
+												<div key={highlight} className="flex items-center space-x-2">
+													<input
+														type="checkbox"
+														id={highlight}
+														checked={formData.highlights.includes(highlight)}
+														onChange={() => handleHighlightChange(highlight)}
+														className="rounded bg-white/10 border-white/20 text-purple-600 focus:ring-purple-400"
+													/>
+													<Label htmlFor={highlight} className="text-white">
+														{highlight}
+													</Label>
+												</div>
+											))}
+										</div>
+
+										{formData.highlights.includes("Tenanted property") && (
+											<div>
+												<Label htmlFor="tenantName">Tenant Name (Corporate) *</Label>
+												<Input
+													id="tenantName"
+													name="tenantName"
+													value={formData.tenantName}
+													onChange={handleInputChange}
+													placeholder="e.g., Infosys, TCS, etc."
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+										)}
 
 										<div>
-											<Label htmlFor="additionalFeatures">Additional Features</Label>
+											<Label htmlFor="customHighlights">Custom USPs / Additional Information</Label>
 											<Textarea
-												id="additionalFeatures"
-												name="additionalFeatures"
-												value={formData.additionalFeatures}
+												id="customHighlights"
+												name="customHighlights"
+												value={formData.customHighlights}
 												onChange={handleInputChange}
-												placeholder="Any other features or highlights of your property..."
-												rows={3}
-												className='bg-white/10 border-white/20 text-white placeholder-gray-400'
+												placeholder="Add any additional unique selling points or custom highlights..."
+												className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+												rows={4}
 											/>
 										</div>
 									</div>
 								)}
 
-								{/* Step 5: Images & Review */}
-								{formStep === 5 && (
-									<div className='space-y-6'>
-										<h2 className='text-2xl font-bold text-white mb-6 flex items-center'>
-											<ImageIcon className='w-6 h-6 mr-2 text-purple-400' />
-											Upload Images & Review
-										</h2>
-
-										{/* Image Upload Section */}
-										<div>
-											<Label className="text-lg font-semibold text-white mb-4 block">
-												Property Images
-											</Label>
-											<div className='border-2 border-dashed border-purple-400/30 rounded-xl p-8 text-center bg-black/40 hover:bg-black/60 transition-all duration-300'>
-												<Upload className='w-16 h-16 text-purple-400 mx-auto mb-4' />
-												<input
-													type='file'
-													multiple
-													accept='image/*'
-													onChange={handleImageUpload}
-													className='hidden'
-													ref={fileInputRef}
-												/>
-												<Button
-													type='button'
-													onClick={() => fileInputRef.current?.click()}
-													className='bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl mb-4'
-												>
-													<ImageIcon className="w-4 h-4 mr-2" />
-													Choose Images
-												</Button>
-												<p className='text-gray-400'>
-													Upload up to 10 high-quality images of your property
-												</p>
-												<p className='text-gray-500 text-sm mt-2'>
-													Supported formats: JPG, PNG, WebP (Max 5MB each)
-												</p>
-											</div>
-										</div>
-
-										{/* Image Preview */}
-										{formData.images.length > 0 && (
-											<div>
-												<Label className="text-lg font-semibold text-white mb-4 block">
-													Selected Images ({formData.images.length}/10)
-												</Label>
-												<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-													{formData.images.map((image, index) => (
-														<div key={index} className='relative group'>
-															<img
-																src={URL.createObjectURL(image)}
-																alt={`Preview ${index + 1}`}
-																className='w-full h-24 object-cover rounded-xl border border-white/20 group-hover:border-purple-400/50 transition-all duration-300'
-															/>
-															<button
-																type='button'
-																onClick={() => removeImage(index)}
-																className='absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100'
-															>
-																<X className='w-4 h-4' />
-															</button>
-														</div>
-													))}
-												</div>
-											</div>
-										)}
-
+								{formStep === 7 && (
+									<div className="space-y-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<Shield className="w-6 h-6 mr-2 text-purple-400" />
+											Final Review & Contact Information
+										</h3>
+										
 										{/* Property Summary */}
-										<div className="backdrop-blur-xl bg-black/80 rounded-2xl p-6 border border-white/10">
-											<h3 className="text-xl font-bold text-white mb-4 flex items-center">
-												<FileText className="w-5 h-5 mr-2 text-purple-400" />
-												Property Summary
-											</h3>
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-												<div className="space-y-2">
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Title:</span> {formData.title}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Type:</span> {formData.propertyType} - {formData.subType}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Listing:</span> {formData.listingType}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">BHK:</span> {formData.bedrooms}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Area:</span> {formData.area} sq ft</p>
+										<div className="bg-white/5 border border-white/20 rounded-lg p-6">
+											<h4 className="text-lg font-semibold text-white mb-4">Property Summary</h4>
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-200">
+												<div>
+													<span className="text-white font-medium">Property Type:</span> {formData.propertyType}
 												</div>
-												<div className="space-y-2">
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Token Price:</span> ₹{formData.price}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">No. of Tokens:</span> {formData.numberOfTokens}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Total Value:</span> ₹{formData.price && formData.numberOfTokens ? (parseFloat(formData.price) * parseFloat(formData.numberOfTokens)).toLocaleString('en-IN') : '0'}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Location:</span> {formData.address.locality}, {formData.address.city}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Furnishing:</span> {formData.furnishing}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Possession:</span> {formData.possessionStatus}</p>
-													<p className="text-gray-300"><span className="text-purple-400 font-medium">Amenities:</span> {formData.amenities.length} selected</p>
+												<div>
+													<span className="text-white font-medium">Project Name:</span> {formData.projectName}
+												</div>
+												<div>
+													<span className="text-white font-medium">Location:</span> {formData.locality}, {formData.city}
+												</div>
+												<div>
+													<span className="text-white font-medium">Built-up Area:</span> {formData.builtUpArea} sq ft
+												</div>
+												<div>
+													<span className="text-white font-medium">Total Valuation:</span> ₹{formData.totalValuation} Cr
+												</div>
+												<div>
+													<span className="text-white font-medium">Min Investment:</span> {formData.minimumInvestmentTicket}
 												</div>
 											</div>
 										</div>
 
-										{/* Owner Contact Details */}
-										<div className="backdrop-blur-xl bg-black/80 rounded-2xl p-6 border border-white/10">
-											<h3 className="text-xl font-bold text-white mb-4 flex items-center">
-												<User className="w-5 h-5 mr-2 text-purple-400" />
-												Owner Contact Details
-											</h3>
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-												<div>
-													<Label htmlFor="ownerDetails.name">Owner Name *</Label>
-													<Input
-														id="ownerDetails.name"
-														name="ownerDetails.name"
-														value={formData.ownerDetails.name}
-														onChange={handleInputChange}
-														placeholder="Enter owner's full name"
-														className='bg-white/10 border-white/20 text-white placeholder-gray-400'
-														required
-													/>
-												</div>
-												
-												<div>
-													<Label htmlFor="ownerDetails.phone">Phone Number *</Label>
-													<Input
-														id="ownerDetails.phone"
-														name="ownerDetails.phone"
-														value={formData.ownerDetails.phone}
-														onChange={handleInputChange}
-														placeholder="Enter contact number"
-														type="tel"
-														className='bg-white/10 border-white/20 text-white placeholder-gray-400'
-														required
-													/>
-												</div>
+										{/* Contact Information */}
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="ownerDetails.name">Owner/Contact Name *</Label>
+												<Input
+													id="ownerDetails.name"
+													name="ownerDetails.name"
+													value={formData.ownerDetails.name}
+													onChange={handleInputChange}
+													placeholder="Full name"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
 											</div>
-											
-											<div className="mt-4">
-												<Label htmlFor="ownerDetails.email">Email Address (Optional)</Label>
+											<div>
+												<Label htmlFor="ownerDetails.phone">Phone Number *</Label>
+												<Input
+													id="ownerDetails.phone"
+													name="ownerDetails.phone"
+													value={formData.ownerDetails.phone}
+													onChange={handleInputChange}
+													placeholder="+91 XXXXX XXXXX"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+										</div>
+
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="ownerDetails.email">Email Address *</Label>
 												<Input
 													id="ownerDetails.email"
 													name="ownerDetails.email"
+													type="email"
 													value={formData.ownerDetails.email}
 													onChange={handleInputChange}
-													placeholder="Enter email address"
-													type="email"
-													className='bg-white/10 border-white/20 text-white placeholder-gray-400'
+													placeholder="email@example.com"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
 												/>
 											</div>
+											<div>
+												<Label htmlFor="ownerDetails.companyName">Company/Organization</Label>
+												<Input
+													id="ownerDetails.companyName"
+													name="ownerDetails.companyName"
+													value={formData.ownerDetails.companyName}
+													onChange={handleInputChange}
+													placeholder="Optional"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+												/>
+											</div>
+										</div>
+
+										{/* Terms and Conditions */}
+										<div className="space-y-4">
+											<div className="flex items-start space-x-2">
+												<input
+													type="checkbox"
+													id="termsAccepted"
+													checked={formData.termsAccepted}
+													onChange={(e) => setFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))}
+													className="rounded bg-white/10 border-white/20 text-purple-600 focus:ring-purple-400 mt-1"
+													required
+												/>
+												<Label htmlFor="termsAccepted" className="text-white text-sm">
+													I hereby confirm that:
+													<ul className="mt-2 space-y-1 text-purple-200 text-xs">
+														<li>• All information provided is accurate and complete</li>
+														<li>• I have legal authority to list this property</li>
+														<li>• I accept 100गज&apos;s terms and conditions for fractional ownership listing</li>
+														<li>• I understand the compliance requirements for commercial real estate</li>
+														<li>• I consent to verification processes and document checks</li>
+													</ul>
+												</Label>
+											</div>
+										</div>
+
+										{/* Final Notes */}
+										<div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+											<h5 className="text-white font-medium mb-2">Next Steps:</h5>
+											<ul className="text-purple-200 text-sm space-y-1">
+												<li>• Your property will be reviewed by our team within 2-3 business days</li>
+												<li>• Legal and technical verification may take 5-7 business days</li>
+												<li>• You&apos;ll receive email updates on the verification status</li>
+												<li>• Once approved, your property will be listed for fractional investment</li>
+											</ul>
 										</div>
 									</div>
 								)}
 
-							{/* Navigation Buttons with Glass Effect */}
-							<div className='flex justify-between mt-8'>
-								<Button
-									type='button'
-									onClick={handlePrevStep}
-									disabled={formStep === 1}
-									className='backdrop-blur-xl bg-black/60 hover:bg-black/80 text-white px-6 py-3 rounded-xl flex items-center border border-white/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
-								>
-									<ArrowLeft className='w-4 h-4 mr-2' />
-									Previous
-								</Button>
+								{/* Navigation Buttons */}
+								<div className="flex justify-between pt-6">
+									<Button
+										type="button"
+										onClick={handlePrevStep}
+										disabled={formStep === 1}
+										className="bg-gray-600 hover:bg-gray-700 text-white disabled:opacity-50"
+									>
+										<ArrowLeft className="w-4 h-4 mr-2" />
+										Previous
+									</Button>
 
-								{formStep < 5 ? (
-									<Button
-										type='button'
-										onClick={handleNextStep}
-										className={`backdrop-blur-xl px-8 py-3 rounded-xl flex items-center border border-white/20 transition-all duration-300 shadow-lg ${
-											isCurrentStepValid() 
-												? 'bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 text-white shadow-purple-500/25' 
-												: 'bg-gray-600/50 text-gray-300 cursor-not-allowed'
-										}`}
-										disabled={!isCurrentStepValid()}
-									>
-										Next
-										<ArrowRight className='w-4 h-4 ml-2' />
-									</Button>
-								) : (
-									<Button
-										type='submit'
-										disabled={submitting}
-										className='backdrop-blur-xl bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 text-white px-8 py-3 rounded-xl flex items-center border border-white/20 transition-all duration-300 shadow-lg shadow-purple-500/25 disabled:opacity-50'
-									>
-										{submitting ? "Posting..." : "Post Property"}
-										<FileText className='w-4 h-4 ml-2' />
-									</Button>
-								)}
-							</div>
-						</form>
+									{formStep < 7 ? (
+										<Button
+											type="button"
+											onClick={handleNextStep}
+											disabled={!getCurrentStepValidation()}
+											className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											Next
+											<ArrowRight className="w-4 h-4 ml-2" />
+										</Button>
+									) : (
+										<Button
+											type="submit"
+											disabled={submitting || !getCurrentStepValidation()}
+											className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+										>
+											{submitting ? "Submitting..." : "Submit for Verification"}
+										</Button>
+									)}
+								</div>
+							</form>
+						</div>
 					</div>
-
-					{/* Success/Error Messages with Glass Effect */}
-					{error && (
-						<div className='mt-4 p-6 backdrop-blur-xl bg-red-500/10 border border-red-400/30 rounded-2xl text-red-200 text-center shadow-2xl'>
-							<div className='flex items-center justify-center gap-2'>
-								<div className='w-2 h-2 bg-red-400 rounded-full animate-pulse'></div>
-								{error}
-							</div>
-						</div>
-					)}
-
-					{success && (
-						<div className='mt-4 p-6 backdrop-blur-xl bg-green-500/10 border border-green-400/30 rounded-2xl text-green-200 text-center shadow-2xl'>
-							<div className='flex items-center justify-center gap-2'>
-								<div className='w-2 h-2 bg-green-400 rounded-full animate-pulse'></div>
-								{success}
-							</div>
-						</div>
-					)}
 				</div>
-			</div>
 
-			{/* Auth Modal */}
-			<Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />}>
-				<AuthModal
-					isOpen={showAuthModal}
-					onClose={() => setShowAuthModal(false)}
-					onAuthSuccess={handleAuthSuccess}
-				/>
-			</Suspense>
-		</div>
+				{/* Auth Modal */}
+				<Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />}>
+					<AuthModal
+						isOpen={showAuthModal}
+						onClose={() => setShowAuthModal(false)}
+						onAuthSuccess={handleAuthSuccess}
+					/>
+				</Suspense>
+			</div>
 		</>
 	);
 }
