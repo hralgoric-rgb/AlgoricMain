@@ -111,6 +111,7 @@ export default function CommercialPropertyForm() {
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [showAuthModal, setShowAuthModal] = useState(false);
+	const [isRestoringData, setIsRestoringData] = useState(false);
 
 	// Property types for commercial real estate
 	const propertyTypes = useMemo(() => [
@@ -275,6 +276,57 @@ export default function CommercialPropertyForm() {
 		},
 	});
 
+	// State for file uploads
+	const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+	const [isDragging, setIsDragging] = useState(false);
+	
+	// State for Step 5 media uploads
+	const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+	const [uploadedBrochure, setUploadedBrochure] = useState<File | null>(null);
+	const [isImageDragging, setIsImageDragging] = useState(false);
+	const [isBrochureDragging, setIsBrochureDragging] = useState(false);
+
+	// Load saved form data from localStorage on component mount
+	useEffect(() => {
+		const savedFormData = localStorage.getItem('commercialPropertyFormData');
+		const savedFormStep = localStorage.getItem('commercialPropertyFormStep');
+		
+		if (savedFormData || savedFormStep) {
+			setIsRestoringData(true);
+		}
+		
+		if (savedFormData) {
+			try {
+				const parsedData = JSON.parse(savedFormData);
+				setFormData(parsedData);
+			} catch (error) {
+				console.error('Error parsing saved form data:', error);
+			}
+		}
+		
+		if (savedFormStep) {
+			const step = parseInt(savedFormStep);
+			if (step >= 1 && step <= 7) {
+				setFormStep(step);
+			}
+		}
+		
+		// Hide the restoration indicator after a short delay
+		setTimeout(() => {
+			setIsRestoringData(false);
+		}, 1500);
+	}, []);
+
+	// Save form data to localStorage whenever formData changes
+	useEffect(() => {
+		localStorage.setItem('commercialPropertyFormData', JSON.stringify(formData));
+	}, [formData]);
+
+	// Save form step to localStorage whenever formStep changes
+	useEffect(() => {
+		localStorage.setItem('commercialPropertyFormStep', formStep.toString());
+	}, [formStep]);
+
 	useEffect(() => {
 		const token = typeof window !== "undefined"
 			? sessionStorage.getItem("authToken") || localStorage.getItem("authToken")
@@ -340,6 +392,119 @@ export default function CommercialPropertyForm() {
 		}));
 	}, [areaCoordinates]);
 
+	// File upload handlers
+	const handleFileUpload = useCallback((files: FileList | File[]) => {
+		const fileArray = Array.from(files);
+		const validFiles = fileArray.filter(file => {
+			const isValidType = file.type === 'application/pdf' || file.type.startsWith('image/');
+			const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
+			return isValidType && isValidSize;
+		});
+
+		setUploadedFiles(prev => [...prev, ...validFiles]);
+		
+		// Auto-check the documents uploaded checkbox if files are uploaded
+		if (validFiles.length > 0) {
+			setFormData(prev => ({ ...prev, documentsUploaded: true }));
+		}
+	}, []);
+
+	const handleDragOver = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsDragging(true);
+	}, []);
+
+	const handleDragLeave = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsDragging(false);
+	}, []);
+
+	const handleDrop = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsDragging(false);
+		if (e.dataTransfer.files) {
+			handleFileUpload(e.dataTransfer.files);
+		}
+	}, [handleFileUpload]);
+
+	const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files) {
+			handleFileUpload(e.target.files);
+		}
+	}, [handleFileUpload]);
+
+	const removeFile = useCallback((index: number) => {
+		setUploadedFiles(prev => {
+			const newFiles = prev.filter((_, i) => i !== index);
+			// If no files left, uncheck the documents uploaded checkbox
+			if (newFiles.length === 0) {
+				setFormData(prev => ({ ...prev, documentsUploaded: false }));
+			}
+			return newFiles;
+		});
+	}, []);
+
+	// Step 5 file upload handlers
+	const handleImageUpload = useCallback((files: FileList | File[]) => {
+		const fileArray = Array.from(files);
+		const validFiles = fileArray.filter(file => {
+			const isValidType = file.type.startsWith('image/');
+			const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
+			return isValidType && isValidSize;
+		});
+		setUploadedImages(prev => [...prev, ...validFiles]);
+	}, []);
+
+	const handleBrochureUpload = useCallback((file: File) => {
+		if (file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) {
+			setUploadedBrochure(file);
+		}
+	}, []);
+
+	const handleImageDragOver = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsImageDragging(true);
+	}, []);
+
+	const handleImageDragLeave = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsImageDragging(false);
+	}, []);
+
+	const handleImageDrop = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsImageDragging(false);
+		if (e.dataTransfer.files) {
+			handleImageUpload(e.dataTransfer.files);
+		}
+	}, [handleImageUpload]);
+
+	const handleBrochureDragOver = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsBrochureDragging(true);
+	}, []);
+
+	const handleBrochureDragLeave = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsBrochureDragging(false);
+	}, []);
+
+	const handleBrochureDrop = useCallback((e: React.DragEvent) => {
+		e.preventDefault();
+		setIsBrochureDragging(false);
+		if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+			handleBrochureUpload(e.dataTransfer.files[0]);
+		}
+	}, [handleBrochureUpload]);
+
+	const removeImage = useCallback((index: number) => {
+		setUploadedImages(prev => prev.filter((_, i) => i !== index));
+	}, []);
+
+	const removeBrochure = useCallback(() => {
+		setUploadedBrochure(null);
+	}, []);
+
 	// Form validation functions for each step
 	const validateStep1 = useCallback(() => {
 		return formData.propertyType !== "";
@@ -380,14 +545,13 @@ export default function CommercialPropertyForm() {
 	}, [formData]);
 
 	const validateStep4 = useCallback(() => {
-		return formData.documentsUploaded;
-	}, [formData.documentsUploaded]);
+		return formData.documentsUploaded && uploadedFiles.length > 0;
+	}, [formData.documentsUploaded, uploadedFiles.length]);
 
 	const validateStep5 = useCallback(() => {
-		// For now, just checking if they have at least acknowledged the media section
-		// In a real implementation, you'd check for actual file uploads
-		return true; // Media is optional but encouraged
-	}, []);
+		// Check if at least some images are uploaded (minimum 6 recommended but not strictly enforced for demo)
+		return uploadedImages.length > 0; // Can adjust this to require minimum 6 images
+	}, [uploadedImages.length]);
 
 	const validateStep6 = useCallback(() => {
 		// Highlights are optional, so always valid
@@ -464,6 +628,11 @@ export default function CommercialPropertyForm() {
 		try {
 			// Simulate API call
 			await new Promise(resolve => setTimeout(resolve, 2000));
+			
+			// Clear saved form data on successful submission
+			localStorage.removeItem('commercialPropertyFormData');
+			localStorage.removeItem('commercialPropertyFormStep');
+			
 			setSuccess("Commercial property posted successfully!");
 			setTimeout(() => {
 				router.push("/equity/property");
@@ -523,7 +692,7 @@ export default function CommercialPropertyForm() {
 					<EquityNavigation />
 				</Suspense>
 				
-				<div className="container mx-auto px-4 py-8">
+				<div className="container mx-auto px-4 py-8 pt-28 md:pt-24">
 					<div className="max-w-4xl mx-auto">
 						{/* Header */}
 						<div className="text-center mb-8">
@@ -533,6 +702,15 @@ export default function CommercialPropertyForm() {
 							<p className="text-purple-200 text-lg">
 								List your commercial property for fractional investment opportunities
 							</p>
+							
+							{/* Data Restoration Indicator */}
+							{isRestoringData && (
+								<div className="mt-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg">
+									<p className="text-green-200 text-sm">
+										✓ Restoring your previous form data...
+									</p>
+								</div>
+							)}
 						</div>
 
 						{/* Step Indicator */}
@@ -567,7 +745,7 @@ export default function CommercialPropertyForm() {
 							
 							{/* Validation Status Indicator */}
 							{!getCurrentStepValidation() && (
-								<div className="mt-3 text-sm text-orange-300 flex items-center justify-center">
+								<div className="mt-3 text-sm text-gray-300 flex items-center justify-center">
 									<Settings className="w-4 h-4 mr-1" />
 									Complete all required fields to continue
 								</div>
@@ -605,15 +783,15 @@ export default function CommercialPropertyForm() {
 										</h3>
 
 										<div>
-											<Label htmlFor="propertyType" className="flex items-center">
-												Property Type 
-												<span className="text-red-400 ml-1">*</span>
+											<Label htmlFor="propertyType" className="flex items-center mb-2">
+												Property Type
+												<span className="text-red-400 ml-2">*</span>
 											</Label>
 											<Select
 												value={formData.propertyType}
 												onValueChange={(value) => setFormData(prev => ({ ...prev, propertyType: value }))}
 											>
-												<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.propertyType ? 'border-red-400/50' : ''}`}>
+												<SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400">
 													<SelectValue placeholder="Select property type" />
 												</SelectTrigger>
 												<SelectContent className="bg-gray-900 border-purple-400/30">
@@ -633,7 +811,7 @@ export default function CommercialPropertyForm() {
 										</div>
 
 										<div>
-											<Label>Listing Category</Label>
+											<Label className="mb-2 block">Listing Category</Label>
 											<div className="p-4 bg-white/10 border border-white/20 rounded-lg">
 												<div className="flex items-center space-x-2">
 													<CheckCircle className="w-5 h-5 text-green-400" />
@@ -653,7 +831,7 @@ export default function CommercialPropertyForm() {
 										</h3>
 
 										<div>
-											<Label htmlFor="projectName" className="flex items-center">
+											<Label htmlFor="projectName" className="flex items-center mb-2">
 												Project/Asset Name 
 												<span className="text-red-400 ml-1">*</span>
 											</Label>
@@ -663,7 +841,7 @@ export default function CommercialPropertyForm() {
 												value={formData.projectName}
 												onChange={handleInputChange}
 												placeholder="e.g., DLF Corporate Park"
-												className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.projectName ? 'border-red-400/50' : ''}`}
+												className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 												required
 											/>
 											{!formData.projectName && (
@@ -673,7 +851,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="fullAddress" className="flex items-center">
+												<Label htmlFor="fullAddress" className="flex items-center mb-2">
 													Full Address with Pin Code 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -683,7 +861,7 @@ export default function CommercialPropertyForm() {
 													value={formData.fullAddress}
 													onChange={handleInputChange}
 													placeholder="Complete address with pin code"
-													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.fullAddress ? 'border-red-400/50' : ''}`}
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 													required
 												/>
 												{!formData.fullAddress && (
@@ -691,7 +869,7 @@ export default function CommercialPropertyForm() {
 												)}
 											</div>
 											<div>
-												<Label htmlFor="pinCode" className="flex items-center">
+												<Label htmlFor="pinCode" className="flex items-center mb-2">
 													Pin Code 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -701,7 +879,7 @@ export default function CommercialPropertyForm() {
 													value={formData.pinCode}
 													onChange={handleInputChange}
 													placeholder="110001"
-													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.pinCode ? 'border-red-400/50' : ''}`}
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 													required
 												/>
 												{!formData.pinCode && (
@@ -712,7 +890,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="city" className="flex items-center">
+												<Label htmlFor="city" className="flex items-center mb-2">
 													City 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -722,12 +900,12 @@ export default function CommercialPropertyForm() {
 													value={formData.city}
 													onChange={handleInputChange}
 													placeholder="Delhi"
-													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.city ? 'border-red-400/50' : ''}`}
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 													required
 												/>
 											</div>
 											<div>
-												<Label htmlFor="locality" className="flex items-center">
+												<Label htmlFor="locality" className="flex items-center mb-2">
 													Locality 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -735,7 +913,7 @@ export default function CommercialPropertyForm() {
 													value={formData.locality}
 													onValueChange={handleLocalityChange}
 												>
-													<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.locality ? 'border-red-400/50' : ''}`}>
+													<SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400">
 														<SelectValue placeholder="Select locality" />
 													</SelectTrigger>
 													<SelectContent className="bg-gray-900 border-purple-400/30 max-h-48 overflow-y-auto">
@@ -759,7 +937,7 @@ export default function CommercialPropertyForm() {
 										</div>
 
 										<div>
-											<Label htmlFor="possessionStatus" className="flex items-center">
+											<Label htmlFor="possessionStatus" className="flex items-center mb-2">
 												Possession Status 
 												<span className="text-red-400 ml-1">*</span>
 											</Label>
@@ -767,7 +945,7 @@ export default function CommercialPropertyForm() {
 												value={formData.possessionStatus}
 												onValueChange={(value) => setFormData(prev => ({ ...prev, possessionStatus: value }))}
 											>
-												<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.possessionStatus ? 'border-red-400/50' : ''}`}>
+												<SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400">
 													<SelectValue placeholder="Select possession status" />
 												</SelectTrigger>
 												<SelectContent className="bg-gray-900 border-purple-400/30">
@@ -785,7 +963,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="builtUpArea" className="flex items-center">
+												<Label htmlFor="builtUpArea" className="flex items-center mb-2">
 													Built-up Area (sq. ft.) 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -796,7 +974,7 @@ export default function CommercialPropertyForm() {
 													value={formData.builtUpArea}
 													onChange={handleInputChange}
 													placeholder="e.g., 10000"
-													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.builtUpArea ? 'border-red-400/50' : ''}`}
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 													required
 												/>
 												{!formData.builtUpArea && (
@@ -804,7 +982,7 @@ export default function CommercialPropertyForm() {
 												)}
 											</div>
 											<div>
-												<Label htmlFor="totalValuation" className="flex items-center">
+												<Label htmlFor="totalValuation" className="flex items-center mb-2">
 													Total Valuation (₹ Cr) 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -816,7 +994,7 @@ export default function CommercialPropertyForm() {
 													value={formData.totalValuation}
 													onChange={handleInputChange}
 													placeholder="e.g., 50.5"
-													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.totalValuation ? 'border-red-400/50' : ''}`}
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 													required
 												/>
 												{!formData.totalValuation && (
@@ -826,7 +1004,7 @@ export default function CommercialPropertyForm() {
 										</div>
 
 										<div>
-											<Label htmlFor="minimumInvestmentTicket" className="flex items-center">
+											<Label htmlFor="minimumInvestmentTicket" className="flex items-center mb-2">
 												Minimum Investment Ticket 
 												<span className="text-red-400 ml-1">*</span>
 											</Label>
@@ -834,7 +1012,7 @@ export default function CommercialPropertyForm() {
 												value={formData.minimumInvestmentTicket}
 												onValueChange={(value) => setFormData(prev => ({ ...prev, minimumInvestmentTicket: value }))}
 											>
-												<SelectTrigger className={`bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400 ${!formData.minimumInvestmentTicket ? 'border-red-400/50' : ''}`}>
+												<SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400">
 													<SelectValue placeholder="Select minimum ticket size" />
 												</SelectTrigger>
 												<SelectContent className="bg-gray-900 border-purple-400/30">
@@ -852,7 +1030,7 @@ export default function CommercialPropertyForm() {
 
 										{formData.minimumInvestmentTicket === "Custom Amount" && (
 											<div>
-												<Label htmlFor="customTicketAmount" className="flex items-center">
+												<Label htmlFor="customTicketAmount" className="flex items-center mb-2">
 													Custom Ticket Amount (₹) 
 													<span className="text-red-400 ml-1">*</span>
 												</Label>
@@ -863,7 +1041,7 @@ export default function CommercialPropertyForm() {
 													value={formData.customTicketAmount}
 													onChange={handleInputChange}
 													placeholder="e.g., 75000"
-													className={`bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400 ${!formData.customTicketAmount ? 'border-red-400/50' : ''}`}
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
 													required
 												/>
 												{!formData.customTicketAmount && (
@@ -884,7 +1062,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="targetRaiseAmount">Target Raise Amount (₹ Cr) *</Label>
+												<Label htmlFor="targetRaiseAmount" className="mb-2 block">Target Raise Amount (₹ Cr) *</Label>
 												<Input
 													id="targetRaiseAmount"
 													name="targetRaiseAmount"
@@ -898,7 +1076,7 @@ export default function CommercialPropertyForm() {
 												/>
 											</div>
 											<div>
-												<Label htmlFor="ownershipSplit">Ownership Split *</Label>
+												<Label htmlFor="ownershipSplit" className="mb-2 block">Ownership Split *</Label>
 												<Input
 													id="ownershipSplit"
 													name="ownershipSplit"
@@ -913,7 +1091,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="rentalYield">Rental Yield (%) *</Label>
+												<Label htmlFor="rentalYield" className="mb-2 block">Rental Yield (%) *</Label>
 												<Input
 													id="rentalYield"
 													name="rentalYield"
@@ -927,7 +1105,7 @@ export default function CommercialPropertyForm() {
 												/>
 											</div>
 											<div>
-												<Label htmlFor="annualROIProjection">Annual ROI Projection (%) *</Label>
+												<Label htmlFor="annualROIProjection" className="mb-2 block">Annual ROI Projection (%) *</Label>
 												<Input
 													id="annualROIProjection"
 													name="annualROIProjection"
@@ -943,7 +1121,7 @@ export default function CommercialPropertyForm() {
 										</div>
 
 										<div>
-											<Label htmlFor="minimumHoldingPeriod">Minimum Holding Period / Lock-in *</Label>
+											<Label htmlFor="minimumHoldingPeriod" className="mb-2 block">Minimum Holding Period / Lock-in *</Label>
 											<Input
 												id="minimumHoldingPeriod"
 												name="minimumHoldingPeriod"
@@ -956,7 +1134,7 @@ export default function CommercialPropertyForm() {
 										</div>
 
 										<div>
-											<Label>Exit Options *</Label>
+											<Label className="mb-2 block">Exit Options *</Label>
 											<div className="space-y-3 mt-2">
 												{exitOptions.map((option) => (
 													<div key={option} className="flex items-center space-x-2">
@@ -1000,14 +1178,61 @@ export default function CommercialPropertyForm() {
 												</ul>
 											</div>
 
-											<div className="mt-6 p-8 border-2 border-dashed border-white/30 rounded-lg text-center">
+											<div className={`mt-6 p-8 border-2 border-dashed rounded-lg text-center transition-colors ${
+												isDragging 
+													? 'border-purple-400 bg-purple-400/10' 
+													: 'border-white/30 hover:border-purple-400/50'
+											}`}
+											onDragOver={handleDragOver}
+											onDragLeave={handleDragLeave}
+											onDrop={handleDrop}
+											>
 												<Upload className="w-12 h-12 mx-auto text-purple-400 mb-4" />
 												<p className="text-white mb-2">Drag and drop your documents here</p>
 												<p className="text-purple-200 text-sm mb-4">or click to browse files</p>
-												<Button type="button" className="bg-purple-600 hover:bg-purple-700 text-white">
+												<input
+													type="file"
+													id="fileUpload"
+													multiple
+													accept=".pdf,.jpg,.jpeg,.png"
+													onChange={handleFileInputChange}
+													className="hidden"
+												/>
+												<Button 
+													type="button" 
+													onClick={() => document.getElementById('fileUpload')?.click()}
+													className="bg-purple-600 hover:bg-purple-700 text-white"
+												>
 													Choose Files
 												</Button>
 											</div>
+
+											{/* Uploaded Files List */}
+											{uploadedFiles.length > 0 && (
+												<div className="mt-4 space-y-2">
+													<h5 className="text-white font-medium">Uploaded Files:</h5>
+													{uploadedFiles.map((file, index) => (
+														<div key={index} className="flex items-center justify-between bg-white/5 border border-white/20 rounded-lg p-3">
+															<div className="flex items-center space-x-2">
+																<FileText className="w-4 h-4 text-purple-400" />
+																<span className="text-white text-sm">{file.name}</span>
+																<span className="text-purple-200 text-xs">
+																	({(file.size / (1024 * 1024)).toFixed(2)} MB)
+																</span>
+															</div>
+															<Button
+																type="button"
+																size="sm"
+																variant="ghost"
+																onClick={() => removeFile(index)}
+																className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+															>
+																<X className="w-4 h-4" />
+															</Button>
+														</div>
+													))}
+												</div>
+											)}
 
 											<div className="flex items-center space-x-2 mt-4">
 												<input
@@ -1036,18 +1261,64 @@ export default function CommercialPropertyForm() {
 										<div className="space-y-6">
 											<div>
 												<Label>Upload Images (Min. 6 HD images, at least 1 exterior + 1 floor plan) *</Label>
-												<div className="mt-2 p-8 border-2 border-dashed border-white/30 rounded-lg text-center">
+												<div className={`mt-2 p-8 border-2 border-dashed rounded-lg text-center transition-colors ${
+													isImageDragging 
+														? 'border-purple-400 bg-purple-400/10' 
+														: 'border-white/30 hover:border-purple-400/50'
+												}`}
+												onDragOver={handleImageDragOver}
+												onDragLeave={handleImageDragLeave}
+												onDrop={handleImageDrop}
+												>
 													<ImageIcon className="w-12 h-12 mx-auto text-purple-400 mb-4" />
-													<p className="text-white mb-2">Upload property images</p>
+													<p className="text-white mb-2">Drag and drop your images here</p>
 													<p className="text-purple-200 text-sm mb-4">JPG, PNG, WEBP up to 10MB each</p>
-													<Button type="button" className="bg-purple-600 hover:bg-purple-700 text-white">
+													<input
+														type="file"
+														id="imageUpload"
+														multiple
+														accept="image/*"
+														onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+														className="hidden"
+													/>
+													<Button 
+														type="button" 
+														onClick={() => document.getElementById('imageUpload')?.click()}
+														className="bg-purple-600 hover:bg-purple-700 text-white"
+													>
 														Upload Images
 													</Button>
 												</div>
+												
+												{/* Uploaded Images List */}
+												{uploadedImages.length > 0 && (
+													<div className="mt-4 space-y-2">
+														<h5 className="text-white font-medium">Uploaded Images ({uploadedImages.length}):</h5>
+														<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+															{uploadedImages.map((file, index) => (
+																<div key={index} className="relative bg-white/5 border border-white/20 rounded-lg p-2">
+																	<div className="flex items-center space-x-2">
+																		<ImageIcon className="w-4 h-4 text-purple-400" />
+																		<span className="text-white text-xs truncate">{file.name}</span>
+																	</div>
+																	<Button
+																		type="button"
+																		size="sm"
+																		variant="ghost"
+																		onClick={() => removeImage(index)}
+																		className="absolute top-1 right-1 w-5 h-5 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+																	>
+																		<X className="w-3 h-3" />
+																	</Button>
+																</div>
+															))}
+														</div>
+													</div>
+												)}
 											</div>
 
 											<div>
-												<Label htmlFor="virtualTourLink">Virtual Tour Link</Label>
+												<Label htmlFor="virtualTourLink" className="mb-2 block">Virtual Tour Link</Label>
 												<Input
 													id="virtualTourLink"
 													name="virtualTourLink"
@@ -1073,13 +1344,57 @@ export default function CommercialPropertyForm() {
 
 											<div>
 												<Label>Promotional Brochure PDF (max. 10 MB)</Label>
-												<div className="mt-2 p-6 border-2 border-dashed border-white/30 rounded-lg text-center">
+												<div className={`mt-2 p-6 border-2 border-dashed rounded-lg text-center transition-colors ${
+													isBrochureDragging 
+														? 'border-purple-400 bg-purple-400/10' 
+														: 'border-white/30 hover:border-purple-400/50'
+												}`}
+												onDragOver={handleBrochureDragOver}
+												onDragLeave={handleBrochureDragLeave}
+												onDrop={handleBrochureDrop}
+												>
 													<FileText className="w-8 h-8 mx-auto text-purple-400 mb-2" />
-													<p className="text-white text-sm">Upload brochure PDF</p>
-													<Button type="button" size="sm" className="mt-2 bg-purple-600 hover:bg-purple-700 text-white">
+													<p className="text-white text-sm mb-2">Drag and drop your PDF here</p>
+													<input
+														type="file"
+														id="brochureUpload"
+														accept=".pdf"
+														onChange={(e) => e.target.files?.[0] && handleBrochureUpload(e.target.files[0])}
+														className="hidden"
+													/>
+													<Button 
+														type="button" 
+														size="sm" 
+														onClick={() => document.getElementById('brochureUpload')?.click()}
+														className="mt-2 bg-purple-600 hover:bg-purple-700 text-white"
+													>
 														Upload PDF
 													</Button>
 												</div>
+												
+												{/* Uploaded Brochure */}
+												{uploadedBrochure && (
+													<div className="mt-3 bg-white/5 border border-white/20 rounded-lg p-3">
+														<div className="flex items-center justify-between">
+															<div className="flex items-center space-x-2">
+																<FileText className="w-4 h-4 text-purple-400" />
+																<span className="text-white text-sm">{uploadedBrochure.name}</span>
+																<span className="text-purple-200 text-xs">
+																	({(uploadedBrochure.size / (1024 * 1024)).toFixed(2)} MB)
+																</span>
+															</div>
+															<Button
+																type="button"
+																size="sm"
+																variant="ghost"
+																onClick={removeBrochure}
+																className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+															>
+																<X className="w-4 h-4" />
+															</Button>
+														</div>
+													</div>
+												)}
 											</div>
 										</div>
 									</div>
@@ -1113,7 +1428,7 @@ export default function CommercialPropertyForm() {
 
 										{formData.highlights.includes("Tenanted property") && (
 											<div>
-												<Label htmlFor="tenantName">Tenant Name (Corporate) *</Label>
+												<Label htmlFor="tenantName" className="mb-2 block">Tenant Name (Corporate) *</Label>
 												<Input
 													id="tenantName"
 													name="tenantName"
@@ -1127,7 +1442,7 @@ export default function CommercialPropertyForm() {
 										)}
 
 										<div>
-											<Label htmlFor="customHighlights">Custom USPs / Additional Information</Label>
+											<Label htmlFor="customHighlights" className="mb-2 block">Custom USPs / Additional Information</Label>
 											<Textarea
 												id="customHighlights"
 												name="customHighlights"
@@ -1176,7 +1491,7 @@ export default function CommercialPropertyForm() {
 										{/* Contact Information */}
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="ownerDetails.name">Owner/Contact Name *</Label>
+												<Label htmlFor="ownerDetails.name" className="mb-2 block">Owner/Contact Name *</Label>
 												<Input
 													id="ownerDetails.name"
 													name="ownerDetails.name"
@@ -1188,7 +1503,7 @@ export default function CommercialPropertyForm() {
 												/>
 											</div>
 											<div>
-												<Label htmlFor="ownerDetails.phone">Phone Number *</Label>
+												<Label htmlFor="ownerDetails.phone" className="mb-2 block">Phone Number *</Label>
 												<Input
 													id="ownerDetails.phone"
 													name="ownerDetails.phone"
@@ -1203,7 +1518,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="ownerDetails.email">Email Address *</Label>
+												<Label htmlFor="ownerDetails.email" className="mb-2 block">Email Address *</Label>
 												<Input
 													id="ownerDetails.email"
 													name="ownerDetails.email"

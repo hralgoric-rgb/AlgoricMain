@@ -457,7 +457,7 @@ export default function CommercialPropertyForm() {
 										</h3>
 
 										<div>
-											<Label htmlFor="propertyType">Property Type *</Label>
+											<Label htmlFor="propertyType" className="mb-2 block">Property Type&nbsp;*</Label>
 											<Select
 												value={formData.propertyType}
 												onValueChange={(value) => setFormData(prev => ({ ...prev, propertyType: value }))}
@@ -499,7 +499,7 @@ export default function CommercialPropertyForm() {
 										</h3>
 
 										<div>
-											<Label htmlFor="projectName">Project/Asset Name *</Label>
+											<Label htmlFor="projectName" className="mb-2 block">Project/Asset Name *</Label>
 											<Input
 												id="projectName"
 												name="projectName"
@@ -513,7 +513,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="fullAddress">Full Address with Pin Code *</Label>
+												<Label htmlFor="fullAddress" className="mb-2 block">Full Address with Pin Code *</Label>
 												<Textarea
 													id="fullAddress"
 													name="fullAddress"
@@ -525,7 +525,7 @@ export default function CommercialPropertyForm() {
 												/>
 											</div>
 											<div>
-												<Label htmlFor="pinCode">Pin Code *</Label>
+												<Label htmlFor="pinCode" className="mb-2 block">Pin Code *</Label>
 												<Input
 													id="pinCode"
 													name="pinCode"
@@ -540,7 +540,7 @@ export default function CommercialPropertyForm() {
 
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 											<div>
-												<Label htmlFor="city">City *</Label>
+												<Label htmlFor="city" className="mb-2 block">City *</Label>
 												<Input
 													id="city"
 													name="city"
@@ -552,7 +552,7 @@ export default function CommercialPropertyForm() {
 												/>
 											</div>
 											<div>
-												<Label htmlFor="locality">Locality *</Label>
+												<Label htmlFor="locality" className="mb-2 block">Locality *</Label>
 												<Select
 													value={formData.locality}
 													onValueChange={(value) => setFormData(prev => ({ ...prev, locality: value }))}
