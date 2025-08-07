@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -12,6 +13,24 @@ import Navbar from "../_components/Navbar";
 function Page() {
     const heroRef = useRef<HTMLDivElement>(null);
     const featuresRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+
+    // Navigation functions
+    const handleLandlordDashboard = () => {
+        router.push('/microestate/landlord');
+    };
+
+    const handleTenantPortal = () => {
+        router.push('/microestate/tenant');
+    };
+
+    const handleGetStarted = () => {
+        router.push('/contact');
+    };
+
+    const handleScheduleDemo = () => {
+        router.push('/contact');
+    };
 
     useEffect(() => {
         const tl = gsap.timeline();
@@ -156,45 +175,17 @@ function Page() {
                                 <div className="absolute -bottom-6 left-1/4 w-2 h-2 bg-orange-300 rounded-full opacity-70 animate-bounce delay-700"></div>
                             </div>
 
-                            <p className="hero-subtitle text-lg md:text-xl text-white mb-4 max-w-3xl mx-auto leading-relaxed">
+                            <p className="hero-subtitle text-lg md:text-xl text-white mb-16 max-w-3xl mx-auto leading-relaxed">
                                 Streamline property management with our all-in-one platform. Manage properties, leases, and payments with ease while providing exceptional experiences for both{" "}
                                 <span className="text-orange-400 font-semibold">landlords</span> and{" "}
                                 <span className="text-orange-400 font-semibold">tenants</span>.
                             </p>
 
-                            <div className="hero-form flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-16">
-                                <div className="relative flex-1 group">
-                                    <Input
-                                        placeholder="Enter your email address"
-    className="w-full h-14 bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-2 border-orange-500/20 backdrop-blur-md text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all duration-500 px-6 rounded-2xl shadow-xl focus:shadow-orange-500/30 text-lg"
-                                    />
-  {/* Removed all hover background effect layers */}
-                                </div>
-
-
-                                <Button
-                                    className="relative h-14 bg-gradient-to-r from-primary-orange to-primary-red hover:from-primary-orange hover:to-primary-red text-white font-bold px-8 rounded-2xl shadow-xl hover:shadow-orange-500/40 transition-all duration-500 transform hover:-translate-y-1 hover:scale-105 border border-orange-500/30 overflow-hidden group"
-                                    onClick={()=>{}}
-                                >
-                                    <span className="relative z-10 flex items-center gap-2 text-lg">
-                                        <Mail className="w-5 h-5" />
-                                        Say Hello
-                                    </span>
-
-                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-300 opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
-
-                                    <div className="absolute inset-0 bg-orange-400/20 rounded-2xl animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                </Button>
-                            </div>
-
                             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                                 <Button
                                     variant="outline"
                                     size="lg"
-                                    onClick={()=>{}}
+                                    onClick={handleLandlordDashboard}
                                     className="group relative w-full sm:w-auto border-2 border-primary-orange/40 text-primary-orange px-10 py-7 rounded-2xl font-bold text-lg transition-all duration-700 overflow-hidden backdrop-blur-sm shadow-lg hover:shadow-primary-orange/30 transform hover:-translate-y-2 hover:scale-105"
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-left rounded-2xl"></div>
@@ -212,7 +203,7 @@ function Page() {
                                 <Button
                                     variant="outline"
                                     size="lg"
-                                    onClick={()=>{}}
+                                    onClick={handleTenantPortal}
                                     className="group relative w-full sm:w-auto border-2 border-primary-orange/40 text-primary-orange px-10 py-7 rounded-2xl font-bold text-lg transition-all duration-700 overflow-hidden backdrop-blur-sm shadow-lg hover:shadow-primary-orange/30 transform hover:-translate-y-2 hover:scale-105"
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-right rounded-2xl"></div>
@@ -293,7 +284,7 @@ function Page() {
                                 <Button
                                     size="lg"
                                     className="group relative bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold px-10 py-6 text-lg rounded-2xl shadow-2xl hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-orange-500/20 overflow-hidden"
-                                    onClick={()=>{}}
+                                    onClick={handleGetStarted}
                                 >
                                     <span className="relative z-10 flex items-center gap-2">
                                         <TrendingUp className="w-6 h-6" />
@@ -306,7 +297,7 @@ function Page() {
                                 <Button
                                     variant="outline"
                                     size="lg"
-                                    onClick={()=>{}}
+                                    onClick={handleScheduleDemo}
                                     className="group relative border-2 border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:border-orange-500 px-10 py-6 text-lg rounded-2xl font-semibold transition-all duration-300 backdrop-blur-sm hover:shadow-lg hover:shadow-orange-500/20 transform hover:-translate-y-1"
                                 >
                                     <span className="relative z-10 flex items-center gap-2">
