@@ -621,24 +621,102 @@ export default function CommercialPropertyForm() {
 	// Form submission
 	const handleSubmit = useCallback(async (e: React.FormEvent) => {
 		e.preventDefault();
+		e.stopPropagation();
+		
+		console.log("Form submission started in page.tsx");
+		
 		setError("");
 		setSuccess("");
 		setSubmitting(true);
 
 		try {
-			// Simulate API call
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			
-			// Clear saved form data on successful submission
-			localStorage.removeItem('commercialPropertyFormData');
-			localStorage.removeItem('commercialPropertyFormStep');
-			
-			setSuccess("Commercial property posted successfully!");
-			setTimeout(() => {
-				router.push("/equity/property");
-			}, 2000);
+			const token = typeof window !== "undefined"
+				? sessionStorage.getItem("authToken") || localStorage.getItem("authToken")
+				: null;
+
+			if (!token) {
+				setError("You must be logged in to post a property.");
+				setSubmitting(false);
+				return;
+			}
+
+			// Validate only the fields that are actually implemented in the form
+			const requiredFields = [
+				{ field: formData.propertyType, name: "Property Type" },
+				{ field: formData.projectName, name: "Project Name" },
+				{ field: formData.fullAddress, name: "Full Address" },
+				{ field: formData.pinCode, name: "Pin Code" },
+				{ field: formData.locality, name: "Locality" },
+				{ field: formData.possessionStatus, name: "Possession Status" },
+				{ field: formData.builtUpArea, name: "Built-up Area" },
+				{ field: formData.totalValuation, name: "Total Valuation" },
+				{ field: formData.minimumInvestmentTicket, name: "Minimum Investment Ticket" },
+				{ field: formData.ownerDetails.name, name: "Owner Name" },
+				{ field: formData.ownerDetails.phone, name: "Owner Phone" },
+				{ field: formData.ownerDetails.email, name: "Owner Email" },
+				{ field: formData.termsAccepted, name: "Terms Acceptance", isBoolean: true }
+			];
+
+			const missingFields = requiredFields.filter(item => 
+				item.isBoolean ? !item.field : !item.field?.toString().trim()
+			);
+
+			if (missingFields.length > 0) {
+				setError(`Please fill in the following required fields: ${missingFields.map(f => f.name).join(', ')}`);
+				setSubmitting(false);
+				return;
+			}
+
+			// Additional validation for custom amount
+			if (formData.minimumInvestmentTicket === "Custom Amount" && !formData.customTicketAmount) {
+				setError("Please enter a custom ticket amount.");
+				setSubmitting(false);
+				return;
+			}
+
+			console.log("Submitting form data:", formData);
+			console.log("Token exists:", !!token);
+			console.log("Making API call to /api/commercial");
+
+			// Make API call to create property
+			const response = await fetch('/api/commercial', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`,
+				},
+				body: JSON.stringify(formData),
+			});
+
+			console.log("API Response status:", response.status);
+			console.log("API Response headers:", Object.fromEntries(response.headers.entries()));
+
+			if (!response.ok) {
+				console.error("Response not ok:", response.status, response.statusText);
+			}
+
+			const result = await response.json();
+			console.log("API Response data:", result);
+
+			if (response.ok && result.success) {
+				// Clear saved form data on successful submission
+				localStorage.removeItem('commercialPropertyFormData');
+				localStorage.removeItem('commercialPropertyFormStep');
+				
+				setSuccess("Commercial property submitted successfully for approval! You will be notified once it's reviewed.");
+				setTimeout(() => {
+					router.push("/equity/property");
+				}, 3000);
+			} else {
+				const errorMessage = result.message || 
+					(result.errors?.map((e: any) => typeof e === 'string' ? e : e.message).join(', ')) || 
+					"Failed to submit property. Please try again.";
+				setError(errorMessage);
+				setSubmitting(false);
+			}
 		} catch (err) {
-			setError("An error occurred. Please try again.");
+			console.error('Property submission error:', err);
+			setError("An error occurred while submitting the property. Please check your connection and try again.");
 			setSubmitting(false);
 		}
 	}, [formData, router]);
@@ -773,7 +851,13 @@ export default function CommercialPropertyForm() {
 								</div>
 							)}
 
-							<form onSubmit={handleSubmit} className="space-y-6">
+							<form 
+								onSubmit={(e) => {
+									console.log("Form onSubmit triggered in page.tsx");
+									handleSubmit(e);
+								}} 
+								className="space-y-6"
+							>
 								{/* Step 1: Property Type & Category */}
 								{formStep === 1 && (
 									<div className="space-y-6">

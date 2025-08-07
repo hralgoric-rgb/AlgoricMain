@@ -15,7 +15,6 @@ import {
   Building2,
   Eye,
   Share2,
-  Heart,
   AlertCircle,
   CheckCircle,
   Info,
@@ -29,12 +28,16 @@ import {
   Server,
   UserPlus,
   Coffee,
+  Calculator,
+  BarChart3,
+  TrendingDown,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import BuySharesModal from "@/app/commercial/components/BuySharesModal";
-import { CommercialProperty } from "@/app/data/commercialProperties";
+import { ICommercialProperty } from "@/app/models/CommercialProperty";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -48,12 +51,13 @@ export default function PropertyDetailPage({
   params,
 }: PropertyDetailPageProps) {
   const router = useRouter();
-  const [property, setProperty] = useState<CommercialProperty | null>(null);
+  const [property, setProperty] = useState<ICommercialProperty | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedShares, setSelectedShares] = useState(1);
   const [showBuyModal, setShowBuyModal] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [propertyId, setPropertyId] = useState<string>("");
+  const [areaAnalysis, setAreaAnalysis] = useState<any>(null);
+  const [loadingAreaAnalysis, setLoadingAreaAnalysis] = useState(false);
 
   // Fetch property data based on ID
   useEffect(() => {
@@ -92,6 +96,13 @@ export default function PropertyDetailPage({
     fetchProperty();
   }, [params]);
 
+  // Fetch area analysis when property is loaded
+  useEffect(() => {
+    if (property?.locality) {
+      fetchAreaAnalysis(property.locality);
+    }
+  }, [property?.locality]);
+
   const handleBuyShares = () => {
     setShowBuyModal(true);
   };
@@ -100,6 +111,37 @@ export default function PropertyDetailPage({
     toast.success("Shares purchased successfully!");
     setShowBuyModal(false);
     // You can add additional success logic here like refreshing data
+  };
+
+  const handleShare = async () => {
+    if (!property) return;
+    
+    const shareData = {
+      title: `${property.projectName || property.title} - Investment Opportunity`,
+      text: `Check out this commercial real estate investment opportunity: ${property.projectName || property.title} in ${property.locality}. Expected ROI: ${property.currentROI}%`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        toast.success("Property shared successfully!");
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Property link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Property link copied to clipboard!");
+      } catch (clipboardError) {
+        console.error("Clipboard error:", clipboardError);
+        toast.error("Unable to share or copy link");
+      }
+    }
   };
 
   const getTotalInvestment = () => {
@@ -113,6 +155,90 @@ export default function PropertyDetailPage({
       (getTotalInvestment() * property.currentYield) / 100 / 12
     );
   };
+
+  // Financial calculation helpers
+  const getGrossIncome = () => {
+    if (!property || !property.monthlyRental) return 0;
+    return property.monthlyRental * 12;
+  };
+
+  const getOperatingExpenses = () => {
+    if (!property || !property.monthlyRental) return 0;
+    // Typically 20-30% of gross income for commercial properties
+    return Math.round(getGrossIncome() * 0.25);
+  };
+
+  const getNetIncome = () => {
+    return getGrossIncome() - getOperatingExpenses();
+  };
+
+  const getCapRate = () => {
+    if (!property || !property.totalPropertyValue || !property.monthlyRental) return 0;
+    return Math.round((getNetIncome() / property.totalPropertyValue) * 100 * 100) / 100;
+  };
+
+  const getAIScore = () => {
+    if (!property) return 0;
+    // Calculate AI score based on various factors
+    const occupancyScore = property.currentOccupancy || 0;
+    const roiScore = property.currentROI ? Math.min(property.currentROI * 10, 100) : 0;
+    const yieldScore = property.currentYield ? Math.min(property.currentYield * 12, 100) : 0;
+    const locationScore = property.locality ? 85 : 70; // Basic location scoring
+    
+    // Only include scores that have values
+    const scores = [occupancyScore, roiScore, yieldScore, locationScore].filter(score => score > 0);
+    
+    return scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  };
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 10000000) {
+      return `₹${(amount / 10000000).toFixed(1)}Cr`;
+    } else if (amount >= 100000) {
+      return `₹${(amount / 100000).toFixed(1)}L`;
+    } else if (amount >= 1000) {
+      return `₹${(amount / 1000).toFixed(1)}K`;
+    }
+    return `₹${amount.toLocaleString()}`;
+  };
+
+  // Area analysis function
+  const fetchAreaAnalysis = async (location: string) => {
+    if (!location.trim()) return;
+    
+    setLoadingAreaAnalysis(true);
+    try {
+      const response = await fetch(
+        `https://ml-models-vu7b.onrender.com/api/location/${encodeURIComponent(location)}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAreaAnalysis(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch area analysis:", error);
+    } finally {
+      setLoadingAreaAnalysis(false);
+    }
+  };
+
+  // Create compatibility object for BuySharesModal
+  const compatibleProperty = property ? {
+    ...property,
+    title: property.projectName || property.title,
+    rentalYield: property.currentYield, // Map currentYield to rentalYield
+    propertyManager: property.ownerDetails?.companyName || property.ownerDetails?.name,
+    keyTenants: property.tenantName ? [property.tenantName] : [],
+    address: {
+      ...property.address,
+      city: property.address?.city || property.locality,
+      state: property.address?.state,
+      street: property.address?.street || property.fullAddress,
+      zipCode: property.address?.zipCode || property.pinCode,
+      coordinates: property.address?.coordinates || [0, 0]
+    }
+  } : null;
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -194,23 +320,27 @@ export default function PropertyDetailPage({
               <div className="flex items-center gap-3 mb-2">
                 <PropertyIcon className="w-6 h-6 text-purple-500" />
                 <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-white via-[#a78bfa] to-white bg-clip-text text-transparent">
-                  {property.title}
+                  {property.projectName || property.title}
                 </h1>
               </div>
               <div className="flex items-center gap-4 text-gray-400">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>
-                    {property.address.city}, {property.address.state}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>{property.currentROI}% ROI</span>
-                </div>
+                {property.locality && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>
+                      {property.locality}{property.address?.city && `, ${property.address.city}`}
+                    </span>
+                  </div>
+                )}
+                {property.currentROI && (
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>{property.currentROI}% ROI</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
                   <Shield className="w-4 h-4" />
-                  <span>AI Score: 92/100</span>
+                  <span>AI Score: {getAIScore()}/100</span>
                 </div>
               </div>
             </div>
@@ -219,19 +349,7 @@ export default function PropertyDetailPage({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={`border-gray-600 ${
-                  isFavorite ? "text-red-400 border-red-400" : "text-gray-300"
-                } hover:bg-gray-800`}
-              >
-                <Heart
-                  className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`}
-                />
-                {isFavorite ? "Saved" : "Save"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+                onClick={handleShare}
                 className="border-gray-600 text-gray-300 hover:bg-gray-800"
               >
                 <Share2 className="w-4 h-4 mr-2" />
@@ -254,8 +372,8 @@ export default function PropertyDetailPage({
             >
               <div className="aspect-video rounded-2xl overflow-hidden bg-gray-800">
                 <img
-                  src={property.images[0]}
-                  alt={property.title}
+                  src={property.images?.[0] || "/placeholder-property.jpg"}
+                  alt={property.projectName || property.title || "Property Image"}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 right-4">
@@ -279,112 +397,245 @@ export default function PropertyDetailPage({
               <h2 className="text-2xl font-bold text-white mb-4">
                 Property Overview
               </h2>
-              <p className="text-gray-300 text-lg leading-relaxed mb-6">
-                {property.description}
-              </p>
+              {property.description && (
+                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  {property.description}
+                </p>
+              )}
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Building2 className="w-6 h-6 text-white" />
+                {property.totalArea && (
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Building2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-white font-semibold">
+                      {property.totalArea.toLocaleString()} sq ft
+                    </div>
+                    <div className="text-gray-400 text-sm">Total Area</div>
                   </div>
-                  <div className="text-white font-semibold">
-                    {property.totalArea.toLocaleString()} sq ft
+                )}
+                {property.builtYear && (
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-white font-semibold">
+                      {property.builtYear}
+                    </div>
+                    <div className="text-gray-400 text-sm">Year Built</div>
                   </div>
-                  <div className="text-gray-400 text-sm">Total Area</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Calendar className="w-6 h-6 text-white" />
+                )}
+                {property.currentOccupancy !== undefined && (
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-white font-semibold">
+                      {property.currentOccupancy}%
+                    </div>
+                    <div className="text-gray-400 text-sm">Occupancy</div>
                   </div>
-                  <div className="text-white font-semibold">
-                    {property.builtYear}
+                )}
+                {property.currentROI && (
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Target className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-white font-semibold">
+                      {property.currentROI}%
+                    </div>
+                    <div className="text-gray-400 text-sm">Annual ROI</div>
                   </div>
-                  <div className="text-gray-400 text-sm">Year Built</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-white font-semibold">
-                    {property.currentOccupancy}%
-                  </div>
-                  <div className="text-gray-400 text-sm">Occupancy</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Target className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="text-white font-semibold">
-                    {property.currentROI}%
-                  </div>
-                  <div className="text-gray-400 text-sm">Annual ROI</div>
-                </div>
+                )}
               </div>
             </motion.div>
 
-            {/* Key Features & Amenities */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
-            >
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <CheckCircle
-                    className="w-5 h-5"
-                    style={{ color: "#B6FF3F" }}
-                  />
-                  Key Features
+            {/* Investment Highlights */}
+            {(property.highlights.length > 0 || property.customHighlights) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 rounded-xl p-6 border border-purple-800/40"
+              >
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <Star className="w-5 h-5 mr-2 text-purple-400" />
+                  Investment Highlights
                 </h3>
                 <div className="space-y-3">
-                  {property.features.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-[#B6FF3F]" />
-                      <span className="text-gray-300">{feature}</span>
+                  {property.highlights.map((highlight, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
+                      <span className="text-gray-300">{highlight}</span>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Star className="w-5 h-5 text-purple-500" />
-                  Amenities
-                </h3>
-                <div className="space-y-3">
-                  {property.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-[#a78bfa]" />
-                      <span className="text-gray-300">{amenity}</span>
+                  {property.customHighlights && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
+                      <span className="text-gray-300">{property.customHighlights}</span>
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
 
-            {/* Key Tenants */}
+            {/* Property Details */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
             >
-              <h3 className="text-lg font-bold text-white mb-4">Key Tenants</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {property.keyTenants.map((tenant, index) => (
-                  <div
-                    key={index}
-                    className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200 cursor-pointer hover:bg-gray-800"
-                  >
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                <Info className="w-5 h-5 mr-2 text-purple-400" />
+                Property Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  {property.totalValuation && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Total Valuation</span>
+                      <span className="text-white font-semibold">₹{property.totalValuation} Cr</span>
+                    </div>
+                  )}
+                  {property.possessionStatus && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Possession Status</span>
+                      <span className="text-white font-semibold">{property.possessionStatus}</span>
+                    </div>
+                  )}
+                  {property.pinCode && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Pin Code</span>
+                      <span className="text-white font-semibold">{property.pinCode}</span>
+                    </div>
+                  )}
+                  {property.minimumHoldingPeriod && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Min. Holding Period</span>
+                      <span className="text-white font-semibold">{property.minimumHoldingPeriod}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {(property.minimumInvestmentTicket || property.customTicketAmount) && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Min Investment</span>
+                      <span className="text-white font-semibold">
+                        {property.minimumInvestmentTicket === "Custom Amount" && property.customTicketAmount ? 
+                          `₹${property.customTicketAmount.toLocaleString()}` : 
+                          property.minimumInvestmentTicket
+                        }
+                      </span>
+                    </div>
+                  )}
+                  {property.targetRaiseAmount && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Target Raise</span>
+                      <span className="text-white font-semibold">₹{property.targetRaiseAmount} Cr</span>
+                    </div>
+                  )}
+                  {property.ownershipSplit && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Ownership Split</span>
+                      <span className="text-white font-semibold">{property.ownershipSplit}</span>
+                    </div>
+                  )}
+                  {property.virtualTourLink && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Virtual Tour</span>
+                      <a 
+                        href={property.virtualTourLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-purple-400 hover:text-purple-300 font-semibold"
+                      >
+                        View Tour
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {property.exitOptions.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-gray-700">
+                  <h4 className="text-white font-semibold mb-3">Exit Options</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {property.exitOptions.map((option, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 bg-purple-900/30 text-purple-300 rounded-full text-sm border border-purple-800/40"
+                      >
+                        {option}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              {property.features && property.features.length > 0 && (
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <CheckCircle
+                      className="w-5 h-5"
+                      style={{ color: "#B6FF3F" }}
+                    />
+                    Key Features
+                  </h3>
+                  <div className="space-y-3">
+                    {property.features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-[#B6FF3F]" />
+                        <span className="text-gray-300">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {property.amenities && property.amenities.length > 0 && (
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <Star className="w-5 h-5 text-purple-500" />
+                    Amenities
+                  </h3>
+                  <div className="space-y-3">
+                    {property.amenities.map((amenity, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-[#a78bfa]" />
+                        <span className="text-gray-300">{amenity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Key Tenants */}
+            {property.tenantName && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+              >
+                <h3 className="text-lg font-bold text-white mb-4">Key Tenant</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="text-center p-4 bg-gray-900 rounded-full shadow-sm border-2 border-[#B6FF3F] transition-colors duration-200">
                     <div className="font-semibold text-lg text-white">
-                      {tenant}
+                      {property.tenantName}
                     </div>
                   </div>
-                ))}
-              </div>
-            </motion.div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Financial Analysis */}
             <motion.div
@@ -393,37 +644,222 @@ export default function PropertyDetailPage({
               transition={{ delay: 0.4 }}
               className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
             >
-              <h3 className="text-lg font-bold text-white mb-4">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                <Calculator className="w-5 h-5 mr-2 text-purple-400" />
                 Financial Analysis
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div
-                    className="text-2xl font-bold"
-                    style={{ color: "#B6FF3F" }}
-                  >
-                    ₹12L
+                {getGrossIncome() > 0 && (
+                  <div className="text-center">
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: "#B6FF3F" }}
+                    >
+                      {formatCurrency(getGrossIncome())}
+                    </div>
+                    <div className="text-gray-400">Annual Gross Income</div>
                   </div>
-                  <div className="text-gray-400">Gross Income</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-400">₹3.5L</div>
-                  <div className="text-gray-400">Operating Expenses</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-white">₹8.5L</div>
-                  <div className="text-gray-400">Net Income</div>
-                </div>
-                <div className="text-center">
-                  <div
-                    className="text-2xl font-bold"
-                    style={{ color: "#a78bfa" }}
-                  >
-                    3.4%
+                )}
+                {getOperatingExpenses() > 0 && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-400">
+                      {formatCurrency(getOperatingExpenses())}
+                    </div>
+                    <div className="text-gray-400">Operating Expenses</div>
                   </div>
-                  <div className="text-gray-400">Cap Rate</div>
+                )}
+                {getNetIncome() > 0 && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">
+                      {formatCurrency(getNetIncome())}
+                    </div>
+                    <div className="text-gray-400">Annual Net Income</div>
+                  </div>
+                )}
+                {getCapRate() > 0 && (
+                  <div className="text-center">
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: "#a78bfa" }}
+                    >
+                      {getCapRate()}%
+                    </div>
+                    <div className="text-gray-400">Cap Rate</div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Additional Financial Metrics */}
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {property.monthlyRental && (
+                    <div className="bg-gray-800/50 p-3 rounded-lg">
+                      <div className="text-sm text-gray-400">Monthly Rental</div>
+                      <div className="text-lg font-semibold text-white">
+                        {formatCurrency(property.monthlyRental)}
+                      </div>
+                    </div>
+                  )}
+                  {property.totalPropertyValue && property.totalArea && (
+                    <div className="bg-gray-800/50 p-3 rounded-lg">
+                      <div className="text-sm text-gray-400">Price Per Sq Ft</div>
+                      <div className="text-lg font-semibold text-white">
+                        ₹{Math.round(property.totalPropertyValue / property.totalArea).toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+                  {property.currentOccupancy !== undefined && (
+                    <div className="bg-gray-800/50 p-3 rounded-lg">
+                      <div className="text-sm text-gray-400">Occupancy Rate</div>
+                      <div className="text-lg font-semibold text-green-400">
+                        {property.currentOccupancy}%
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+            </motion.div>
+
+            {/* Area Analysis Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+            >
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <MapPin className="w-5 h-5 mr-2 text-purple-400" />
+                  Area Analysis{property.locality && `: ${property.locality}`}
+                </h3>              {loadingAreaAnalysis ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                  <span className="text-white">Analyzing area data...</span>
+                </div>
+              ) : areaAnalysis ? (
+                <div className="space-y-6">
+                  {/* Safety and Crime Scores */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gray-800/50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400">Safety Score</span>
+                        <span className={`font-bold text-lg ${
+                          areaAnalysis.safety_rating >= 8 ? 'text-green-400' :
+                          areaAnalysis.safety_rating >= 6 ? 'text-yellow-400' : 'text-red-400'
+                        }`}>
+                          {areaAnalysis.safety_rating}/10
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            areaAnalysis.safety_rating >= 8 ? 'bg-green-500' :
+                            areaAnalysis.safety_rating >= 6 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${areaAnalysis.safety_rating * 10}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-800/50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400">Crime Level</span>
+                        <span className={`font-bold text-lg ${
+                          areaAnalysis.crime_rating <= 3 ? 'text-green-400' :
+                          areaAnalysis.crime_rating <= 6 ? 'text-yellow-400' : 'text-red-400'
+                        }`}>
+                          {areaAnalysis.crime_level}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {areaAnalysis.total_crimes} reported cases annually
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pros and Cons */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-green-900/20 p-4 rounded-lg border border-green-800/30">
+                      <h4 className="text-green-400 font-semibold mb-3 flex items-center">
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Advantages
+                      </h4>
+                      <ul className="space-y-2">
+                        {areaAnalysis.pros.slice(0, 4).map((pro: string, index: number) => (
+                          <li key={index} className="text-sm text-gray-300 flex items-start">
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0" />
+                            {pro}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-red-900/20 p-4 rounded-lg border border-red-800/30">
+                      <h4 className="text-red-400 font-semibold mb-3 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Considerations
+                      </h4>
+                      <ul className="space-y-2">
+                        {areaAnalysis.cons.slice(0, 4).map((con: string, index: number) => (
+                          <li key={index} className="text-sm text-gray-300 flex items-start">
+                            <span className="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-2 flex-shrink-0" />
+                            {con}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Infrastructure */}
+                  <div className="bg-gray-800/30 p-4 rounded-lg">
+                    <h4 className="text-white font-semibold mb-3">Infrastructure Status</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Electricity Supply</span>
+                        <span className={`text-sm font-medium ${
+                          areaAnalysis.electricity_issues.toLowerCase().includes('good') || 
+                          areaAnalysis.electricity_issues.toLowerCase().includes('stable') ? 
+                          'text-green-400' : 'text-yellow-400'
+                        }`}>
+                          {areaAnalysis.electricity_issues}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Water/Drainage</span>
+                        <span className={`text-sm font-medium ${
+                          areaAnalysis.water_clogging.toLowerCase().includes('no') || 
+                          areaAnalysis.water_clogging.toLowerCase().includes('minimal') ? 
+                          'text-green-400' : 'text-yellow-400'
+                        }`}>
+                          {areaAnalysis.water_clogging}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-purple-900/20 p-4 rounded-lg border border-purple-800/30">
+                    <p className="text-sm text-gray-300">
+                      <span className="font-semibold text-white">Investment Insight: </span>
+                      {property.locality && areaAnalysis.zone && `${property.locality} is in ${areaAnalysis.zone} `}
+                      {areaAnalysis.safety_rating && `with a safety score of ${areaAnalysis.safety_rating}/10. `}
+                      {areaAnalysis.safety_rating >= 7 ? 
+                        "This is considered a good area for commercial real estate investment." :
+                        areaAnalysis.safety_rating ? "Consider the safety factors when evaluating this investment." : ""
+                      }
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <AlertCircle className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                  <p className="text-gray-400">Area analysis data not available</p>
+                  <button 
+                    onClick={() => fetchAreaAnalysis(property.locality)}
+                    className="mt-2 text-purple-400 hover:text-purple-300 text-sm"
+                  >
+                    Try to reload area data
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
 
@@ -552,30 +988,49 @@ export default function PropertyDetailPage({
                 transition={{ delay: 0.7 }}
                 className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
               >
-                <h3 className="text-lg font-bold text-white mb-4">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-purple-400" />
                   Market Analysis
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Market Growth</span>
-                    <span
-                      className="font-semibold"
-                      style={{ color: "#B6FF3F" }}
-                    >
-                      +{property.appreciationRate}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Comparable Properties</span>
-                    <span className="text-white font-semibold">12</span>
-                  </div>
+                  {property.appreciationRate && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Expected Appreciation</span>
+                      <span
+                        className="font-semibold"
+                        style={{ color: "#B6FF3F" }}
+                      >
+                        +{property.appreciationRate}%
+                      </span>
+                    </div>
+                  )}
+                  {property.currentYield && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Current Yield</span>
+                      <span className="text-white font-semibold">
+                        {property.currentYield}%
+                      </span>
+                    </div>
+                  )}
+                  {property.status && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Property Status</span>
+                      <span className={`font-semibold capitalize ${
+                        property.status === 'active' ? 'text-green-400' : 
+                        property.status === 'pending_approval' ? 'text-yellow-400' : 
+                        'text-gray-400'
+                      }`}>
+                        {property.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                  )}
                   <div>
-                    <div className="text-gray-400 mb-2">Market Conditions</div>
+                    <div className="text-gray-400 mb-2">Investment Type</div>
                     <div
                       className="text-sm font-semibold"
                       style={{ color: "#B6FF3F" }}
                     >
-                      High Demand, Limited Supply
+                      Fractional Commercial Real Estate
                     </div>
                   </div>
                 </div>
@@ -597,16 +1052,73 @@ export default function PropertyDetailPage({
                   </div>
                   <div>
                     <div className="text-white font-semibold">
-                      {property.propertyManager}
+                      {property.ownerDetails?.companyName || property.ownerDetails?.name}
                     </div>
                     <div className="text-sm text-gray-400">
-                      Professional Management
+                      {property.ownerDetails?.companyName ? "Company" : "Property Owner"}
                     </div>
                   </div>
                 </div>
                 <div className="text-sm text-gray-300">
-                  Experienced property management company ensuring optimal
-                  operations and tenant satisfaction.
+                  {property.ownerDetails?.companyName ? 
+                    "Experienced property management company ensuring optimal operations and tenant satisfaction." :
+                    "Property owner managed with professional oversight for optimal operations."
+                  }
+                </div>
+              </motion.div>
+
+              {/* Property Owner Contact */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.85 }}
+                className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+              >
+                <h3 className="text-lg font-bold text-white mb-4">
+                  Property Owner
+                </h3>
+                <div className="space-y-3">
+                  {property.ownerDetails?.name && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Name</span>
+                      <span className="text-white font-semibold">{property.ownerDetails.name}</span>
+                    </div>
+                  )}
+                  {property.ownerDetails?.companyName && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Company</span>
+                      <span className="text-white font-semibold">{property.ownerDetails.companyName}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Contact</span>
+                    <span className="text-gray-300 text-sm">Via 100गज Platform</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-purple-900/20 rounded-lg">
+                  <p className="text-xs text-gray-400">
+                    All communications are facilitated through 100गज for security and transparency.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Risk Disclosure */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9 }}
+                className="bg-gradient-to-br from-orange-900/30 to-red-900/20 rounded-xl p-6 border border-orange-800/40"
+              >
+                <h3 className="text-lg font-bold text-orange-400 mb-4 flex items-center">
+                  <AlertCircle className="w-5 h-5 mr-2" />
+                  Investment Disclaimer
+                </h3>
+                <div className="space-y-2 text-sm text-gray-300">
+                  <p>• Real estate investments carry market risks</p>
+                  <p>• Past performance does not guarantee future returns</p>
+                  <p>• Property values may fluctuate based on market conditions</p>
+                  <p>• Rental income may vary based on occupancy rates</p>
+                  <p>• Please read all legal documents before investing</p>
                 </div>
               </motion.div>
             </div>
@@ -616,7 +1128,7 @@ export default function PropertyDetailPage({
 
       {/* Buy Shares Modal with Razorpay Integration */}
       <BuySharesModal
-        property={property}
+        property={compatibleProperty as any}
         isOpen={showBuyModal}
         onClose={() => setShowBuyModal(false)}
         onSuccess={handlePurchaseSuccess}

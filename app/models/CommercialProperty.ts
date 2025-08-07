@@ -23,10 +23,21 @@ export interface ICommercialProperty extends Document {
     | "Industrial"
     | "Data Center";
   totalArea: number; // in sqft
-  builtYear: number;
+  builtYear?: number;
+
+  // Basic Property Details from Form
+  projectName: string;
+  fullAddress: string;
+  pinCode: string;
+  locality: string;
+  googleMapsPin?: string;
+  possessionStatus: "Ready to Move" | "Under Construction" | "Leased Asset";
+  totalValuation: number; // Total valuation in crores
+  minimumInvestmentTicket: string;
+  customTicketAmount?: number;
 
   // Developer Info
-  developer: {
+  developer?: {
     name: string;
     rating: number;
     projectsCompleted: number;
@@ -39,33 +50,60 @@ export interface ICommercialProperty extends Document {
   pricePerShare: number;
   minInvestment: number;
 
+  // Fractional Investment Parameters
+  targetRaiseAmount?: number;
+  ownershipSplit?: string;
+  sharePercentage?: number;
+  minimumHoldingPeriod?: string;
+  exitOptions: string[];
+
   // Returns
   currentROI: number; // Annual ROI percentage
-  currentYield: number; // Annual current yield percentage
-  appreciationRate: number; // Expected annual appreciation
+  currentYield: number; // Annual current yield percentage (rentalYield from form)
+  appreciationRate: number; // Expected annual appreciation (annualROIProjection from form)
 
   // Occupancy & Revenue
   currentOccupancy: number; // Percentage
   monthlyRental: number; // Total monthly rental income
 
   // SPV Details
-  spvId: string;
-  spvName: string;
+  spvId?: string;
+  spvName?: string;
 
   // Status
-  status: "active" | "sold_out" | "coming_soon";
+  status: "active" | "sold_out" | "coming_soon" | "pending_approval";
   featured: boolean;
 
   // Additional Info
   amenities: string[];
   nearbyLandmarks: string[];
   features: string[];
+  highlights: string[]; // Property highlights/USP from form
+  customHighlights?: string;
+  tenantName?: string;
+
   // Documents
   documents: {
     name: string;
     url: string;
     type: "legal" | "financial" | "technical";
   }[];
+  documentsUploaded: boolean;
+
+  // Media & Marketing
+  virtualTourLink?: string;
+  requestVirtualTour: boolean;
+
+  // Contact Information
+  ownerDetails: {
+    name: string;
+    phone: string;
+    email: string;
+    companyName?: string;
+  };
+
+  // Legal
+  termsAccepted: boolean;
 
   createdAt: Date;
   updatedAt: Date;
@@ -81,7 +119,6 @@ const CommercialPropertySchema: Schema = new Schema(
     },
     description: {
       type: String,
-      required: [true, "Property description is required"],
       trim: true,
       maxlength: [2000, "Description cannot exceed 2000 characters"],
     },
@@ -113,10 +150,9 @@ const CommercialPropertySchema: Schema = new Schema(
       },
       coordinates: {
         type: [Number],
-        required: [true, "Coordinates are required"],
         validate: {
           validator: function (v: number[]) {
-            return v.length === 2;
+            return !v || v.length === 2;
           },
           message: "Coordinates must be an array of [longitude, latitude]",
         },
@@ -124,14 +160,56 @@ const CommercialPropertySchema: Schema = new Schema(
     },
     images: {
       type: [String],
-      required: [true, "At least one image is required"],
-      validate: {
-        validator: function (v: string[]) {
-          return v.length > 0;
-        },
-        message: "At least one image is required",
+      default: [],
+    },
+
+    // Basic Property Details from Form
+    projectName: {
+      type: String,
+      required: [true, "Project name is required"],
+      trim: true,
+    },
+    fullAddress: {
+      type: String,
+      required: [true, "Full address is required"],
+      trim: true,
+    },
+    pinCode: {
+      type: String,
+      required: [true, "Pin code is required"],
+      trim: true,
+    },
+    locality: {
+      type: String,
+      required: [true, "Locality is required"],
+      trim: true,
+    },
+    googleMapsPin: {
+      type: String,
+      trim: true,
+    },
+    possessionStatus: {
+      type: String,
+      required: [true, "Possession status is required"],
+      enum: {
+        values: ["Ready to Move", "Under Construction", "Leased Asset"],
+        message: "Possession status must be one of: Ready to Move, Under Construction, Leased Asset",
       },
     },
+    totalValuation: {
+      type: Number,
+      required: [true, "Total valuation is required"],
+      min: [0, "Total valuation cannot be negative"],
+    },
+    minimumInvestmentTicket: {
+      type: String,
+      required: [true, "Minimum investment ticket is required"],
+    },
+    customTicketAmount: {
+      type: Number,
+      min: [0, "Custom ticket amount cannot be negative"],
+    },
+
     propertyType: {
       type: String,
       required: [true, "Property type is required"],
@@ -145,17 +223,15 @@ const CommercialPropertySchema: Schema = new Schema(
           "Industrial",
         ],
         message:
-          "Property type must be one of: Office, Retail, Warehouse, Mixed Use, Industrial",
+          "Property type must be one of: Office, Retail, Warehouse, Data Center, Co-working, Industrial",
       },
     },
     totalArea: {
       type: Number,
-      required: [true, "Total area is required"],
       min: [1, "Total area must be greater than 0"],
     },
     builtYear: {
       type: Number,
-      required: [true, "Built year is required"],
       min: [1900, "Built year must be after 1900"],
       max: [
         new Date().getFullYear() + 5,
@@ -165,18 +241,15 @@ const CommercialPropertySchema: Schema = new Schema(
     developer: {
       name: {
         type: String,
-        required: [true, "Developer name is required"],
         trim: true,
       },
       rating: {
         type: Number,
-        required: [true, "Developer rating is required"],
         min: [1, "Rating must be between 1 and 5"],
         max: [5, "Rating must be between 1 and 5"],
       },
       projectsCompleted: {
         type: Number,
-        required: [true, "Projects completed count is required"],
         min: [0, "Projects completed cannot be negative"],
       },
     },
@@ -211,6 +284,30 @@ const CommercialPropertySchema: Schema = new Schema(
       required: [true, "Minimum investment is required"],
       min: [1, "Minimum investment must be greater than 0"],
     },
+
+    // Fractional Investment Parameters
+    targetRaiseAmount: {
+      type: Number,
+      min: [0, "Target raise amount cannot be negative"],
+    },
+    ownershipSplit: {
+      type: String,
+      trim: true,
+    },
+    sharePercentage: {
+      type: Number,
+      min: [0, "Share percentage cannot be negative"],
+      max: [100, "Share percentage cannot exceed 100%"],
+    },
+    minimumHoldingPeriod: {
+      type: String,
+      trim: true,
+    },
+    exitOptions: {
+      type: [String],
+      default: [],
+    },
+
     currentROI: {
       type: Number,
       required: [true, "Current ROI is required"],
@@ -242,23 +339,19 @@ const CommercialPropertySchema: Schema = new Schema(
     },
     spvId: {
       type: String,
-      required: [true, "SPV ID is required"],
       trim: true,
-      unique: true,
     },
     spvName: {
       type: String,
-      required: [true, "SPV name is required"],
       trim: true,
     },
     status: {
       type: String,
-      required: [true, "Status is required"],
       enum: {
-        values: ["active", "sold_out", "coming_soon"],
-        message: "Status must be one of: active, sold_out, coming_soon",
+        values: ["active", "sold_out", "coming_soon", "pending_approval"],
+        message: "Status must be one of: active, sold_out, coming_soon, pending_approval",
       },
-      default: "active",
+      default: "pending_approval",
     },
     featured: {
       type: Boolean,
@@ -276,21 +369,30 @@ const CommercialPropertySchema: Schema = new Schema(
       type: [String],
       default: [],
     },
+    highlights: {
+      type: [String],
+      default: [],
+    },
+    customHighlights: {
+      type: String,
+      trim: true,
+    },
+    tenantName: {
+      type: String,
+      trim: true,
+    },
     documents: [
       {
         name: {
           type: String,
-          required: [true, "Document name is required"],
           trim: true,
         },
         url: {
           type: String,
-          required: [true, "Document URL is required"],
           trim: true,
         },
         type: {
           type: String,
-          required: [true, "Document type is required"],
           enum: {
             values: ["legal", "financial", "technical"],
             message:
@@ -299,6 +401,55 @@ const CommercialPropertySchema: Schema = new Schema(
         },
       },
     ],
+    documentsUploaded: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Media & Marketing
+    virtualTourLink: {
+      type: String,
+      trim: true,
+    },
+    requestVirtualTour: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Contact Information
+    ownerDetails: {
+      name: {
+        type: String,
+        required: [true, "Owner name is required"],
+        trim: true,
+      },
+      phone: {
+        type: String,
+        required: [true, "Owner phone is required"],
+        trim: true,
+      },
+      email: {
+        type: String,
+        required: [true, "Owner email is required"],
+        trim: true,
+      },
+      companyName: {
+        type: String,
+        trim: true,
+      },
+    },
+
+    // Legal
+    termsAccepted: {
+      type: Boolean,
+      required: [true, "Terms must be accepted"],
+      validate: {
+        validator: function (v: boolean) {
+          return v === true;
+        },
+        message: "Terms and conditions must be accepted",
+      },
+    },
   },
   {
     timestamps: true, // This adds createdAt and updatedAt fields automatically

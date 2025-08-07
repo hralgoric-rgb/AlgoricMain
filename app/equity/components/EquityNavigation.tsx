@@ -114,41 +114,7 @@ export default function EquityNavigation() {
 									<span>KYC</span>
 								</Link>
 							)}
-							{isAuthenticated && (
-								<div className='relative ml-4'>
-									<button
-										className='flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 border border-gray-600'
-										onClick={() => setShowProfileMenu((v) => !v)}
-									>
-										<User className='w-5 h-5' />
-										<span>Profile</span>
-									</button>
-									{showProfileMenu && (
-										<div className='absolute right-0 mt-2 w-40 bg-black border border-gray-700 rounded-lg shadow-lg z-50'>
-											<Link
-												href='/equity/profile'
-												className='block px-4 py-2 text-white hover:bg-gray-800'
-											>
-												My Profile
-											</Link>
-											<button
-												className='w-full text-left px-4 py-2 text-red-400 hover:bg-gray-800'
-												onClick={() => {
-													localStorage.removeItem("authToken");
-													sessionStorage.removeItem("authToken");
-													document.cookie =
-														"authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-													setIsAuthenticated(false);
-													setShowProfileMenu(false);
-													window.location.reload();
-												}}
-											>
-												Logout
-											</button>
-										</div>
-									)}
-								</div>
-							)}
+							
 						</div>
 
 						{/* Mobile Menu Button */}
@@ -224,31 +190,7 @@ export default function EquityNavigation() {
 									KYC
 								</Link>
 							)}
-							{isAuthenticated && (
-								<>
-									<Link
-										href='/equity/profile'
-										className='block w-full mt-2 px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-600 text-center font-medium'
-										onClick={() => setMobileOpen(false)}
-									>
-										My Profile
-									</Link>
-									<button
-										className='block w-full mt-2 px-4 py-3 rounded-lg bg-red-600 text-white border border-red-400 text-center font-medium'
-										onClick={() => {
-											localStorage.removeItem("authToken");
-											sessionStorage.removeItem("authToken");
-											document.cookie =
-												"authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-											setIsAuthenticated(false);
-											setMobileOpen(false);
-											window.location.reload();
-										}}
-									>
-										Logout
-									</button>
-								</>
-							)}
+							
 						</div>
 					</motion.div>
 				)}

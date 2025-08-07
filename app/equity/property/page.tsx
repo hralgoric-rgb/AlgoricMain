@@ -4,8 +4,6 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Search,
-  Grid3X3,
-  List,
   Briefcase,
   Warehouse,
   Store,
@@ -50,7 +48,7 @@ export default function PropertyListingPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedRisk, setSelectedRisk] = useState("all");
   const [sortBy, setSortBy] = useState("aiScore");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [yieldRange, setYieldRange] = useState<[number, number]>([0, 15]);
   const router = useRouter();
@@ -197,7 +195,7 @@ export default function PropertyListingPage() {
 
       {/* Main Content */}
       <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
           {/* Header */}
           <div className="mb-8 text-center">
             <motion.h1
@@ -212,7 +210,7 @@ export default function PropertyListingPage() {
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-8 relative overflow-hidden group">
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-8 relative overflow-hidden group max-w-6xl mx-auto">
             {/* Search Bar */}
             <div className="relative z-10 mb-6">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -244,7 +242,7 @@ export default function PropertyListingPage() {
             </div>
 
             {/* Advanced Filters */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {/* Risk Level */}
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -279,37 +277,6 @@ export default function PropertyListingPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* View Mode */}
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  View
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      viewMode === "grid"
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    }`}
-                  >
-                    <Grid3X3 className="w-4 h-4" />
-                    Grid
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      viewMode === "list"
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    }`}
-                  >
-                    <List className="w-4 h-4" />
-                    List
-                  </button>
-                </div>
               </div>
 
               {/* Results Count */}
@@ -391,15 +358,9 @@ export default function PropertyListingPage() {
           </div>
 
           {/* Properties Grid */}
-          <div className="relative z-10">
+          <div className="relative z-10 max-w-6xl mx-auto px-4">
             {filteredProperties.length > 0 ? (
-              <div
-                className={`grid gap-6 ${
-                  viewMode === "grid"
-                    ? "md:grid-cols-2 lg:grid-cols-3"
-                    : "grid-cols-1"
-                }`}
-              >
+              <div className="space-y-4">
                 {filteredProperties.map((property, index) => {
                   const glowColors = [
                     "rgba(249, 115, 22, 0.3)", // orange
@@ -414,7 +375,7 @@ export default function PropertyListingPage() {
                   return (
                     <div
                       key={property.id}
-                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800/50 group h-full flex"
+                      className="w-full bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800/50 rounded-xl overflow-hidden group hover:border-purple-500/50 transition-all duration-300"
                     >
                       <PropertyCard property={property} />
                     </div>
@@ -422,7 +383,7 @@ export default function PropertyListingPage() {
                 })}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gradient-to-br from-gray-900/30 to-black/30 backdrop-blur-sm rounded-xl border border-gray-800/50 relative overflow-hidden">
+              <div className="text-center py-12 bg-gradient-to-br from-gray-900/30 to-black/30 backdrop-blur-sm rounded-xl border border-gray-800/50 relative overflow-hidden max-w-4xl mx-auto">
                 <Building2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
                   No properties found
@@ -432,7 +393,7 @@ export default function PropertyListingPage() {
                   properties.
                 </p>
                 <div>
-                  <button className="bg-purple-200/80 hover:bg-purple-300 text-purple-400">
+                  <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors duration-300">
                     Clear Filters
                   </button>
                 </div>

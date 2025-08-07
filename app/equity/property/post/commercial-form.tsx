@@ -26,6 +26,8 @@ import {
 	Settings,
 	Star,
 	User,
+	Calculator,
+	TrendingUp,
 } from "lucide-react";
 
 // Interface for commercial property form data
@@ -50,7 +52,6 @@ interface CommercialPropertyFormData {
 	// Step 3: Fractional Investment Parameters
 	targetRaiseAmount: string;
 	ownershipSplit: string;
-	totalShares: string;
 	sharePercentage: string;
 	rentalYield: string;
 	annualROIProjection: string;
@@ -213,7 +214,6 @@ export default function CommercialPropertyForm() {
 		// Step 3: Fractional Investment Parameters
 		targetRaiseAmount: "",
 		ownershipSplit: "",
-		totalShares: "",
 		sharePercentage: "",
 		rentalYield: "",
 		annualROIProjection: "",
@@ -306,6 +306,41 @@ export default function CommercialPropertyForm() {
 		}));
 	}, []);
 
+	// Handle image upload
+	const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (!files) return;
+
+		const newFiles = Array.from(files);
+		const totalImages = formData.images.length + newFiles.length;
+
+		if (totalImages > 10) {
+			setError("Maximum 10 images allowed");
+			return;
+		}
+
+		// Validate file sizes (10MB max each)
+		const oversizedFiles = newFiles.filter(file => file.size > 10 * 1024 * 1024);
+		if (oversizedFiles.length > 0) {
+			setError("Each image must be less than 10MB");
+			return;
+		}
+
+		setFormData(prev => ({
+			...prev,
+			images: [...prev.images, ...newFiles]
+		}));
+		setError(""); // Clear any previous errors
+	}, [formData.images.length]);
+
+	// Remove image
+	const removeImage = useCallback((index: number) => {
+		setFormData(prev => ({
+			...prev,
+			images: prev.images.filter((_, i) => i !== index)
+		}));
+	}, []);
+
 	// Step navigation
 	const handleNextStep = useCallback(() => {
 		if (formStep < 7) {
@@ -324,19 +359,129 @@ export default function CommercialPropertyForm() {
 	// Form submission
 	const handleSubmit = useCallback(async (e: React.FormEvent) => {
 		e.preventDefault();
+		e.stopPropagation();
+		
+		console.log("Form submission started");
+		
 		setError("");
 		setSuccess("");
 		setSubmitting(true);
 
 		try {
-			// Simulate API call
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			setSuccess("Commercial property posted successfully!");
-			setTimeout(() => {
-				router.push("/equity/property");
-			}, 2000);
+			const token = typeof window !== "undefined"
+				? sessionStorage.getItem("authToken") || localStorage.getItem("authToken")
+				: null;
+
+			if (!token) {
+				setError("You must be logged in to post a property.");
+				setSubmitting(false);
+				return;
+			}
+
+			// Validate only the fields that are actually implemented in the form
+			const requiredFields = [
+				{ field: formData.propertyType, name: "Property Type" },
+				{ field: formData.projectName, name: "Project Name" },
+				{ field: formData.fullAddress, name: "Full Address" },
+				{ field: formData.pinCode, name: "Pin Code" },
+				{ field: formData.locality, name: "Locality" },
+				{ field: formData.possessionStatus, name: "Possession Status" },
+				{ field: formData.builtUpArea, name: "Built-up Area" },
+				{ field: formData.totalValuation, name: "Total Valuation" },
+				{ field: formData.minimumInvestmentTicket, name: "Minimum Investment Ticket" },
+				{ field: formData.ownerDetails.name, name: "Owner Name" },
+				{ field: formData.ownerDetails.phone, name: "Owner Phone" },
+				{ field: formData.ownerDetails.email, name: "Owner Email" },
+				{ field: formData.termsAccepted, name: "Terms Acceptance", isBoolean: true }
+			];
+
+			const missingFields = requiredFields.filter(item => 
+				item.isBoolean ? !item.field : !item.field?.toString().trim()
+			);
+
+			if (missingFields.length > 0) {
+				setError(`Please fill in the following required fields: ${missingFields.map(f => f.name).join(', ')}`);
+				setSubmitting(false);
+				return;
+			}
+
+			// Additional validation for custom amount
+			if (formData.minimumInvestmentTicket === "Custom Amount" && !formData.customTicketAmount) {
+				setError("Please enter a custom ticket amount.");
+				setSubmitting(false);
+				return;
+			}
+
+			console.log("Submitting form data:", formData);
+			console.log("Token exists:", !!token);
+			console.log("Making API call to /api/commercial");
+
+			let response;
+
+			// Check if there are images to upload
+			if (formData.images.length > 0) {
+				// Use FormData for file uploads
+				const submitData = new FormData();
+				
+				// Add all form fields except images
+				const { images, ...formDataWithoutImages } = formData;
+				
+				// Add form data as JSON
+				submitData.append('formData', JSON.stringify(formDataWithoutImages));
+				
+				// Add images as files
+				images.forEach((file, index) => {
+					submitData.append(`images`, file);
+				});
+
+				// Make API call with FormData
+				response = await fetch('/api/commercial', {
+					method: 'POST',
+					headers: {
+						'Authorization': `Bearer ${token}`,
+						// Don't set Content-Type for FormData - browser will set it with boundary
+					},
+					body: submitData,
+				});
+			} else {
+				// Use JSON when no images
+				const { images, ...formDataWithoutImages } = formData;
+				
+				response = await fetch('/api/commercial', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`,
+					},
+					body: JSON.stringify(formDataWithoutImages),
+				});
+			}
+
+			console.log("API Response status:", response.status);
+			console.log("API Response headers:", Object.fromEntries(response.headers.entries()));
+
+			if (!response.ok) {
+				console.error("Response not ok:", response.status, response.statusText);
+			}
+
+			const result = await response.json();
+			console.log("API Response data:", result);
+
+			if (response.ok && result.success) {
+				setSuccess("Commercial property submitted successfully for approval! You will be notified once it's reviewed.");
+				setTimeout(() => {
+					router.push("/equity/property");
+				}, 3000);
+			} else {
+				const errorMessage = result.message || 
+					(result.errors?.map((e: any) => typeof e === 'string' ? e : e.message).join(', ')) || 
+					"Failed to submit property. Please try again.";
+				setError(errorMessage);
+				setSubmitting(false);
+			}
 		} catch (err) {
-			setError("An error occurred. Please try again.");
+			console.error('Property submission error:', err);
+			setError("An error occurred while submitting the property. Please check your connection and try again.");
 			setSubmitting(false);
 		}
 	}, [formData, router]);
@@ -345,6 +490,45 @@ export default function CommercialPropertyForm() {
 		setShowAuthModal(false);
 		window.location.reload();
 	}, []);
+
+	// Helper functions for calculations
+	const getMinInvestmentAmount = useCallback(() => {
+		if (formData.minimumInvestmentTicket === "Custom Amount") {
+			return parseFloat(formData.customTicketAmount) || 10000;
+		}
+		
+		const ticketMapping: Record<string, number> = {
+			"₹10,000": 10000,
+			"₹25,000": 25000,
+			"₹50,000": 50000
+		};
+		
+		return ticketMapping[formData.minimumInvestmentTicket] || 10000;
+	}, [formData.minimumInvestmentTicket, formData.customTicketAmount]);
+
+	const calculateTotalShares = useCallback(() => {
+		const totalValue = parseFloat(formData.totalValuation) * 10000000; // Convert crores to rupees
+		const minInvestment = getMinInvestmentAmount();
+		
+		if (!totalValue || !minInvestment) {
+			return 1000; // Fallback
+		}
+		
+		// Calculate total shares based on minimum investment
+		const calculatedShares = Math.round(totalValue / minInvestment);
+		
+		// Ensure reasonable share count (between 100 and 10000)
+		const minShares = 100;
+		const maxShares = 10000;
+		
+		return Math.max(minShares, Math.min(maxShares, calculatedShares));
+	}, [formData.totalValuation, getMinInvestmentAmount]);
+
+	const calculatePricePerShare = useCallback(() => {
+		const totalValue = parseFloat(formData.totalValuation) * 10000000;
+		const totalShares = calculateTotalShares();
+		return Math.round(totalValue / totalShares);
+	}, [formData.totalValuation, calculateTotalShares]);
 
 	if (loading) {
 		return <LoadingSpinner />;
@@ -447,7 +631,13 @@ export default function CommercialPropertyForm() {
 								</div>
 							)}
 
-							<form onSubmit={handleSubmit} className="space-y-6">
+							<form 
+								onSubmit={(e) => {
+									console.log("Form onSubmit triggered");
+									handleSubmit(e);
+								}} 
+								className="space-y-6"
+							>
 								{/* Step 1: Property Type & Category */}
 								{formStep === 1 && (
 									<div className="space-y-6">
@@ -657,14 +847,151 @@ export default function CommercialPropertyForm() {
 									</div>
 								)}
 
-								{/* Simplified steps 3-7 for brevity */}
+								{/* Step 3: Fractional Investment Parameters */}
 								{formStep === 3 && (
 									<div className="space-y-6">
-										<h3 className="text-2xl font-bold text-white mb-6">
+										<h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+											<Calculator className="w-6 h-6 mr-2 text-purple-400" />
 											Fractional Investment Parameters
 										</h3>
-										<div className="text-white">
-											<p>Investment parameter fields will be added here...</p>
+										
+										{/* Auto-calculated Investment Breakdown */}
+										{formData.totalValuation && formData.minimumInvestmentTicket && (
+											<div className="bg-purple-900/20 border border-purple-800/40 rounded-xl p-6 mb-6">
+												<h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+													<TrendingUp className="w-5 h-5 mr-2 text-green-400" />
+													Auto-Calculated Investment Structure
+												</h4>
+												<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+													<div className="bg-white/5 p-4 rounded-lg border border-white/10">
+														<div className="text-sm text-gray-400">Total Shares</div>
+														<div className="text-2xl font-bold text-white">
+															{calculateTotalShares().toLocaleString()}
+														</div>
+														<div className="text-xs text-gray-500 mt-1">
+															Based on min. investment
+														</div>
+													</div>
+													<div className="bg-white/5 p-4 rounded-lg border border-white/10">
+														<div className="text-sm text-gray-400">Price Per Share</div>
+														<div className="text-2xl font-bold text-green-400">
+															₹{calculatePricePerShare().toLocaleString()}
+														</div>
+														<div className="text-xs text-gray-500 mt-1">
+															Property value ÷ Total shares
+														</div>
+													</div>
+													<div className="bg-white/5 p-4 rounded-lg border border-white/10">
+														<div className="text-sm text-gray-400">Min. Investment</div>
+														<div className="text-2xl font-bold text-purple-400">
+															₹{getMinInvestmentAmount().toLocaleString()}
+														</div>
+														<div className="text-xs text-gray-500 mt-1">
+															{formData.minimumInvestmentTicket}
+														</div>
+													</div>
+												</div>
+												<div className="mt-4 p-3 bg-blue-900/20 rounded-lg border border-blue-800/40">
+													<p className="text-sm text-blue-200">
+														<strong>How it works:</strong> The total number of shares is automatically calculated by dividing your property value (₹{formData.totalValuation} Cr) by the minimum investment amount (₹{getMinInvestmentAmount().toLocaleString()}). This ensures each share costs approximately your chosen minimum investment amount.
+													</p>
+												</div>
+											</div>
+										)}
+
+										{/* Optional Manual Inputs */}
+										<div className="space-y-4">
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+												<div>
+													<Label htmlFor="rentalYield" className="mb-2 block">Expected Annual Rental Yield (%)</Label>
+													<Input
+														id="rentalYield"
+														name="rentalYield"
+														type="number"
+														step="0.1"
+														min="0"
+														max="20"
+														value={formData.rentalYield}
+														onChange={handleInputChange}
+														placeholder="e.g., 6.5"
+														className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													/>
+													<p className="text-xs text-gray-400 mt-1">Typical range: 4-12%</p>
+												</div>
+												<div>
+													<Label htmlFor="annualROIProjection" className="mb-2 block">Expected Annual ROI (%)</Label>
+													<Input
+														id="annualROIProjection"
+														name="annualROIProjection"
+														type="number"
+														step="0.1"
+														min="0"
+														max="30"
+														value={formData.annualROIProjection}
+														onChange={handleInputChange}
+														placeholder="e.g., 12"
+														className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													/>
+													<p className="text-xs text-gray-400 mt-1">Includes rental yield + appreciation</p>
+												</div>
+											</div>
+
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+												<div>
+													<Label htmlFor="minimumHoldingPeriod" className="mb-2 block">Minimum Holding Period</Label>
+													<Select
+														value={formData.minimumHoldingPeriod}
+														onValueChange={(value) => setFormData(prev => ({ ...prev, minimumHoldingPeriod: value }))}
+													>
+														<SelectTrigger className="bg-white/10 border-white/20 text-white focus:border-purple-400 focus:ring-purple-400">
+															<SelectValue placeholder="Select period" />
+														</SelectTrigger>
+														<SelectContent className="bg-gray-900 border-purple-400/30">
+															<SelectItem value="1 year" className="text-white hover:bg-purple-600/50">1 year</SelectItem>
+															<SelectItem value="2 years" className="text-white hover:bg-purple-600/50">2 years</SelectItem>
+															<SelectItem value="3 years" className="text-white hover:bg-purple-600/50">3 years</SelectItem>
+															<SelectItem value="5 years" className="text-white hover:bg-purple-600/50">5 years</SelectItem>
+															<SelectItem value="No minimum" className="text-white hover:bg-purple-600/50">No minimum</SelectItem>
+														</SelectContent>
+													</Select>
+												</div>
+												<div>
+													<Label htmlFor="targetRaiseAmount" className="mb-2 block">Target Raise Amount (₹ Crores)</Label>
+													<Input
+														id="targetRaiseAmount"
+														name="targetRaiseAmount"
+														type="number"
+														step="0.1"
+														min="0"
+														value={formData.targetRaiseAmount}
+														onChange={handleInputChange}
+														placeholder="e.g., 2.5"
+														className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													/>
+													<p className="text-xs text-gray-400 mt-1">Amount you want to raise from investors</p>
+												</div>
+											</div>
+
+											{/* Exit Options */}
+											<div>
+												<Label className="mb-3 block">Exit Options (Select all that apply)</Label>
+												<div className="space-y-2">
+													{exitOptions.map((option) => (
+														<div key={option} className="flex items-center space-x-2">
+															<input
+																type="checkbox"
+																id={option}
+																checked={formData.exitOptions.includes(option)}
+																onChange={() => handleExitOptionChange(option)}
+																className="rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-500"
+															/>
+															<Label htmlFor={option} className="text-white cursor-pointer">
+																{option}
+															</Label>
+														</div>
+													))}
+												</div>
+											</div>
 										</div>
 									</div>
 								)}
@@ -685,8 +1012,97 @@ export default function CommercialPropertyForm() {
 										<h3 className="text-2xl font-bold text-white mb-6">
 											Media & Marketing
 										</h3>
-										<div className="text-white">
-											<p>Image and media upload fields will be added here...</p>
+										
+										<div className="space-y-4">
+											{/* Property Images Upload */}
+											<div>
+												<label className="block text-white text-sm font-medium mb-2">
+													Property Images *
+												</label>
+												<div className="border-2 border-dashed border-purple-400/50 rounded-lg p-6 bg-white/5">
+													<input
+														type="file"
+														multiple
+														accept="image/*"
+														onChange={handleImageUpload}
+														className="hidden"
+														id="property-images"
+													/>
+													<label 
+														htmlFor="property-images"
+														className="cursor-pointer flex flex-col items-center text-center"
+													>
+														<ImageIcon className="w-12 h-12 text-purple-400 mb-3" />
+														<p className="text-white mb-2">
+															Click to upload property images
+														</p>
+														<p className="text-gray-400 text-sm">
+															PNG, JPG, JPEG up to 10MB each. Max 10 images.
+														</p>
+													</label>
+												</div>
+												
+												{/* Preview uploaded images */}
+												{formData.images.length > 0 && (
+													<div className="mt-4">
+														<p className="text-white text-sm mb-2">
+															Uploaded Images ({formData.images.length}/10):
+														</p>
+														<div className="grid grid-cols-3 gap-3">
+															{Array.from(formData.images).map((file, index) => (
+																<div key={index} className="relative">
+																	<img
+																		src={URL.createObjectURL(file)}
+																		alt={`Property ${index + 1}`}
+																		className="w-full h-24 object-cover rounded-lg"
+																	/>
+																	<button
+																		type="button"
+																		onClick={() => removeImage(index)}
+																		className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+																	>
+																		×
+																	</button>
+																</div>
+															))}
+														</div>
+													</div>
+												)}
+											</div>
+
+											{/* Virtual Tour Link */}
+											<div>
+												<label className="block text-white text-sm font-medium mb-2">
+													Virtual Tour Link (Optional)
+												</label>
+												<input
+													type="url"
+													value={formData.virtualTourLink || ""}
+													onChange={(e) => setFormData(prev => ({ 
+														...prev, 
+														virtualTourLink: e.target.value 
+													}))}
+													placeholder="https://example.com/virtual-tour"
+													className="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+												/>
+											</div>
+
+											{/* Request Virtual Tour */}
+											<div className="flex items-center space-x-3">
+												<input
+													type="checkbox"
+													id="requestVirtualTour"
+													checked={formData.requestVirtualTour || false}
+													onChange={(e) => setFormData(prev => ({ 
+														...prev, 
+														requestVirtualTour: e.target.checked 
+													}))}
+													className="w-4 h-4 text-purple-600 bg-white/10 border-white/20 rounded focus:ring-purple-500"
+												/>
+												<label htmlFor="requestVirtualTour" className="text-white text-sm">
+													Request virtual tour creation service
+												</label>
+											</div>
 										</div>
 									</div>
 								)}
@@ -748,6 +1164,33 @@ export default function CommercialPropertyForm() {
 											</div>
 										</div>
 
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											<div>
+												<Label htmlFor="ownerDetails.email">Email Address *</Label>
+												<Input
+													id="ownerDetails.email"
+													name="ownerDetails.email"
+													type="email"
+													value={formData.ownerDetails.email}
+													onChange={handleInputChange}
+													placeholder="Email address"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+													required
+												/>
+											</div>
+											<div>
+												<Label htmlFor="ownerDetails.companyName">Company Name (Optional)</Label>
+												<Input
+													id="ownerDetails.companyName"
+													name="ownerDetails.companyName"
+													value={formData.ownerDetails.companyName}
+													onChange={handleInputChange}
+													placeholder="Company name"
+													className="bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+												/>
+											</div>
+										</div>
+
 										<div className="flex items-center space-x-2">
 											<input
 												type="checkbox"
@@ -789,6 +1232,7 @@ export default function CommercialPropertyForm() {
 										<Button
 											type="submit"
 											disabled={submitting}
+											onClick={() => console.log("Submit button clicked, formStep:", formStep)}
 											className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
 										>
 											{submitting ? "Submitting..." : "Submit for Verification"}
