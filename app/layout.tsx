@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./providers";
@@ -11,20 +10,6 @@ const PremiumPopup = dynamic(() => import('@/components/ui/PremiumPopup'));
 
 // Dynamically import the ChatBot component with no SSR to avoid hydration issues
 const ChatBotWrapper = dynamic(() => import('@/components/ui/ChatBotWrapper'));
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-});
 
 const inter = Inter({
   variable: "--font-inter",

@@ -135,26 +135,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Experimental features for better compatibility
-  // Use serverComponentsExternalPackages for Next.js 13+ App Router
-  serverComponentsExternalPackages: [
-    "mongoose",
-    "bcrypt",
-    "@radix-ui/react-tabs",
-    "@radix-ui/react-avatar",
-    "@radix-ui/react-dialog",
-    "@radix-ui/react-select",
-    "@radix-ui/react-dropdown-menu",
-    "@radix-ui/react-tooltip",
-    "@radix-ui/react-popover",
-    "@radix-ui/react-scroll-area",
-    "@radix-ui/react-separator",
-    "@radix-ui/react-checkbox",
-    "@radix-ui/react-switch",
-    "@radix-ui/react-slider",
-    "next-auth",
-  ],
-
   webpack: (config, { isServer, dev }) => {
     // Fixes npm packages that depend on Node.js modules
     config.resolve.fallback = {
