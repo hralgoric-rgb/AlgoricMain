@@ -8,7 +8,7 @@ import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 
   // for getting the whole bill details
   // does not requireLandlord 
-  export async function GET(_request: NextRequest , {params}: {params: {BillId: string}}) {
+  export async function GET(_request: NextRequest , {params}: {params: {id: string}}) {
     try {
 
       await dbConnect()
@@ -21,18 +21,18 @@ import { requireLandlord } from "@/app/(microestate)/middleware/auth";
               }, {status: 401});
           }
     
-          const bill = await UtilityBill.findById(params.BillId)
+          const bill = await UtilityBill.findById(params.id)
          
           if (!bill) {
             return NextResponse.json({
         message: "Bill not found "
-      } , {status: 401})
+      } , {status: 404})
           }
 
           return NextResponse.json({
-            message: "Bill Found Sucessfully",
+            message: "Bill Found Successfully",
             bill
-          } , {status: 201})
+          } , {status: 200})
       
     } catch (error) {
       console.log("Error  While Getting Details " , error)
@@ -47,12 +47,18 @@ import { requireLandlord } from "@/app/(microestate)/middleware/auth";
   // for deleting the bill
 
   export const DELETE = requireLandlord(
-  async (_request: NextRequest, context: any) => {
+  async (request: NextRequest, user: any) => {
     try {
       await dbConnect();
 
-      const billId = context.params?.billId;
-      const userId = context.userId;
+      // Extract bill ID from URL path
+      const url = new URL(request.url);
+      const pathParts = url.pathname.split('/');
+      const billId = pathParts[pathParts.length - 1]; // Get the last part of the path
+      
+      console.log('Delete bill request:', { url: request.url, billId, pathParts });
+      
+      const userId = user.userId;
 
       if (!billId) {
         return NextResponse.json({ message: "Bill ID is required" }, { status: 400 });
@@ -85,12 +91,16 @@ import { requireLandlord } from "@/app/(microestate)/middleware/auth";
   // editing the bill details 
 
 export const PUT = requireLandlord(
-  async (request: NextRequest, context: any) => {
+  async (request: NextRequest, user: any) => {
     try {
       await dbConnect();
 
-      const billId = context.params?.BillId;
-      const userId = context.userId;
+      // Extract bill ID from URL path
+      const url = new URL(request.url);
+      const pathParts = url.pathname.split('/');
+      const billId = pathParts[pathParts.length - 1]; // Get the last part of the path
+      
+      const userId = user.userId;
 
       if (!billId) {
         return NextResponse.json({ message: "Bill ID is required" }, { status: 400 });
@@ -114,7 +124,7 @@ export const PUT = requireLandlord(
       
     if (!data) {
       return NextResponse.json(
-          { message: "data is requried!" },
+          { message: "data is required!" },
           { status: 400 }
         );
     }

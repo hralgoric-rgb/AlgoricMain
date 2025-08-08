@@ -4,7 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, Home, Mail, Phone, Calendar, Save, DollarSign, Shield, FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Background from '../../../../_components/Background';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from '../../../../_components/Background';
+import ProtectedRoute from '../../../../_components/ProtectedRoute';
+import { useAuth } from '../../../../Context/AuthProvider';
 import axios from 'axios';
 
 export default function AddTenantPage() {
@@ -148,7 +152,9 @@ export default function AddTenantPage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-      <Background />
+      <FloatingCircles />
+      <ParticleBackground />
+      <AnimatedGradient />
       <div className="container mx-auto py-10 mt-24 relative z-10">
         {/* Header */}
         <section className="mb-8 animate-fadeIn">

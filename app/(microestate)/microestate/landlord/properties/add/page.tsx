@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Background from "../../../../_components/Background";
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from "../../../../_components/Background";
 import ProtectedRoute from "../../../../_components/ProtectedRoute";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -186,7 +186,7 @@ export default function AddPropertyPage() {
       ...prev,
       [field]: nestedField
         ? {
-            ...prev[field as keyof FormData],
+            ...(prev[field as keyof FormData] as Record<string, any>),
             [nestedField]: value,
           }
         : value,
@@ -789,7 +789,9 @@ export default function AddPropertyPage() {
   return (
     <ProtectedRoute allowedRoles={["landlord"]}>
       <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-        <Background />
+        <FloatingCircles />
+        <ParticleBackground />
+        <AnimatedGradient />
         <div className="container mx-auto py-10 mt-24 relative z-10">
           {/* Header */}
           <section className="mb-8 animate-fadeIn">

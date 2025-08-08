@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, FileText, Home, DollarSign, MapPin, Users, Edit, History, Loader2, CheckCircle, AlertTriangle, Image, X, Upload, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Background from '../../../../../_components/Background';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from '../../../../../_components/Background';
 import ProtectedRoute from '../../../../../_components/ProtectedRoute';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -52,7 +54,7 @@ export default function EditPropertyPage() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState('');
   const [newImages, setNewImages] = useState<File[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -279,7 +281,9 @@ export default function EditPropertyPage() {
     return (
       <ProtectedRoute allowedRoles={["landlord"]}>
         <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-          <Background />
+          <FloatingCircles />
+          <ParticleBackground />
+          <AnimatedGradient />
           <div className="flex items-center justify-center min-h-screen">
             <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
           </div>
@@ -291,7 +295,9 @@ export default function EditPropertyPage() {
   return (
     <ProtectedRoute allowedRoles={["landlord"]}>
       <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-        <Background />
+        <FloatingCircles />
+        <ParticleBackground />
+        <AnimatedGradient />
         <div className="container mx-auto py-10 mt-24 relative z-10">
           {/* Header */}
           <section className="mb-8 animate-fadeIn">

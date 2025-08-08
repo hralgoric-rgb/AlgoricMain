@@ -2,8 +2,29 @@
 import Link from "next/link";
 import { FloatingCircles, ParticleBackground } from "../../_components/Background";
 import { Building } from "lucide-react";
+import { useAuth } from "../../Context/AuthProvider";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user) {
+      toast.error("You are already logged in!");
+      // Redirect based on user role
+      if (user.role === "landlord") {
+        router.push("/microestate/landlord");
+      } else if (user.role === "tenant") {
+        router.push("/microestate/tenant");
+      } else {
+        router.push("/microestate");
+      }
+    }
+  }, [user, router]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex flex-col justify-between">
       <FloatingCircles />

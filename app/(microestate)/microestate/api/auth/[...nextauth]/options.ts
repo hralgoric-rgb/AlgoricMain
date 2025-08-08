@@ -13,6 +13,7 @@ declare module "next-auth" {
     id?: string;
     email?: string;
     name?: string;
+    emailVerified?: boolean;
   }
   interface Session {
     user: {
@@ -22,6 +23,7 @@ declare module "next-auth" {
       role?: string;
       firstName?: string;
       lastName?: string;
+      emailVerified?: boolean;
     };
   }
 }

@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           const userData = {
-            id: session.user.id,
+            id: session.user.id || "",
             email: session.user.email!,
             name: session.user.name!,
             role: session.user.role as "landlord" | "tenant",
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentSession = await getSession();
       if (currentSession?.user) {
         const userData = {
-          id: currentSession.user.id,
+          id: currentSession.user.id || "",
           email: currentSession.user.email!,
           name: currentSession.user.name!,
           role: currentSession.user.role as "landlord" | "tenant",

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FloatingCircles,
   ParticleBackground,
@@ -17,8 +17,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../../Context/AuthProvider";
+import { toast } from "sonner";
 
 export default function LandlordRegisterPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user) {
+      toast.error("You are already logged in!");
+      // Redirect based on user role
+      if (user.role === "landlord") {
+        router.push("/microestate/landlord");
+      } else if (user.role === "tenant") {
+        router.push("/microestate/tenant");
+      } else {
+        router.push("/microestate");
+      }
+    }
+  }, [user, router]);
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [qrCode, setQrCode] = useState<File | null>(null);
 
@@ -33,7 +52,6 @@ export default function LandlordRegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

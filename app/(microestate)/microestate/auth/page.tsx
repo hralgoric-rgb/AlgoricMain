@@ -22,10 +22,27 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../Context/AuthProvider";
 import { signIn, getSession } from "next-auth/react";
+import { toast } from "sonner";
 
 const Login = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user) {
+      toast.error("You are already logged in!");
+      // Redirect based on user role
+      if (user.role === "landlord") {
+        router.push("/microestate/landlord");
+      } else if (user.role === "tenant") {
+        router.push("/microestate/tenant");
+      } else {
+        router.push("/microestate");
+      }
+    }
+  }, [user, router]);
+
   const [currentView, setCurrentView] = useState<
     "main" | "forgot-password" | "reset-password"
   >("main");
@@ -103,10 +120,10 @@ const Login = () => {
           // console.log("👤 User data:", user);
 
           const userData = {
-            id: user.id,
+            id: user.id || "",
             email: user.email!,
             name: user.name!,
-            role: user.role as string,
+            role: user.role as "landlord" | "tenant",
             emailVerified: user.emailVerified || false,
           };
 

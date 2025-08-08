@@ -194,9 +194,9 @@ interface AnimatedGradientProps {
 export const AnimatedGradient: React.FC<AnimatedGradientProps> = ({ className = "" }) => {
   return (
     <div className={`absolute inset-0 ${className}`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-indigo-900/30 animate-pulse"></div>
-      <div className="absolute inset-0 bg-gradient-to-tl from-cyan-900/20 via-purple-900/20 to-pink-900/20 animation-delay-1000 animate-pulse"></div>
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-800/20 via-indigo-800/20 to-purple-800/20 animation-delay-2000 animate-pulse"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-indigo-900/30"></div>
+      <div className="absolute inset-0 bg-gradient-to-tl from-cyan-900/20 via-purple-900/20 to-pink-900/20 animation-delay-1000"></div>
+      <div className="absolute inset-0 bg-gradient-to-tr from-blue-800/20 via-indigo-800/20 to-purple-800/20 animation-delay-2000"></div>
     </div>
   );
 };

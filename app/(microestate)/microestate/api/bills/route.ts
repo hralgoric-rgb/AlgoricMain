@@ -7,36 +7,33 @@ import MicroestateUser from "@/app/(microestate)/models/user";
 import { requireLandlord } from "@/app/(microestate)/middleware/auth";
 import Lease from "@/app/(microestate)/models/Lease";
 
-// // get all bills
-// export async function GET(_request: NextRequest ) {
+// get all bills for a specific landlord
+export const GET = requireLandlord(
+  async (_request: NextRequest, context: { userId: string; userRole: string; userEmail: string }) => {
+    try {
+      await dbConnect();
+      
+      const landlordId = context.userId;
+      
+      const bills = await UtilityBill.find({ landlordId })
+        .populate("propertyId", "title address")
+        .populate("landlordId", "name")
+        .populate("tenantId", "firstName lastName")
+        .sort({ createdAt: -1 }); // Sort by newest first
 
-//     try {
-//         await dbConnect()
-         
-//         const bills = await UtilityBill.find()
-//         .populate("propertyId" , "title address")
-//         .populate("landlordId" , "name ")
-//         .populate("TentantId" , "name")
+      return NextResponse.json({
+        message: "Bills Found",
+        bills
+      }, { status: 200 });
 
-//         if (!bills) {
-//             return NextResponse.json({
-//             message: "No Bills Found"
-//         }, {status: 200})
-//         }
-
-//         return NextResponse.json({
-//             message: "Bills Found",
-//             bills
-//         }, {status: 200})
-
-
-//     } catch (error) {
-//         console.log("Error while Getting all the bills" , error)
-//         return NextResponse.json({
-//             message: "Error occcured"
-//         }, {status: 500})
-//     }
-// }
+    } catch (error) {
+      console.log("Error while Getting all the bills", error);
+      return NextResponse.json({
+        message: "Error occurred while fetching bills"
+      }, { status: 500 });
+    }
+  }
+);
 
 // create bill
 
@@ -64,61 +61,84 @@ export const POST = requireLandlord(
         billingPeriod,
         dueDate,
         responsibleParty,
+        tenantId, // Specific tenant selection
         billDocument,
         notes,
+        propertyId, // Optional: allow frontend to specify which property
       } = await request.json();
 
       if (!utilityType || !amount || !billingPeriod || !dueDate || !responsibleParty) {
         return NextResponse.json(
-          { message: "ALL fields are required!" },
+          { message: "All fields are required!" },
           { status: 400 }
         );
       }
 
-      const UserId = context.userId;
+      const landlordId = context.userId;
 
-      const FoundUser = await MicroestateUser.findById(UserId);
-      if (!FoundUser) {
+      const foundUser = await MicroestateUser.findById(landlordId);
+      if (!foundUser) {
         return NextResponse.json(
           { message: "User does not exist in our database" },
           { status: 400 }
         );
       }
 
-      // Find property owned by landlord
-      const property = await Lease.findOne({ landlordId: UserId });
-      if (!property) {
+      let activeLease;
+      let selectedTenant = null;
+
+      if (tenantId) {
+        // If a specific tenant is selected, find the lease for that tenant
+        activeLease = await Lease.findOne({ 
+          landlordId: landlordId,
+          tenantId: tenantId,
+          status: "active"
+        }).populate("propertyId tenantId");
+        
+        if (!activeLease) {
+          return NextResponse.json(
+            { message: "No active lease found for the selected tenant." },
+            { status: 400 }
+          );
+        }
+        selectedTenant = activeLease.tenantId;
+      } else if (propertyId) {
+        // If a specific property is provided, find lease for that property
+        activeLease = await Lease.findOne({ 
+          landlordId: landlordId,
+          propertyId: propertyId,
+          status: "active"
+        }).populate("propertyId tenantId");
+      } else {
+        // Otherwise, find any active lease for this landlord
+        activeLease = await Lease.findOne({ 
+          landlordId: landlordId,
+          status: "active"
+        }).populate("propertyId tenantId");
+      }
+
+      if (!activeLease) {
         return NextResponse.json(
-          { message: "You don't have any property" },
+          { message: "No active lease found. You need to have an active lease with a tenant to create bills." },
           { status: 400 }
         );
       }
 
-      // Find active tenant assigned to the property
-      const tenant = await MicroestateUser.findOne({
-        role: "Tenant",
-        propertyId: property._id,
-        status: "active",
-      });
+      // Use selected tenant or fallback to lease tenant
+      const finalTenant = selectedTenant || activeLease.tenantId;
 
-      if (responsibleParty === "tenant" && !tenant) {
+      // Check if we need a tenant for this bill
+      if (responsibleParty === "tenant" && !finalTenant) {
         return NextResponse.json(
-          { message: "No active tenant assigned to this property" },
+          { message: "No tenant assigned to this lease. Bills for tenant responsibility require an active tenant." },
           { status: 400 }
-        );
-      }
-
-      if (!tenant) {
-        return NextResponse.json(
-          { message: "No tenant assigned to your property" },
-          { status: 404 }
         );
       }
 
       const newBill = await UtilityBill.create({
-        propertyId: property._id,
-        landlordId: UserId,
-        tenantId: tenant._id,
+        propertyId: activeLease.propertyId,
+        landlordId: landlordId,
+        tenantId: finalTenant,
         utilityType,
         amount,
         billingPeriod: {
@@ -134,10 +154,15 @@ export const POST = requireLandlord(
 
       await newBill.save();
 
+      // Populate the response for better frontend handling
+      const populatedBill = await UtilityBill.findById(newBill._id)
+        .populate("propertyId", "title address")
+        .populate("tenantId", "firstName lastName");
+
       return NextResponse.json(
         {
           message: "Bill Created Successfully",
-          newBill,
+          bill: populatedBill,
         },
         { status: 200 }
       );

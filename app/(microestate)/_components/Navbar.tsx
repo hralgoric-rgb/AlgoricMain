@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Building } from 'lucide-react';
+import { Building, LogOut } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../Context/AuthProvider';
@@ -9,7 +9,7 @@ import { useAuth } from '../Context/AuthProvider';
 function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
-    const { isAuthenticated } = useAuth();
+    const { user, logout } = useAuth();
 
     // Don't show navbar on auth/register/verify-email pages
     if (
@@ -17,11 +17,6 @@ function Navbar() {
         pathname.includes('/microestate/register') ||
         pathname.includes('/microestate/verify-email')
     ) {
-        return null;
-    }
-
-    // Only show navbar if NOT authenticated
-    if (isAuthenticated) {
         return null;
     }
 
@@ -35,22 +30,43 @@ function Navbar() {
                     </div>
                     <span className="text-2xl font-bold text-white tracking-wide">microestate</span>
                 </div>
-                {/* Login/Register Buttons */}
+                
+                {/* Right side buttons */}
                 <div className="flex items-center gap-3">
-                    <Button
-                        className="h-12 px-7 text-base bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 border-none"
-                        style={{ minWidth: '110px' }}
-                        onClick={() => router.push("/microestate/auth")}
-                    >
-                        Login
-                    </Button>
-                    <a
-                        href="/microestate/register"
-                        className="h-12 px-7 text-base flex items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-orange-500/10 border-none"
-                        style={{ minWidth: '110px', textDecoration: 'none' }}
-                    >
-                        Register
-                    </a>
+                    {user ? (
+                        // Show logout button and user info when authenticated
+                        <>
+                            <div className="flex items-center gap-3 text-white">
+                                <span className="text-sm text-gray-300">Welcome, {user.name}</span>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 px-4 text-sm border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200 flex items-center gap-2"
+                                    onClick={logout}
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Logout
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        // Show login/register buttons when not authenticated
+                        <>
+                            <Button
+                                className="h-12 px-7 text-base bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 border-none"
+                                style={{ minWidth: '110px' }}
+                                onClick={() => router.push("/microestate/auth")}
+                            >
+                                Login
+                            </Button>
+                            <a
+                                href="/microestate/register"
+                                className="h-12 px-7 text-base flex items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-red-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-orange-500/10 border-none"
+                                style={{ minWidth: '110px', textDecoration: 'none' }}
+                            >
+                                Register
+                            </a>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>

@@ -17,10 +17,12 @@ import {
 } from "lucide-react";
 import TenantNavbar from "./components/TenantNavbar";
 import TenantFooter from "./components/TenantFooter";
-import Background from "../../_components/Background";
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from "../../_components/Background";
 import { motion } from "framer-motion";
 import { useAuth } from "../../Context/AuthProvider";
 import axios from "axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // --- API Response Interfaces ---
 interface Notification {
@@ -133,6 +135,20 @@ function QRCodeModal({ isOpen, onClose, amount, qrCodeUrl }: QRCodeModalProps) {
 
 export default function TenantDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
+  
+  // Role-based access control
+  useEffect(() => {
+    if (user && user.role !== "tenant") {
+      toast.error("Access denied! This is the tenant portal.");
+      if (user.role === "landlord") {
+        router.push("/microestate/landlord");
+      } else {
+        router.push("/microestate/auth");
+      }
+    }
+  }, [user, router]);
+
   const [lease, setLease] = useState<LeaseDetails | null>(null);
   const [tenantProfile, setTenantProfile] = useState<TenantProfile | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -219,7 +235,9 @@ export default function TenantDashboard() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col overflow-x-hidden">
-      <Background />
+      <FloatingCircles />
+      <ParticleBackground />
+      <AnimatedGradient />
       <TenantNavbar />
 
       {error && !lease && !tenantProfile && (

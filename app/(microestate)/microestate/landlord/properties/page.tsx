@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import Background from "../../../_components/Background";
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from "../../../_components/Background";
 import ProtectedRoute from "../../../_components/ProtectedRoute";
 import axios from "axios";
 import { useAuth } from "@/app/(microestate)/Context/AuthProvider";
@@ -180,7 +180,9 @@ export default function PropertiesPage() {
   return (
     <ProtectedRoute allowedRoles={["landlord"]}>
       <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-        <Background />
+        <FloatingCircles />
+        <ParticleBackground />
+        <AnimatedGradient />
         <div className="container mx-auto py-4 mt-8 relative z-10">
 
           {/* Header */}

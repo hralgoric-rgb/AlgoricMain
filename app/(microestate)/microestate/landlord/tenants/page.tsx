@@ -5,7 +5,11 @@ import { useSession } from 'next-auth/react';
 import { User, Home, Mail, Phone, Eye, Trash2, Filter, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Background from '../../../_components/Background';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from '../../../_components/Background';
+import ProtectedRoute from '../../../_components/ProtectedRoute';
+import { useAuth } from '../../../Context/AuthProvider';
 import axios from 'axios';
 
 interface Property {
@@ -103,7 +107,9 @@ export default function TenantsPage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-      <Background />
+      <FloatingCircles />
+      <ParticleBackground />
+      <AnimatedGradient />
       <div className="container mx-auto py-4 mt-8 relative z-10">
         {/* Header */}
         <section className="mb-8 animate-fadeIn">

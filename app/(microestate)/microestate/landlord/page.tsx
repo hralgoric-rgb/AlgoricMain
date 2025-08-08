@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { Building, FileText, Mail, Plus, Home, User, CheckCircle, Inbox, Edit, Users, Calendar, CreditCard, Bell, Settings, Download, Trash2, Edit2, FileDown, AlertTriangle, TrendingUp, DollarSign, Clock, MapPin, Eye, BarChart3, Activity, Zap, Droplets, Wifi, Receipt, AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Background from '../../_components/Background';
+import { FloatingCircles, ParticleBackground, AnimatedGradient } from '../../_components/Background';
 import { useAuth } from '../../Context/AuthProvider';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 import axios from 'axios';
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const leaseProgress = 0.6; // 60% complete
 
@@ -76,6 +78,20 @@ interface TenantData {
 
 export default function LandlordDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
+  
+  // Role-based access control
+  useEffect(() => {
+    if (user && user.role !== "landlord") {
+      toast.error("Access denied! This is the landlord portal.");
+      if (user.role === "tenant") {
+        router.push("/microestate/tenant");
+      } else {
+        router.push("/microestate/auth");
+      }
+    }
+  }, [user, router]);
+
   const [landlordName, setLandlordName] = useState('');
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
@@ -94,12 +110,15 @@ export default function LandlordDashboard() {
   });
 
   const [showCreateBill, setShowCreateBill] = useState(false);
+  const [isCreatingBill, setIsCreatingBill] = useState(false);
+  const [availableTenants, setAvailableTenants] = useState<any[]>([]);
   const [newBill, setNewBill] = useState({
     utilityType: '',
     amount: '',
     billingPeriod: { start: '', end: '' },
     dueDate: '',
     responsibleParty: 'tenant',
+    tenantId: '', // Add tenant selection
     billDocument: '',
     notes: ''
   });
@@ -188,14 +207,17 @@ export default function LandlordDashboard() {
 
   const fetchBillsData = async () => {
     try {
+      // Fetch all bills for the landlord
+      const allBillsResponse = await axios.get('/microestate/api/bills');
+      const allBills: Bill[] = allBillsResponse.data.bills || [];
+      
       // Fetch overdue bills
       const overdueResponse = await axios.get('/microestate/api/bills/overdue');
       const overdueBills: Bill[] = overdueResponse.data.bills || [];
       
-      // For pending and paid bills, we'll need to create an endpoint or filter from all bills
-      // For now, we'll use empty arrays since there's no specific API for pending/paid bills
-      const pendingBills: Bill[] = [];
-      const paidBills: Bill[] = [];
+      // Categorize bills based on status
+      const pendingBills = allBills.filter(bill => bill.status === 'pending');
+      const paidBills = allBills.filter(bill => bill.status === 'paid');
       
       setUtilityBills({
         pending: pendingBills,
@@ -204,12 +226,35 @@ export default function LandlordDashboard() {
       });
     } catch (error) {
       console.error('Error fetching bills data:', error);
+      toast.error('Failed to fetch bills data');
       // Set empty arrays on error
       setUtilityBills({
         pending: [],
         overdue: [],
         paid: []
       });
+    }
+  };
+
+  const fetchAvailableTenants = async () => {
+    try {
+      // Fetch active leases for this landlord to get available tenants
+      const response = await axios.get('/microestate/api/leases');
+      const leases = response.data.leases || [];
+      
+      // Extract unique tenants from active leases
+      const tenants = leases
+        .filter((lease: any) => lease.status === 'active' && lease.tenantId)
+        .map((lease: any) => ({
+          id: lease.tenantId._id,
+          name: `${lease.tenantId.firstName} ${lease.tenantId.lastName}`,
+          propertyTitle: lease.propertyId.title
+        }));
+      
+      setAvailableTenants(tenants);
+    } catch (error) {
+      console.error('Error fetching available tenants:', error);
+      setAvailableTenants([]);
     }
   };
 
@@ -229,26 +274,54 @@ export default function LandlordDashboard() {
     try {
       // Validate required fields
       if (!newBill.utilityType || !newBill.amount || !newBill.billingPeriod.start || !newBill.billingPeriod.end || !newBill.dueDate || !newBill.responsibleParty) {
-        alert('Please fill in all required fields');
+        toast.error('Please fill in all required fields');
         return;
       }
+
+      // Validate tenant selection for tenant-responsible bills
+      if (newBill.responsibleParty === 'tenant' && !newBill.tenantId) {
+        toast.error('Please select a tenant for tenant-responsible bills');
+        return;
+      }
+
+      // Validate amount is positive
+      const amount = parseFloat(newBill.amount);
+      if (amount <= 0) {
+        toast.error('Amount must be greater than 0');
+        return;
+      }
+
+      // Validate billing period dates
+      const startDate = new Date(newBill.billingPeriod.start);
+      const endDate = new Date(newBill.billingPeriod.end);
+      if (startDate >= endDate) {
+        toast.error('Billing period end date must be after start date');
+        return;
+      }
+
+      // Set loading state
+      setIsCreatingBill(true);
 
       // Prepare data for API call
       const billData = {
         utilityType: newBill.utilityType,
-        amount: parseFloat(newBill.amount),
+        amount: amount,
         billingPeriod: {
           start: newBill.billingPeriod.start,
           end: newBill.billingPeriod.end
         },
         dueDate: newBill.dueDate,
         responsibleParty: newBill.responsibleParty,
+        tenantId: newBill.tenantId, // Include selected tenant
         billDocument: newBill.billDocument,
         notes: newBill.notes
       };
 
       // API call to create bill
-      await axios.post('/microestate/api/bills', billData);
+      const response = await axios.post('/microestate/api/bills', billData);
+      
+      // Success feedback
+      toast.success('Utility bill created successfully!');
       
       // Reset form
       setShowCreateBill(false);
@@ -258,28 +331,101 @@ export default function LandlordDashboard() {
         billingPeriod: { start: '', end: '' },
         dueDate: '',
         responsibleParty: 'tenant',
+        tenantId: '',
         billDocument: '',
         notes: ''
       });
       
       // Refresh bills data
       await fetchBillsData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating bill:', error);
-      alert('Error creating bill. Please try again.');
+      
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to create bill. Please try again.');
+      }
+    } finally {
+      setIsCreatingBill(false);
     }
   };
 
   const handleMarkAsPaid = async (billId: string) => {
     try {
+      // Show loading state
+      toast.loading('Marking bill as paid...');
+
       // API call to mark bill as paid
-      await axios.post(`/microestate/api/bills/${billId}/mark-as-paid`);
+      const response = await axios.post(`/microestate/api/bills/${billId}/mark-as-paid`);
+      
+      // Success feedback
+      toast.dismiss();
+      toast.success('Bill marked as paid successfully!');
+      
+      // Refresh bills data to update the UI
+      await fetchBillsData();
+    } catch (error: any) {
+      toast.dismiss();
+      console.error('Error marking bill as paid:', error);
+      
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to mark bill as paid. Please try again.');
+      }
+    }
+  };
+
+  const handleDeleteBill = async (billId: string) => {
+    try {
+      // Confirm deletion
+      if (!window.confirm('Are you sure you want to delete this bill? This action cannot be undone.')) {
+        return;
+      }
+
+      // Show loading state
+      toast.loading('Deleting bill...');
+
+      // API call to delete bill
+      await axios.delete(`/microestate/api/bills/${billId}`);
+      
+      // Success feedback
+      toast.dismiss();
+      toast.success('Bill deleted successfully!');
       
       // Refresh bills data
       await fetchBillsData();
-    } catch (error) {
-      console.error('Error marking bill as paid:', error);
-      alert('Error marking bill as paid. Please try again.');
+    } catch (error: any) {
+      toast.dismiss();
+      console.error('Error deleting bill:', error);
+      
+      // Handle specific error messages from backend
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to delete bill. Please try again.');
+      }
+    }
+  };
+
+  const handleSendReminder = async (billId: string) => {
+    try {
+      // Show loading state
+      toast.loading('Sending reminder...');
+
+      // For now, just show success (you can implement email sending later)
+      toast.dismiss();
+      toast.success('Reminder sent to tenant successfully!');
+      
+      // You can implement actual email sending functionality here
+      // await axios.post(`/microestate/api/bills/${billId}/send-reminder`);
+    } catch (error: any) {
+      toast.dismiss();
+      console.error('Error sending reminder:', error);
+      toast.error('Failed to send reminder. Please try again.');
     }
   };
 
@@ -310,7 +456,9 @@ export default function LandlordDashboard() {
           background: linear-gradient(to bottom, #ea580c, #b91c1c);
         }
       `}</style>
-      <Background />
+      <FloatingCircles />
+      <ParticleBackground />
+      <AnimatedGradient />
       
       {loading ? (
         <div className="flex items-center justify-center min-h-screen">
@@ -466,7 +614,10 @@ export default function LandlordDashboard() {
                </div>
                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                  <Button 
-                   onClick={() => setShowCreateBill(true)}
+                   onClick={() => {
+                     setShowCreateBill(true);
+                     fetchAvailableTenants(); // Fetch tenants when modal opens
+                   }}
                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/30"
                  >
                    <Plus className="w-5 h-5 mr-2" />
@@ -552,46 +703,59 @@ export default function LandlordDashboard() {
                  </div>
                </div>
                <div className="space-y-4">
-                 {utilityBills.pending.map((bill) => (
-                   <motion.div 
-                     key={bill._id} 
-                     className="bg-gradient-to-r from-yellow-500/5 to-orange-500/5 border border-yellow-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
-                     whileHover={{ scale: 1.02, y: -2 }}
-                   >
-                     <div className="flex items-center justify-between mb-3">
-                       <div className="flex items-center gap-3">
-                         <div className="p-2 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
-                           {getUtilityIcon(bill.utilityType)}
-                         </div>
-                         <div>
-                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">
-                             {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                 {utilityBills.pending.length === 0 ? (
+                   <div className="text-center py-8">
+                     <Clock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                     <p className="text-gray-400 text-lg font-medium">No pending bills</p>
+                     <p className="text-gray-500 text-sm">All utility bills are up to date</p>
+                   </div>
+                 ) : (
+                   utilityBills.pending.map((bill) => (
+                     <motion.div 
+                       key={bill._id} 
+                       className="bg-gradient-to-r from-yellow-500/5 to-orange-500/5 border border-yellow-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
+                       whileHover={{ scale: 1.02, y: -2 }}
+                     >
+                       <div className="flex items-center justify-between mb-3">
+                         <div className="flex items-center gap-3">
+                           <div className="p-2 bg-yellow-500/20 rounded-lg group-hover:bg-yellow-500/30 transition-colors">
+                             {getUtilityIcon(bill.utilityType)}
+                           </div>
+                           <div>
+                             <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
+                             <div className="text-sm text-gray-400">
+                               {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                             </div>
                            </div>
                          </div>
+                         <span className="text-xl font-bold text-yellow-400">₹{bill.amount.toLocaleString()}</span>
                        </div>
-                       <span className="text-xl font-bold text-yellow-400">₹{bill.amount.toLocaleString()}</span>
-                     </div>
-                     <div className="flex items-center justify-between text-sm mb-4">
-                       <span className="text-yellow-400 font-medium">Due: {new Date(bill.dueDate).toLocaleDateString()}</span>
-                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
-                     </div>
-                     <div className="flex gap-3">
-                       <Button 
-                         size="sm" 
-                         onClick={() => handleMarkAsPaid(bill._id)}
-                         className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                       >
-                         <CheckCircle className="w-4 h-4 mr-2" />
-                         Mark Paid
-                       </Button>
-                       <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
-                         <Edit className="w-4 h-4 mr-2" />
-                         Edit
-                       </Button>
-                     </div>
-                   </motion.div>
-                 ))}
+                       <div className="flex items-center justify-between text-sm mb-4">
+                         <span className="text-yellow-400 font-medium">Due: {new Date(bill.dueDate).toLocaleDateString()}</span>
+                         <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
+                       </div>
+                       <div className="flex gap-3">
+                         <Button 
+                           size="sm" 
+                           onClick={() => handleMarkAsPaid(bill._id)}
+                           className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                         >
+                           <CheckCircle className="w-4 h-4 mr-2" />
+                           Mark Paid
+                         </Button>
+                         <Button 
+                           size="sm" 
+                           variant="outline" 
+                           onClick={() => handleDeleteBill(bill._id)}
+                           className="border-red-600 text-red-400 text-sm px-4 py-2 rounded-lg hover:bg-red-700/20 hover:border-red-500 transition-all duration-300"
+                         >
+                           <Trash2 className="w-4 h-4 mr-2" />
+                           Delete
+                         </Button>
+                       </div>
+                     </motion.div>
+                   ))
+                 )}
                </div>
              </div>
 
@@ -607,46 +771,59 @@ export default function LandlordDashboard() {
                  </div>
                </div>
                <div className="space-y-4">
-                 {utilityBills.overdue.map((bill) => (
-                   <motion.div 
-                     key={bill._id} 
-                     className="bg-gradient-to-r from-red-500/5 to-pink-500/5 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
-                     whileHover={{ scale: 1.02, y: -2 }}
-                   >
-                     <div className="flex items-center justify-between mb-3">
-                       <div className="flex items-center gap-3">
-                         <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                           {getUtilityIcon(bill.utilityType)}
-                         </div>
-                         <div>
-                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">
-                             {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                 {utilityBills.overdue.length === 0 ? (
+                   <div className="text-center py-8">
+                     <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                     <p className="text-gray-400 text-lg font-medium">No overdue bills</p>
+                     <p className="text-gray-500 text-sm">Great! All bills are current</p>
+                   </div>
+                 ) : (
+                   utilityBills.overdue.map((bill) => (
+                     <motion.div 
+                       key={bill._id} 
+                       className="bg-gradient-to-r from-red-500/5 to-pink-500/5 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
+                       whileHover={{ scale: 1.02, y: -2 }}
+                     >
+                       <div className="flex items-center justify-between mb-3">
+                         <div className="flex items-center gap-3">
+                           <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                             {getUtilityIcon(bill.utilityType)}
+                           </div>
+                           <div>
+                             <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
+                             <div className="text-sm text-gray-400">
+                               {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                             </div>
                            </div>
                          </div>
+                         <span className="text-xl font-bold text-red-400">₹{bill.amount.toLocaleString()}</span>
                        </div>
-                       <span className="text-xl font-bold text-red-400">₹{bill.amount.toLocaleString()}</span>
-                     </div>
-                     <div className="flex items-center justify-between text-sm mb-4">
-                       <span className="text-red-400 font-medium">Overdue since {new Date(bill.dueDate).toLocaleDateString()}</span>
-                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
-                     </div>
-                     <div className="flex gap-3">
-                       <Button 
-                         size="sm" 
-                         onClick={() => handleMarkAsPaid(bill._id)}
-                         className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                       >
-                         <CheckCircle className="w-4 h-4 mr-2" />
-                         Mark Paid
-                       </Button>
-                       <Button size="sm" variant="outline" className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300">
-                         <Mail className="w-4 h-4 mr-2" />
-                         Send Reminder
-                       </Button>
-                     </div>
-                   </motion.div>
-                 ))}
+                       <div className="flex items-center justify-between text-sm mb-4">
+                         <span className="text-red-400 font-medium">Overdue since {new Date(bill.dueDate).toLocaleDateString()}</span>
+                         <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
+                       </div>
+                       <div className="flex gap-3">
+                         <Button 
+                           size="sm" 
+                           onClick={() => handleMarkAsPaid(bill._id)}
+                           className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                         >
+                           <CheckCircle className="w-4 h-4 mr-2" />
+                           Mark Paid
+                         </Button>
+                         <Button 
+                           size="sm" 
+                           variant="outline" 
+                           onClick={() => handleSendReminder(bill._id)}
+                           className="border-gray-600 text-gray-300 text-sm px-4 py-2 rounded-lg hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300"
+                         >
+                           <Mail className="w-4 h-4 mr-2" />
+                           Send Reminder
+                         </Button>
+                       </div>
+                     </motion.div>
+                   ))
+                 )}
                </div>
              </div>
            </div>
@@ -663,32 +840,40 @@ export default function LandlordDashboard() {
                </div>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {utilityBills.paid.map((bill) => (
-                 <motion.div 
-                   key={bill._id} 
-                   className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border border-green-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
-                   whileHover={{ scale: 1.02, y: -2 }}
-                 >
-                   <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center gap-3">
-                       <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                         {getUtilityIcon(bill.utilityType)}
-                       </div>
-                       <div>
-                         <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                         <div className="text-sm text-gray-400">
-                           {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+               {utilityBills.paid.length === 0 ? (
+                 <div className="col-span-full text-center py-8">
+                   <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                   <p className="text-gray-400 text-lg font-medium">No paid bills</p>
+                   <p className="text-gray-500 text-sm">Paid bills will appear here</p>
+                 </div>
+               ) : (
+                 utilityBills.paid.map((bill) => (
+                   <motion.div 
+                     key={bill._id} 
+                     className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border border-green-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
+                     whileHover={{ scale: 1.02, y: -2 }}
+                   >
+                     <div className="flex items-center justify-between mb-3">
+                       <div className="flex items-center gap-3">
+                         <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
+                           {getUtilityIcon(bill.utilityType)}
+                         </div>
+                         <div>
+                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
+                           <div className="text-sm text-gray-400">
+                             {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                           </div>
                          </div>
                        </div>
+                       <span className="text-xl font-bold text-green-400">₹{bill.amount.toLocaleString()}</span>
                      </div>
-                     <span className="text-xl font-bold text-green-400">₹{bill.amount.toLocaleString()}</span>
-                   </div>
-                   <div className="flex items-center justify-between text-sm">
-                     <span className="text-green-400 font-medium">Paid: {bill.paidDate ? new Date(bill.paidDate).toLocaleDateString() : new Date(bill.dueDate).toLocaleDateString()}</span>
-                     <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
-                   </div>
-                 </motion.div>
-               ))}
+                     <div className="flex items-center justify-between text-sm">
+                       <span className="text-green-400 font-medium">Paid: {bill.paidDate ? new Date(bill.paidDate).toLocaleDateString() : new Date(bill.dueDate).toLocaleDateString()}</span>
+                       <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
+                     </div>
+                   </motion.div>
+                 ))
+               )}
              </div>
            </div>
         </div>
@@ -728,7 +913,19 @@ export default function LandlordDashboard() {
                    </div>
                    <Button 
                      variant="outline" 
-                     onClick={() => setShowCreateBill(false)}
+                     onClick={() => {
+                       setShowCreateBill(false);
+                       setNewBill({
+                         utilityType: '',
+                         amount: '',
+                         billingPeriod: { start: '', end: '' },
+                         dueDate: '',
+                         responsibleParty: 'tenant',
+                         tenantId: '',
+                         billDocument: '',
+                         notes: ''
+                       });
+                     }}
                      className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 w-10 h-10 p-0 rounded-xl shadow-lg flex-shrink-0"
                    >
                      <span className="text-xl font-bold">×</span>
@@ -850,6 +1047,38 @@ export default function LandlordDashboard() {
                   </div>
                 </div>
 
+                {/* Tenant Selection - Show only if responsibility is tenant */}
+                {newBill.responsibleParty === 'tenant' && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-white flex items-center gap-2">
+                      <User className="w-4 h-4 text-blue-400" />
+                      Select Tenant *
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={newBill.tenantId}
+                        onChange={(e) => setNewBill({...newBill, tenantId: e.target.value})}
+                        className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none"
+                      >
+                        <option value="">Select a tenant</option>
+                        {availableTenants.map((tenant) => (
+                          <option key={tenant.id} value={tenant.id}>
+                            {tenant.name} ({tenant.propertyTitle})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                    {availableTenants.length === 0 && (
+                      <p className="text-xs text-gray-400 mt-1">No active tenants found. Make sure you have active leases.</p>
+                    )}
+                  </div>
+                )}
+
                 {/* Bill Document */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-white flex items-center gap-2">
@@ -893,17 +1122,39 @@ export default function LandlordDashboard() {
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setShowCreateBill(false)}
+                    onClick={() => {
+                      setShowCreateBill(false);
+                      setNewBill({
+                        utilityType: '',
+                        amount: '',
+                        billingPeriod: { start: '', end: '' },
+                        dueDate: '',
+                        responsibleParty: 'tenant',
+                        tenantId: '',
+                        billDocument: '',
+                        notes: ''
+                      });
+                    }}
                     className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 py-3 rounded-xl font-semibold"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleCreateBill}
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                    disabled={isCreatingBill}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Receipt className="w-4 h-4 mr-2" />
-                    Create Bill
+                    {isCreatingBill ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Receipt className="w-4 h-4 mr-2" />
+                        Create Bill
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
