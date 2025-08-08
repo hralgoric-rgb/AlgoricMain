@@ -132,6 +132,30 @@ const Login = () => {
           // Update your auth context immediately
           login(userData);
 
+          // Create microauth cookie for microestate middleware compatibility
+          try {
+            const microauthResponse = await fetch('/microestate/api/auth/create-microauth', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId: user.id,
+                email: user.email,
+                role: user.role,
+                name: user.name
+              }),
+            });
+
+            if (microauthResponse.ok) {
+              console.log("✅ Microauth cookie created successfully");
+            } else {
+              console.warn("⚠️ Failed to create microauth cookie, but continuing...");
+            }
+          } catch (error) {
+            console.warn("⚠️ Error creating microauth cookie:", error);
+          }
+
           // IMPORTANT: Wait a brief moment for state to update
           await new Promise((resolve) => setTimeout(resolve, 100));
 

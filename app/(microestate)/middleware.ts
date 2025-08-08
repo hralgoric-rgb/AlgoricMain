@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
     const url = new URL(request.url);
 
-    // Skip auth routes
+    // Skip auth routes (including our new microauth endpoints)
     if (url.pathname.startsWith("/microestate/api/auth")) {
       console.log("✅ Skipping auth route");
       return NextResponse.next();
@@ -153,13 +153,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
 export const config = {
   matcher: [
-    // Fixed the typo: "micorestate" -> "/microestate"
     "/microestate/landlord/:path*",
-    "/microestate/tenant/:path*",
+    "/microestate/tenant/:path*", 
     "/microestate/profile/:path*",
     "/microestate/dashboard/:path*",
     "/microestate/auth/:path*",
-    "/microestate/api/:path*", // This will catch your properties API
+    "/microestate/api/(?!auth).*", // This will catch API routes except auth routes
   ],
 };
 

@@ -165,6 +165,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     localStorage.removeItem("microestate_user");
 
+    // Clear microauth cookie
+    try {
+      await fetch('/microestate/api/auth/clear-microauth', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      console.log("✅ Microauth cookie cleared");
+    } catch (error) {
+      console.warn("⚠️ Error clearing microauth cookie:", error);
+    }
+
     // Sign out from NextAuth
     await signOut({ redirect: false });
 

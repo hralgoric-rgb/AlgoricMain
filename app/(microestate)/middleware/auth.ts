@@ -17,7 +17,8 @@ export function requireAuth(handler: (request: NextRequest, user: AuthUser) => P
       
       const token = await getToken({ 
         req: request, 
-        secret: process.env.NEXTAUTH_SECRET 
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
       });
 
       console.log('Token found:', !!token, token?.id);
@@ -73,7 +74,8 @@ export function requireLandlord(handler: (request: NextRequest, user: AuthUser) 
       
       const token = await getToken({ 
         req: request, 
-        secret: process.env.NEXTAUTH_SECRET 
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
       });
 
       console.log('Token found:', !!token, token?.id);
@@ -135,7 +137,8 @@ export function requireTenant(handler: (request: NextRequest, user: AuthUser) =>
     try {
       const token = await getToken({ 
         req: request, 
-        secret: process.env.NEXTAUTH_SECRET 
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
       });
 
       if (!token) {
