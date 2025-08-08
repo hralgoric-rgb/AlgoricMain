@@ -1,47 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useAutoEMICalculator } from '@/hooks/useEMICalculator';
 
 export const EMICalculator = () => {
   const [loanAmount, setLoanAmount] = useState(3000000);
   const [interestRate, setInterestRate] = useState(8.5);
   const [loanTenure, setLoanTenure] = useState(20);
-  const [monthlyEMI, setMonthlyEMI] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0);
 
-  // Distribution of payment
-  const [principalPercentage, setPrincipalPercentage] = useState(0);
-  const [interestPercentage, setInterestPercentage] = useState(0);
+  // Use the auto-calculating hook
+  const { calculation, isCalculating, error } = useAutoEMICalculator({
+    loanAmount,
+    interestRate,
+    tenure: loanTenure,
+    debounceMs: 300, // Reduced debounce for better UX
+  });
 
-  const calculateEMI = React.useCallback(() => {
-    // Convert annual interest rate to monthly and decimal
-    const monthlyInterestRate = interestRate / 12 / 100;
-
-    // Convert tenure to months
-    const tenureInMonths = loanTenure * 12;
-
-    // Calculate EMI using formula: P * r * (1+r)^n / ((1+r)^n - 1)
-    const emi = loanAmount * monthlyInterestRate *
-                Math.pow(1 + monthlyInterestRate, tenureInMonths) /
-                (Math.pow(1 + monthlyInterestRate, tenureInMonths) - 1);
-
-    const total = emi * tenureInMonths;
-    const interest = total - loanAmount;
-
-    // Update state with calculated values
-    setMonthlyEMI(emi);
-    setTotalAmount(total);
-    setTotalInterest(interest);
-
-    // Calculate percentages for the pie chart
-    setPrincipalPercentage((loanAmount / total) * 100);
-    setInterestPercentage((interest / total) * 100);
-  }, [loanAmount, interestRate, loanTenure]);
-
-  useEffect(() => {
-    calculateEMI();
-  }, [calculateEMI]);
+  // Fallback values when calculation is not available
+  const monthlyEMI = calculation?.monthlyEMI || 0;
+  const totalInterest = calculation?.totalInterest || 0;
+  const totalAmount = calculation?.totalAmount || 0;
+  const principalPercentage = calculation?.principalPercentage || 0;
+  const interestPercentage = calculation?.interestPercentage || 0;
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -57,6 +37,15 @@ export const EMICalculator = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-300 text-sm">
+                <strong>Calculation Error:</strong> {error}
+                <br />
+                <span className="text-xs opacity-80">Using fallback calculation method.</span>
+              </div>
+            )}
+
             {/* Loan Amount Slider */}
             <div>
               <div className="flex justify-between mb-2">
@@ -128,7 +117,13 @@ export const EMICalculator = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-orange-500/10">
                 <span className="text-white">Monthly EMI</span>
-                <span className="text-xl font-bold text-orange-500">{formatCurrency(monthlyEMI)}</span>
+                <span className="text-xl font-bold text-orange-500">
+                  {isCalculating ? (
+                    <div className="animate-pulse">Calculating...</div>
+                  ) : (
+                    formatCurrency(monthlyEMI)
+                  )}
+                </span>
               </div>
 
               <div className="flex justify-between items-center py-2 border-b border-orange-500/10">
@@ -138,12 +133,24 @@ export const EMICalculator = () => {
 
               <div className="flex justify-between items-center py-2 border-b border-orange-500/10">
                 <span className="text-white">Total Interest</span>
-                <span className="font-semibold text-orange-500">{formatCurrency(totalInterest)}</span>
+                <span className="font-semibold text-orange-500">
+                  {isCalculating ? (
+                    <div className="animate-pulse">Calculating...</div>
+                  ) : (
+                    formatCurrency(totalInterest)
+                  )}
+                </span>
               </div>
 
               <div className="flex justify-between items-center py-2">
                 <span className="text-white font-medium">Total Amount</span>
-                <span className="font-semibold text-orange-500">{formatCurrency(totalAmount)}</span>
+                <span className="font-semibold text-orange-500">
+                  {isCalculating ? (
+                    <div className="animate-pulse">Calculating...</div>
+                  ) : (
+                    formatCurrency(totalAmount)
+                  )}
+                </span>
               </div>
             </div>
 

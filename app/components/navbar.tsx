@@ -242,11 +242,29 @@ export default function Navbar() {
   };
 
   // Handle logout
-  const handleLogout = () => {
-    if (typeof window === "undefined") return;
-    sessionStorage.removeItem("authToken");
-    setIsAuthenticated(false);
-    router.push("/microestate");
+  const handleLogout = async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      // Clear sessionStorage and localStorage
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+
+      // Clear cookies
+      document.cookie =
+        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+      setIsAuthenticated(false);
+      toast.success("Successfully Logged out");
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (_error) {
+      toast.error("Logout failed");
+    }
   };
 
   // Handle login
@@ -756,12 +774,7 @@ export default function Navbar() {
                 </span>
               </Link>
               <div></div>
-              <Link
-                href="/equity"
-                className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}
-              >
-                <Building2 className="h-5 w-5 mr-2 hover:text-orange-500" />
-              </Link>
+              
               <Link
                 href="/contact"
                 className={`text-white hover:text-orange-400 transition-all relative group ${scrolled ? "text-orange-500" : ""}`}

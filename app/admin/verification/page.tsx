@@ -41,11 +41,14 @@ interface VerificationRequest {
     experience?: number;
     specializations?: string[];
     languages?: string[];
+    agentImage?: string; // URL to agent's profile image
     companyName?: string;
     established?: string;
     headquarters?: string;
     specialization?: string;
     additionalInfo?: string;
+    builderImage?: string; // URL to builder's company image
+    logo?: string; // URL to builder's company logo
   };
   documents?: string[];
   reviewedBy?: string;
@@ -205,6 +208,10 @@ export default function VerificationAdmin() {
   const handleAccept = async (id: string) => {
     setLoadingId(id);
     try {
+      // Find the request to get its type for better feedback
+      const request = pendingRequests.find(req => req._id === id);
+      const requestType = request?.type || 'verification';
+      
       const response = await fetch(`/api/requests/${id}/accept`, {
         method: "POST",
         headers: {
@@ -216,7 +223,13 @@ export default function VerificationAdmin() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Verification request accepted");
+        if (requestType === 'builder') {
+          toast.success("Builder verification request accepted! User profile updated and builder account created.");
+        } else if (requestType === 'agent') {
+          toast.success("Agent verification request accepted! User profile updated with agent credentials.");
+        } else {
+          toast.success("Verification request accepted");
+        }
 
         // Refresh data
         fetchRequests();
@@ -390,16 +403,26 @@ export default function VerificationAdmin() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
                           <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-600">
-                            {request.userId.image ? (
-                              <Image
-                                src={request.userId.image}
-                                alt={request.userId.name}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <User className="h-8 w-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400" />
-                            )}
+                            {(() => {
+                              // Get the correct image based on request type
+                              const imageUrl = request.type === 'agent' 
+                                ? request.requestDetails?.agentImage 
+                                : request.requestDetails?.builderImage || request.requestDetails?.logo;
+                              
+                              // Fallback to user profile image if no verification image
+                              const finalImageUrl = imageUrl || request.userId.image;
+                              
+                              return finalImageUrl ? (
+                                <Image
+                                  src={finalImageUrl}
+                                  alt={request.userId.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <User className="h-8 w-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400" />
+                              );
+                            })()}
                           </div>
                           <div>
                             <h3 className="font-medium text-orange-500">

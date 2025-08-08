@@ -25,7 +25,7 @@ const PaymentSchema: Schema = new Schema({
     enum: ['initiated', 'success', 'failed', 'expired'],
     default: 'initiated'
   },
-  paymentMethod: { type: String, required: true, default: 'phonepe' },
+  paymentMethod: { type: String, required: true, default: 'razorpay', enum: ['razorpay', 'phonepe'] },
   responseData: { type: Schema.Types.Mixed },
 }, { 
   timestamps: true 

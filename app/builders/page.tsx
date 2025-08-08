@@ -23,6 +23,7 @@ import {
 interface Builder {
   _id: string;
   title: string;
+  name: string;
   image: string;
   logo: string;
   projects: number;
@@ -33,6 +34,19 @@ interface Builder {
   rating: number;
   completed: number;
   ongoing: number;
+  email: string;
+  projectsList?: Array<{
+    _id: string;
+    projectName: string;
+    projectType: string;
+    locality: string;
+    city: string;
+    projectImages: string[];
+    createdAt: string;
+    status: string;
+  }>;
+  experience: number;
+  verified: boolean;
 }
 
 export default function BuildersPage() {
@@ -360,10 +374,14 @@ export default function BuildersPage() {
                       {/* Card Header */}
                       <div className="relative h-52 overflow-hidden">
                         <Image
-                          src={`${builder.image}`}
+                          src={builder.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'}
                           alt={builder.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face';
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
 
@@ -373,10 +391,14 @@ export default function BuildersPage() {
                             <div className="w-12 h-12 bg-white rounded-full p-1 shadow-md">
                               <div className="relative w-full h-full overflow-hidden rounded-full">
                                 <Image
-                                  src={builder.logo}
+                                  src={builder.logo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face'}
                                   alt={`${builder.title} logo`}
                                   fill
                                   className="object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face';
+                                  }}
                                 />
                               </div>
                             </div>

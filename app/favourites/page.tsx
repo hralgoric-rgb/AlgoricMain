@@ -100,11 +100,54 @@ interface Builder {
   };
 }
 
+interface Project {
+  _id: string;
+  projectName: string;
+  projectType: string;
+  propertyTypesOffered: string[];
+  projectStage: string;
+  city: string;
+  locality: string;
+  projectAddress: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  unitTypes: {
+    type: string;
+    sizeRange: {
+      min: number;
+      max: number;
+      unit: string;
+    };
+    priceRange: {
+      min: number;
+      max: number;
+      perSqft?: number;
+    };
+  }[];
+  possessionDate: string;
+  constructionStatus: string;
+  projectImages: string[];
+  developer: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  status: string;
+  verified: boolean;
+  views: number;
+  favorites: number;
+  inquiries: number;
+  createdAt: string;
+}
+
 export default function FavoritesPage() {
   const [activeTab, setActiveTab] = useState("properties");
   const [properties, setProperties] = useState<Property[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [builders, setBuilders] = useState<Builder[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [token, setToken] = useState<string | null>(null);
@@ -155,23 +198,21 @@ export default function FavoritesPage() {
                   }
 
                   return builder; // Fall back to basic data if fetch fails
-                } catch (_error) {
-
+                } catch (error) {
+                  console.error(`Error fetching builder ${builder._id}:`, error);
                   return builder; // Fall back to basic data if fetch fails
                 }
               });
-              
-              const builderDetails = await Promise.all(builderDetailsPromises);
-              const validBuilders = builderDetails.filter(builder => builder !== null && builder !== undefined);
-              
-              if (validBuilders.length < builderDetails.length) {
-                toast.warning(`Some builder details could not be loaded completely.`);
-              }
-              
-              setBuilders(validBuilders);
+
+              const detailedBuilders = await Promise.all(builderDetailsPromises);
+              setBuilders(detailedBuilders);
             } else {
               setBuilders([]);
             }
+            break;
+          case "projects":
+            const projectsData = await FavoritesAPI.getProjects();
+            setProjects(projectsData.favorites || []);
             break;
         }
       } catch (_error) {
@@ -205,6 +246,11 @@ export default function FavoritesPage() {
           await FavoritesAPI.removeBuilder(id);
           setBuilders(builders.filter((b) => b._id !== id));
           toast.success(`Builder removed from favorites`);
+          break;
+        case "project":
+          await FavoritesAPI.removeProject(id);
+          setProjects(projects.filter((p) => p._id !== id));
+          toast.success(`Project removed from favorites`);
           break;
       }
     } catch (_error) {
@@ -256,6 +302,15 @@ export default function FavoritesPage() {
             >
               <Building size={16} />
               <span>Builders</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="projects"
+              className={`flex items-center gap-2 p-2 rounded-lg transition-colors duration-300 ${
+                activeTab === "projects" ? "bg-orange-500 text-white" : ""
+              }`}
+            >
+              <Building size={16} />
+              <span>Projects</span>
             </TabsTrigger>
           </TabsList>
 
@@ -340,6 +395,29 @@ export default function FavoritesPage() {
                   </motion.div>
                 )}
               </TabsContent>
+
+              <TabsContent value="projects">
+                {projects.length === 0 ? (
+                  <EmptyState type="projects" />
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {projects.map((project) => (
+                      <ProjectCard
+                        key={project._id}
+                        project={project}
+                        onRemove={() =>
+                          removeFromFavorites("project", project._id)
+                        }
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </TabsContent>
             </>
           )}
         </Tabs>
@@ -371,6 +449,13 @@ function EmptyState({ type }: { type: string }) {
       description: "Explore builders and add them to your favorites.",
       action: "Explore Builders",
       link: "/builders",
+      icon: <Building className="w-16 h-16 text-gray-500" />,
+    },
+    projects: {
+      title: "No favorite projects yet",
+      description: "Discover real estate projects and add them to your favorites.",
+      action: "Explore Projects",
+      link: "/projects",
       icon: <Building className="w-16 h-16 text-gray-500" />,
     },
   };
@@ -620,6 +705,113 @@ function BuilderCard({
         </CardContent>
         <CardFooter className="flex justify-center mt-auto">
           <Link href={`/builders/${builder._id}`}>
+            <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors">
+              View Details
+            </Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    </motion.div>
+  );
+}
+
+function ProjectCard({
+  project,
+  onRemove,
+}: {
+  project: Project;
+  onRemove: () => void;
+}) {
+  const formatPrice = (price: number) => {
+    if (price >= 10000000) {
+      return `₹${(price / 10000000).toFixed(1)} Cr`;
+    } else if (price >= 100000) {
+      return `₹${(price / 100000).toFixed(1)} L`;
+    }
+    return `₹${price.toLocaleString()}`;
+  };
+
+  const getMinPrice = () => {
+    if (project.unitTypes && project.unitTypes.length > 0) {
+      return Math.min(...project.unitTypes.map(u => u.priceRange.min));
+    }
+    return 0;
+  };
+
+  const getMaxPrice = () => {
+    if (project.unitTypes && project.unitTypes.length > 0) {
+      return Math.max(...project.unitTypes.map(u => u.priceRange.max));
+    }
+    return 0;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="bg-gray-800 border border-gray-700 text-white overflow-hidden hover:border-orange-500 transition-all duration-300 h-full flex flex-col">
+        <div className="relative h-48 w-full bg-gray-900">
+          <Image
+            src={project.projectImages?.[0] || "/placeholder-project.jpg"}
+            alt={project.projectName}
+            fill
+            className="object-cover"
+          />
+          <Button
+            variant="destructive"
+            size="icon"
+            className="absolute top-2 right-2 z-10 opacity-80 hover:opacity-100 transition-opacity"
+            onClick={onRemove}
+          >
+            <Trash2 size={16} />
+          </Button>
+          {project.verified && (
+            <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+              Verified
+            </div>
+          )}
+        </div>
+        <CardHeader>
+          <CardTitle className="text-center text-orange-500 line-clamp-1">
+            {project.projectName}
+          </CardTitle>
+          <CardDescription className="text-center text-gray-400">
+            <MapPin className="inline w-4 h-4 mr-1" />
+            {project.locality}, {project.city}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center flex-grow">
+          <div className="mb-3">
+            <p className="text-sm text-gray-300">{project.projectStage}</p>
+            <p className="text-xs text-gray-500">{project.constructionStatus}</p>
+          </div>
+          
+          <div className="bg-gray-900 p-3 rounded mb-3">
+            <p className="text-sm font-medium text-orange-400">Price Range</p>
+            <p className="text-lg font-bold text-white">
+              {formatPrice(getMinPrice())} - {formatPrice(getMaxPrice())}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="text-center">
+              <p className="text-xs text-gray-400">Property Types</p>
+              <p className="text-sm font-medium">{project.propertyTypesOffered?.length || 0}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-400">Unit Types</p>
+              <p className="text-sm font-medium">{project.unitTypes?.length || 0}</p>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-400">
+            Expected Possession: {new Date(project.possessionDate).toLocaleDateString()}
+          </p>
+        </CardContent>
+        <CardFooter className="flex justify-center mt-auto">
+          <Link href={`/projects/${project._id}`}>
             <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors">
               View Details
             </Button>

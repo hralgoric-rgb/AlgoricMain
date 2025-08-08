@@ -100,10 +100,11 @@ export const FavoritesAPI = {
   getProperties: () => apiRequest("/favorites/properties"),
   getAgents: () => apiRequest("/favorites/agents"),
   getBuilders: () => apiRequest("/favorites/builders"),
+  getProjects: () => apiRequest("/favorites/projects"),
   getLocalities: () => apiRequest("/favorites/localities"),
 
   addProperty: (id: string) =>
-    apiRequest("/favorites/properties", {
+    apiRequest("/favorites", {
       method: "POST",
       body: JSON.stringify({ propertyId: id }),
     }),
@@ -129,6 +130,16 @@ export const FavoritesAPI = {
     }),
   removeBuilder: (id: string) =>
     apiRequest(`/favorites/builders/${id}`, {
+      method: "DELETE",
+    }),
+
+  addProject: (id: string) =>
+    apiRequest("/favorites/projects", {
+      method: "POST",
+      body: JSON.stringify({ projectId: id }),
+    }),
+  removeProject: (id: string) =>
+    apiRequest(`/favorites/projects/${id}`, {
       method: "DELETE",
     }),
 
