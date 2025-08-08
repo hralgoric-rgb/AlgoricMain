@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
 	Home,
@@ -20,6 +20,8 @@ export default function EquityNavigation() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [showProfileMenu, setShowProfileMenu] = useState(false);
 	const [showAuth, setShowAuth] = useState(false);
+	const [kycStatus, setKycStatus] = useState<"accepted" | "pending" | "rejected" | null>(null);
+	const [loading, setLoading] = useState(true);
 
 	// Check authentication on mount
 	React.useEffect(() => {
@@ -30,6 +32,54 @@ export default function EquityNavigation() {
 			setIsAuthenticated(!!token);
 		}
 	}, []);
+
+	// Fetch KYC status when authenticated
+	useEffect(() => {
+		const fetchKycStatus = async () => {
+			if (!isAuthenticated) {
+				setLoading(false);
+				return;
+			}
+
+			try {
+				const token =
+					sessionStorage.getItem("authToken") ||
+					localStorage.getItem("authToken");
+				
+				if (!token) {
+					setLoading(false);
+					return;
+				}
+
+				const res = await fetch("/api/kyc", {
+					method: "GET",
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				
+				const data = await res.json();
+				
+				if (res.ok && data.reviewed) {
+					const tokenPayload = JSON.parse(atob(token.split(".")[1]));
+					const userId = tokenPayload.userId || tokenPayload.sub;
+					const myKyc = data.reviewed.find((k: any) => k.userId === userId);
+					
+					if (myKyc) {
+						setKycStatus(myKyc.status);
+					} else {
+						setKycStatus(null);
+					}
+				} else {
+					setKycStatus(null);
+				}
+			} catch (error) {
+				console.error("Error fetching KYC status:", error);
+				setKycStatus(null);
+			}
+			setLoading(false);
+		};
+
+		fetchKycStatus();
+	}, [isAuthenticated]);
 
 	const handleAuthSuccess = () => {
 		setShowAuth(false);
@@ -106,7 +156,8 @@ export default function EquityNavigation() {
 									<span>Post Property</span>
 								</button>
 							)}
-							{isAuthenticated && (
+							{/* KYC Button - Only show if authenticated and KYC not completed */}
+							{isAuthenticated && kycStatus !== "accepted" && !loading && (
 								<Link
 									href='/equity/kyc'
 									className='ml-4 px-4 py-2 rounded-lg bg-gradient-to-r from-[#a78bfa] to-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium shadow-md hover:from-purple-500 hover:to-purple-800'
@@ -181,7 +232,8 @@ export default function EquityNavigation() {
 									Post Property
 								</button>
 							)}
-							{isAuthenticated && (
+							{/* KYC Button for Mobile - Only show if authenticated and KYC not completed */}
+							{isAuthenticated && kycStatus !== "accepted" && !loading && (
 								<Link
 									href='/equity/kyc'
 									className='block w-full mt-2 px-4 py-3 rounded-lg bg-gradient-to-r from-[#a78bfa] to-purple-700 text-white border border-purple-400 transition-all duration-300 text-center font-medium shadow-md hover:from-purple-500 hover:to-purple-800'

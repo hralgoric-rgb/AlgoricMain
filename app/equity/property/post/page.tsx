@@ -674,18 +674,48 @@ export default function CommercialPropertyForm() {
 				return;
 			}
 
-			console.log("Submitting form data:", formData);
-			console.log("Token exists:", !!token);
-			console.log("Making API call to /api/commercial");
+			// 1. Upload images first via /api/upload to get permanent URLs (ImageKit)
+			let imageUrls: string[] = [];
+			if (uploadedImages.length > 0) {
+				console.log('Uploading images to /api/upload ... count:', uploadedImages.length);
+				try {
+					const uploads = uploadedImages.map(async (file) => {
+						const fd = new FormData();
+						fd.append('file', file);
+						fd.append('fileName', `commercial-${Date.now()}-${file.name}`);
+						fd.append('folder', '/commercial');
+						const res = await fetch('/api/upload', { method: 'POST', body: fd });
+						const data = await res.json();
+						if (!res.ok || !data.success) {
+							throw new Error(data.error || data.message || 'Image upload failed');
+						}
+						return data.url as string;
+					});
+					imageUrls = await Promise.all(uploads);
+					console.log('Image upload complete. URLs:', imageUrls);
+				} catch (uploadErr) {
+					console.error('Image upload error:', uploadErr);
+					setError('Failed to upload images. Please try again.');
+					setSubmitting(false);
+					return;
+				}
+			} else {
+				console.log('No images selected to upload.');
+			}
 
-			// Make API call to create property
+			// 2. Prepare payload with image URLs
+			const payload = { ...formData, images: imageUrls };
+			console.log('Submitting commercial payload (images now URLs):', payload);
+			console.log('Token exists:', !!token);
+			console.log('Making API call to /api/commercial');
+
 			const response = await fetch('/api/commercial', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'Authorization': `Bearer ${token}`,
 				},
-				body: JSON.stringify(formData),
+				body: JSON.stringify(payload),
 			});
 
 			console.log("API Response status:", response.status);
@@ -719,7 +749,20 @@ export default function CommercialPropertyForm() {
 			setError("An error occurred while submitting the property. Please check your connection and try again.");
 			setSubmitting(false);
 		}
-	}, [formData, router]);
+	}, [formData, router, uploadedImages]);
+
+/* Helper (optional future reuse): single image upload to /api/upload returning URL
+const uploadSingleImage = async (file: File): Promise<string> => {
+	const fd = new FormData();
+	fd.append('file', file);
+	fd.append('fileName', `commercial-${Date.now()}-${file.name}`);
+	fd.append('folder', '/commercial');
+	const res = await fetch('/api/upload', { method: 'POST', body: fd });
+	const data = await res.json();
+	if (!res.ok || !data.success) throw new Error(data.error || 'Image upload failed');
+	return data.url as string;
+};
+*/
 
 	const handleAuthSuccess = useCallback(() => {
 		setShowAuthModal(false);

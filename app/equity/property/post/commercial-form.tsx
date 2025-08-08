@@ -357,134 +357,135 @@ export default function CommercialPropertyForm() {
 	}, [formStep]);
 
 	// Form submission
+
+	// Helper: upload images to ImageKit via /api/upload and return URL strings
+	const uploadImages = useCallback(async (files: File[]): Promise<string[]> => {
+		if (!files || files.length === 0) return [];
+		console.log('Uploading images to /api/upload ... count:', files.length);
+		try {
+			const uploads = files.map(async (file) => {
+				const fd = new FormData();
+				fd.append('file', file);
+				// optional naming / folder fields if backend supports
+				fd.append('fileName', `commercial-${Date.now()}-${file.name}`);
+				fd.append('folder', '/commercial');
+				const res = await fetch('/api/upload', { method: 'POST', body: fd });
+				const data = await res.json();
+				if (!res.ok || !data.success) {
+					throw new Error(data.error || data.message || 'Image upload failed');
+				}
+				return data.url as string; // assuming API returns { success: true, url: "..." }
+			});
+			const urls = await Promise.all(uploads);
+			console.log('Image upload complete. URLs:', urls);
+			return urls;
+		} catch (err) {
+			console.error('Image upload error:', err);
+			throw err;
+		}
+	}, []);
+
 	const handleSubmit = useCallback(async (e: React.FormEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
-		
-		console.log("Form submission started");
-		
-		setError("");
-		setSuccess("");
+
+		console.log('Commercial form submission started');
+		setError('');
+		setSuccess('');
 		setSubmitting(true);
 
 		try {
-			const token = typeof window !== "undefined"
-				? sessionStorage.getItem("authToken") || localStorage.getItem("authToken")
+			const token = typeof window !== 'undefined'
+				? sessionStorage.getItem('authToken') || localStorage.getItem('authToken')
 				: null;
 
 			if (!token) {
-				setError("You must be logged in to post a property.");
+				setError('You must be logged in to post a property.');
 				setSubmitting(false);
 				return;
 			}
 
-			// Validate only the fields that are actually implemented in the form
+			// Validate required implemented fields
 			const requiredFields = [
-				{ field: formData.propertyType, name: "Property Type" },
-				{ field: formData.projectName, name: "Project Name" },
-				{ field: formData.fullAddress, name: "Full Address" },
-				{ field: formData.pinCode, name: "Pin Code" },
-				{ field: formData.locality, name: "Locality" },
-				{ field: formData.possessionStatus, name: "Possession Status" },
-				{ field: formData.builtUpArea, name: "Built-up Area" },
-				{ field: formData.totalValuation, name: "Total Valuation" },
-				{ field: formData.minimumInvestmentTicket, name: "Minimum Investment Ticket" },
-				{ field: formData.ownerDetails.name, name: "Owner Name" },
-				{ field: formData.ownerDetails.phone, name: "Owner Phone" },
-				{ field: formData.ownerDetails.email, name: "Owner Email" },
-				{ field: formData.termsAccepted, name: "Terms Acceptance", isBoolean: true }
+				{ field: formData.propertyType, name: 'Property Type' },
+				{ field: formData.projectName, name: 'Project Name' },
+				{ field: formData.fullAddress, name: 'Full Address' },
+				{ field: formData.pinCode, name: 'Pin Code' },
+				{ field: formData.locality, name: 'Locality' },
+				{ field: formData.possessionStatus, name: 'Possession Status' },
+				{ field: formData.builtUpArea, name: 'Built-up Area' },
+				{ field: formData.totalValuation, name: 'Total Valuation' },
+				{ field: formData.minimumInvestmentTicket, name: 'Minimum Investment Ticket' },
+				{ field: formData.ownerDetails.name, name: 'Owner Name' },
+				{ field: formData.ownerDetails.phone, name: 'Owner Phone' },
+				{ field: formData.ownerDetails.email, name: 'Owner Email' },
+				{ field: formData.termsAccepted, name: 'Terms Acceptance', isBoolean: true }
 			];
 
-			const missingFields = requiredFields.filter(item => 
-				item.isBoolean ? !item.field : !item.field?.toString().trim()
-			);
-
+			const missingFields = requiredFields.filter(item => item.isBoolean ? !item.field : !item.field?.toString().trim());
 			if (missingFields.length > 0) {
 				setError(`Please fill in the following required fields: ${missingFields.map(f => f.name).join(', ')}`);
 				setSubmitting(false);
 				return;
 			}
 
-			// Additional validation for custom amount
-			if (formData.minimumInvestmentTicket === "Custom Amount" && !formData.customTicketAmount) {
-				setError("Please enter a custom ticket amount.");
+			if (formData.minimumInvestmentTicket === 'Custom Amount' && !formData.customTicketAmount) {
+				setError('Please enter a custom ticket amount.');
 				setSubmitting(false);
 				return;
 			}
 
-			console.log("Submitting form data:", formData);
-			console.log("Token exists:", !!token);
-			console.log("Making API call to /api/commercial");
-
-			let response;
-
-			// Check if there are images to upload
-			if (formData.images.length > 0) {
-				// Use FormData for file uploads
-				const submitData = new FormData();
-				
-				// Add all form fields except images
-				const { images, ...formDataWithoutImages } = formData;
-				
-				// Add form data as JSON
-				submitData.append('formData', JSON.stringify(formDataWithoutImages));
-				
-				// Add images as files
-				images.forEach((file, index) => {
-					submitData.append(`images`, file);
-				});
-
-				// Make API call with FormData
-				response = await fetch('/api/commercial', {
-					method: 'POST',
-					headers: {
-						'Authorization': `Bearer ${token}`,
-						// Don't set Content-Type for FormData - browser will set it with boundary
-					},
-					body: submitData,
-				});
-			} else {
-				// Use JSON when no images
-				const { images, ...formDataWithoutImages } = formData;
-				
-				response = await fetch('/api/commercial', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`,
-					},
-					body: JSON.stringify(formDataWithoutImages),
-				});
+			// 1. Upload new images first to get URLs
+			let newImageUrls: string[] = [];
+			if (formData.images && formData.images.length > 0) {
+				console.log('Preparing to upload commercial form images count:', formData.images.length);
+				try {
+					newImageUrls = await uploadImages(formData.images);
+				} catch (uploadErr) {
+					setError('Failed to upload images. Please try again.');
+					setSubmitting(false);
+					return;
+				}
 			}
 
-			console.log("API Response status:", response.status);
-			console.log("API Response headers:", Object.fromEntries(response.headers.entries()));
+			const allImageUrls = [...(formData.existingImages || []), ...newImageUrls];
 
+			// 2. Prepare payload without File objects
+			const { images: _files, ...rest } = formData;
+			const payload = { ...rest, images: allImageUrls };
+
+			console.log('Submitting commercial payload (images now URLs):', payload);
+
+			const response = await fetch('/api/commercial', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`,
+				},
+				body: JSON.stringify(payload),
+			});
+
+			console.log('API Response status:', response.status);
 			if (!response.ok) {
-				console.error("Response not ok:", response.status, response.statusText);
+				console.error('Response not ok:', response.status, response.statusText);
 			}
-
 			const result = await response.json();
-			console.log("API Response data:", result);
+			console.log('API Response data:', result);
 
 			if (response.ok && result.success) {
-				setSuccess("Commercial property submitted successfully for approval! You will be notified once it's reviewed.");
-				setTimeout(() => {
-					router.push("/equity/property");
-				}, 3000);
+				setSuccess('Commercial property submitted successfully for approval! You will be notified once it\'s reviewed.');
+				setTimeout(() => { router.push('/equity/property'); }, 3000);
 			} else {
-				const errorMessage = result.message || 
-					(result.errors?.map((e: any) => typeof e === 'string' ? e : e.message).join(', ')) || 
-					"Failed to submit property. Please try again.";
+				const errorMessage = result.message || (result.errors?.map((e: any) => typeof e === 'string' ? e : e.message).join(', ')) || 'Failed to submit property. Please try again.';
 				setError(errorMessage);
 				setSubmitting(false);
 			}
 		} catch (err) {
 			console.error('Property submission error:', err);
-			setError("An error occurred while submitting the property. Please check your connection and try again.");
+			setError('An error occurred while submitting the property. Please check your connection and try again.');
 			setSubmitting(false);
 		}
-	}, [formData, router]);
+	}, [formData, router, uploadImages]);
 
 	const handleAuthSuccess = useCallback(() => {
 		setShowAuthModal(false);

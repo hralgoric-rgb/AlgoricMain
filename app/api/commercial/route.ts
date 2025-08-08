@@ -103,35 +103,35 @@ export async function POST(req: NextRequest) {
       formData = await req.json();
     }
     
-    // Upload images to Cloudinary (if any)
-    const uploadedImages: string[] = [];
-    for (const file of imageFiles) {
-      try {
-        // Convert File to Buffer
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        
-        // Upload to Cloudinary
-        const uploadResult = await new Promise((resolve, reject) => {
-          cloudinary.uploader.upload_stream(
-            {
-              folder: "commercial-properties",
-              resource_type: "image",
-              transformation: [
-                { width: 1200, height: 800, crop: "limit", quality: "auto" }
-              ]
-            },
-            (error: any, result: any) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          ).end(buffer);
-        });
-        
-        uploadedImages.push((uploadResult as any).secure_url);
-      } catch (uploadError) {
-        console.error("Error uploading image:", uploadError);
-        // Continue with other images, don't fail the entire request
+    // Upload images to Cloudinary (if any). If client already uploaded to ImageKit
+    // via /api/upload and sent URLs in formData.images, prefer those.
+    let uploadedImages: string[] = [];
+    if (Array.isArray(formData.images) && formData.images.every((u: any) => typeof u === 'string' && u.startsWith('http'))) {
+      uploadedImages = formData.images; // trust pre-uploaded URLs
+    } else if (imageFiles.length > 0) {
+      for (const file of imageFiles) {
+        try {
+          const bytes = await file.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          const uploadResult = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+              {
+                folder: "commercial-properties",
+                resource_type: "image",
+                transformation: [
+                  { width: 1200, height: 800, crop: "limit", quality: "auto" }
+                ]
+              },
+              (error: any, result: any) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            ).end(buffer);
+          });
+          uploadedImages.push((uploadResult as any).secure_url);
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+        }
       }
     }
 

@@ -92,9 +92,26 @@ export default function BuySharesModal({
 
   // Get user data from session/localStorage (you may need to adapt this based on your auth system)
   const getUserData = () => {
-    // This should be replaced with your actual user data retrieval logic
-    const userStr =
-      typeof window !== "undefined" ? localStorage.getItem("user") : null;
+    // First try to get from token
+    const token = typeof window !== "undefined" ? 
+      (sessionStorage.getItem("authToken") || localStorage.getItem("authToken")) : null;
+    
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return {
+          id: payload.userId || payload.sub,
+          email: payload.email,
+          name: payload.name || "User", // You might need to fetch this from user profile
+          phone: payload.phone
+        };
+      } catch (error) {
+        console.error("Error parsing token:", error);
+      }
+    }
+    
+    // Fallback to localStorage user data
+    const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null;
     if (userStr) {
       try {
         return JSON.parse(userStr);
@@ -103,6 +120,78 @@ export default function BuySharesModal({
       }
     }
     return null;
+  };
+
+  const sendPurchaseNotification = async (userData: any) => {
+    try {
+      const token = typeof window !== "undefined" ? 
+        (sessionStorage.getItem("authToken") || localStorage.getItem("authToken")) : null;
+
+      const response = await fetch("/api/equity/purchase-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` })
+        },
+        body: JSON.stringify({
+          propertyName: property.title,
+          propertyId: property._id,
+          shareCount: form.shareCount,
+          totalAmount: form.totalAmount,
+          pricePerShare: property.pricePerShare,
+          propertyLocation: property.location,
+          userName: userData?.name || "Unknown User",
+          userEmail: userData?.email || "unknown@email.com",
+          userPhone: userData?.phone
+        })
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send notification");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error sending purchase notification:", error);
+      throw error;
+    }
+  };
+
+  const handlePurchaseClick = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const userData = getUserData();
+      
+      if (!userData?.email) {
+        toast.error("Please log in to continue with your purchase");
+        setIsProcessing(false);
+        return;
+      }
+
+      // Send purchase notification email
+      await sendPurchaseNotification(userData);
+      
+      // Show success message
+      toast.success(
+        `Thank you for your interest in ${property.title}! Our investment team will contact you within 24 hours to complete your investment of ₹${form.totalAmount.toLocaleString()}.`,
+        { duration: 5000 }
+      );
+      
+      // Close modal after success
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+        setIsProcessing(false);
+      }, 2000);
+
+    } catch (error) {
+      console.error("Purchase notification error:", error);
+      toast.error("Failed to process your request. Please try again or contact support.");
+      setIsProcessing(false);
+    }
   };
 
   const handlePaymentSuccess = (_paymentResponse: any) => {
@@ -174,7 +263,7 @@ export default function BuySharesModal({
           <Card className="luxury-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl text-white">
-                Buy Equity Shares - {property.title}
+                Express Interest - {property.title}
               </CardTitle>
               <Button
                 variant="ghost"
@@ -347,19 +436,23 @@ export default function BuySharesModal({
                     </div>
                   </div>
 
-                  {/* KYC Notice */}
+                  {/* Contact Notice */}
                   <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
                       <FaCheck className="w-4 h-4 text-blue-400" />
                       <span className="text-blue-400 font-medium">
-                        KYC Verification Required
+                        Investment Process
                       </span>
                     </div>
                     <p className="text-sm text-blue-200">
-                      As per regulatory requirements, KYC verification is
-                      mandatory before investment. Your KYC will be processed
-                      after successful payment.
+                      By clicking "Express Interest", our investment team will contact you within 24 hours to:
                     </p>
+                    <ul className="text-sm text-blue-200 mt-2 ml-4 list-disc">
+                      <li>Verify your investment details and capacity</li>
+                      <li>Guide you through KYC verification if needed</li>
+                      <li>Complete the documentation process</li>
+                      <li>Finalize your share purchase</li>
+                    </ul>
                   </div>
                 </>
               )}
@@ -411,18 +504,15 @@ export default function BuySharesModal({
                   <Button
                     disabled={!canProceed() || isProcessing}
                     className="flex-1 luxury-button"
-                    onClick={() => {
-                      // Handle payment click - for now just show a success
-                      handlePaymentSuccess({});
-                    }}
+                    onClick={handlePurchaseClick}
                   >
                     {isProcessing ? (
                       <div className="flex items-center">
                         <FaSpinner className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
+                        Sending Request...
                       </div>
                     ) : (
-                      `Purchase Shares - ${formatCurrency(form.totalAmount)}`
+                      `Express Interest - ${formatCurrency(form.totalAmount)}`
                     )}
                   </Button>
                 </div>

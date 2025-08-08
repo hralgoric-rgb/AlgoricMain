@@ -977,7 +977,7 @@ export default function PropertyDetailPage({
                   className="w-full bg-[#d1ff4a] hover:bg-[#b6e944] text-black font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Buy Equity Shares
+                  Express Interest
                 </Button>
               </motion.div>
 

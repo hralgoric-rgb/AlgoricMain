@@ -358,9 +358,9 @@ export default function PropertyListingPage() {
           </div>
 
           {/* Properties Grid */}
-          <div className="relative z-10 max-w-6xl mx-auto px-4">
+          <div className="relative z-10 max-w-7xl mx-auto px-4">
             {filteredProperties.length > 0 ? (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {filteredProperties.map((property, index) => {
                   const glowColors = [
                     "rgba(249, 115, 22, 0.3)", // orange
