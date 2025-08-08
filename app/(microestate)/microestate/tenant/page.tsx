@@ -22,7 +22,6 @@ import { motion } from "framer-motion";
 import { useAuth } from "../../Context/AuthProvider";
 import axios from "axios";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 // --- API Response Interfaces ---
 interface Notification {
@@ -135,19 +134,6 @@ function QRCodeModal({ isOpen, onClose, amount, qrCodeUrl }: QRCodeModalProps) {
 
 export default function TenantDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
-  
-  // Role-based access control
-  useEffect(() => {
-    if (user && user.role !== "tenant") {
-      toast.error("Access denied! This is the tenant portal.");
-      if (user.role === "landlord") {
-        router.push("/microestate/landlord");
-      } else {
-        router.push("/microestate/auth");
-      }
-    }
-  }, [user, router]);
 
   const [lease, setLease] = useState<LeaseDetails | null>(null);
   const [tenantProfile, setTenantProfile] = useState<TenantProfile | null>(null);

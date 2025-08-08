@@ -78,19 +78,6 @@ interface TenantData {
 
 export default function LandlordDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
-  
-  // Role-based access control
-  useEffect(() => {
-    if (user && user.role !== "landlord") {
-      toast.error("Access denied! This is the landlord portal.");
-      if (user.role === "tenant") {
-        router.push("/microestate/tenant");
-      } else {
-        router.push("/microestate/auth");
-      }
-    }
-  }, [user, router]);
 
   const [landlordName, setLandlordName] = useState('');
   const [loading, setLoading] = useState(true);
