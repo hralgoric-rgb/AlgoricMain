@@ -6,60 +6,51 @@ import { Check, X } from "lucide-react";
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 import { PricingUI } from "@/components/blocks/pricing";
 import { useRouter } from "next/navigation";
+import { useRazorpayPayment } from "@/hooks/useRazorpayPayment";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Pricing() {
   const router = useRouter();
-  // const [isAnnual, setIsAnnual] = useState(true);
-  // const [processing, setProcessing] = useState(false);
-  // const router = useRouter();
+  const { processPayment, isProcessing } = useRazorpayPayment();
+  const [isAnnual, setIsAnnual] = useState(true);
+  const token = sessionStorage.getItem("authToken");
+  // Handle payment for subscription plans
+  const handlePayment = async (planType: string, planName: string, amount: number) => {
+    if (!token) {
+      toast.error("Please login to subscribe to a plan");
+      router.push("/");
+      return;
+    }
 
-  // Mock user ID for development purposes
-  // const userId = "user_" + Math.random().toString(36).substring(2, 9);
+    // Extract user ID from token or use token as userId
+    const userId = token;
 
-  // const handlePayment = async (planType: string, amount: number) => {
-  //   try {
-  //     setProcessing(true);
-
-  //     const response = await fetch("/api/payment/phonepe", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         amount,
-  //         userId,
-  //         planType,
-  //         planDuration: isAnnual ? "annual" : "monthly",
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (data.success && data.redirectUrl) {
-  //       // Redirect to PhonePe payment page
-  //       window.location.href = data.redirectUrl;
-  //     } else {
-  //       toast({
-  //         title: "Payment Failed",
-  //         description: data.error || "Something went wrong. Please try again.",
-  //         variant: "destructive",
-  //       });
-  //       setProcessing(false);
-  //     }
-  //   } catch (_error) {
-  //     //     toast({
-  //       title: "Payment Error",
-  //       description: "Failed to initiate payment. Please try again later.",
-  //       variant: "destructive",
-  //     });
-  //     setProcessing(false);
-  //   }
-  // };
+    try {
+      await processPayment({
+        amount: isAnnual ? Math.floor(amount * 0.9) : amount, // 10% discount for annual
+        planType: planType.toLowerCase(),
+        planDuration: isAnnual ? "annual" : "monthly",
+        planName,
+        userId,
+        onSuccess: (response) => {
+          console.log("Payment successful:", response);
+          // Redirect to success page or dashboard
+          router.push("/dashboard?payment=success");
+        },
+        onError: (error) => {
+          console.error("Payment failed:", error);
+        },
+      });
+    } catch (error) {
+      console.error("Payment initiation error:", error);
+    }
+  };
   const demoPlans = [
     {
       name: "BASIC",
       price: "500",
-      yearlyPrice: "400",
+      yearlyPrice: "450",
       period: "per month",
       features: [
         "5 Listings ",
@@ -71,6 +62,7 @@ export default function Pricing() {
       buttonText: "Get Started",
       href: "/free",
       isPopular: false,
+      onPayment: () => handlePayment("basic", "Basic Plan", isAnnual ? 450 : 500),
     },
     {
       name: "PREMIUM",
@@ -88,6 +80,7 @@ export default function Pricing() {
       buttonText: "Get Started",
       href: "/free",
       isPopular: true,
+      onPayment: () => handlePayment("premium", "Premium Plan", isAnnual ? 900 : 1000),
     },
     {
       name: "OWNER PRO",
@@ -106,6 +99,7 @@ export default function Pricing() {
       buttonText: "Contact Sales",
       href: "/contact",
       isPopular: false,
+      onPayment: () => handlePayment("owner_pro", "Owner Pro Plan", isAnnual ? 1800 : 2000),
     },
   ];
   return (
@@ -116,10 +110,49 @@ export default function Pricing() {
         title1="Choose Your"
         title2="Premium Plan"
       />
+      
+      {/* Annual/Monthly Toggle */}
+      <section className="py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center mb-8">
+            <div className="bg-black/50 rounded-lg p-2 border border-orange-500/20">
+              <div className="flex items-center space-x-4">
+                <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-white' : 'text-gray-400'}`}>
+                  Monthly
+                </span>
+                <button
+                  onClick={() => setIsAnnual(!isAnnual)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-black ${
+                    isAnnual ? 'bg-orange-500' : 'bg-gray-600'
+                  }`}
+                  disabled={isProcessing}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isAnnual ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-white' : 'text-gray-400'}`}>
+                  Annual
+                </span>
+                {isAnnual && (
+                  <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                    Save 10%
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <PricingUI
         plans={demoPlans}
         title="Simple, Transparent Pricing"
         description="Choose the plan that works for you\nAll plans include access to our platform, lead generation tools, and dedicated support."
+        isAnnual={isAnnual}
+        isProcessing={isProcessing}
       />
       {/* Hero Section */}
 
@@ -494,22 +527,28 @@ export default function Pricing() {
                 Join thousands of satisfied users who&apos;ve upgraded to premium for
                 an enhanced real estate experience
               </p>
-              <button className="px-8 py-4 bg-white text-orange-500 font-semibold rounded-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center mx-auto" onClick={() => router.push("/free")}>
-                <span>Upgrade Now</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 ml-2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
-                  />
-                </svg>
+              <button 
+                className="px-8 py-4 bg-white text-orange-500 font-semibold rounded-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center mx-auto disabled:opacity-50 disabled:cursor-not-allowed" 
+                onClick={() => handlePayment("premium", "Premium Plan", isAnnual ? 900 : 1000)}
+                disabled={isProcessing}
+              >
+                <span>{isProcessing ? "Processing..." : "Upgrade Now"}</span>
+                {!isProcessing && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-5 h-5 ml-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
+                    />
+                  </svg>
+                )}
               </button>
             </div>
           </motion.div>

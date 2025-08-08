@@ -224,10 +224,10 @@ export function PropertyNewsSection() {
               className="block"
             >
               <div className="relative w-full h-48 mb-4">
-                <Image
+                <img
                   src={article.image}
                   alt={article.title}
-                  fill
+                  
                   className="object-cover"
                   onError={(e) => {
                     // If image fails to load, replace with fallback

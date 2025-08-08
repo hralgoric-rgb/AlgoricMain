@@ -4,7 +4,6 @@ import VerificationRequest from '@/app/models/VerificationRequest';
 import User from '@/app/models/User';
 import mongoose from 'mongoose';
 import { verifyToken } from '@/app/lib/utils';
-import Builder from '@/app/models/Builder';
 
 // POST /api/requests/:id/accept - Accept a verification request
 export async function POST(
@@ -101,32 +100,48 @@ export async function POST(
       console.log('User role updated to builder');
       
       if (verificationRequest.requestDetails) {
-        console.log('Creating builder with request details:', verificationRequest.requestDetails);
-        const builderData = {
-          title: verificationRequest.requestDetails.companyName || user.name,
-          image: verificationRequest.requestDetails.builderImage || user.image || 'https://via.placeholder.com/300x200',
-          logo: verificationRequest.requestDetails.logo || user.image || 'https://via.placeholder.com/100x100',
-          projects: 0,
-          description: verificationRequest.requestDetails.additionalInfo || `${user.name} is a verified builder on 100Gaj.`,
-          established: verificationRequest.requestDetails.established || 'N/A',
-          headquarters: verificationRequest.requestDetails.headquarters || 'N/A',
-          specialization: verificationRequest.requestDetails.specialization || 'General Construction',
+        console.log('Updating user with builder details:', verificationRequest.requestDetails);
+        
+        // Update builderInfo in the User model instead of creating separate Builder document
+        user.builderInfo = {
+          ...user.builderInfo,
+          verified: true,
+          companyName: verificationRequest.requestDetails.companyName,
+          licenseNumber: verificationRequest.requestDetails.licenseNumber,
+          reraId: verificationRequest.requestDetails.reraId,
+          established: verificationRequest.requestDetails.established,
+          experience: verificationRequest.requestDetails.experience,
+          specializations: verificationRequest.requestDetails.specializations || [],
+          completedProjects: 0,
+          ongoingProjects: 0,
           rating: 0,
-          completed: 0,
-          ongoing: 0,
-          contact: {
-            email: user.email,
-            phone: user.phone,
-          }
+          reviewCount: 0,
         };
         
-        console.log('Builder data prepared:', builderData);
+        // Add image to user profile if provided in verification request
+        if (verificationRequest.requestDetails.builderImage) {
+          user.image = verificationRequest.requestDetails.builderImage;
+        }
         
-        // Create a new builder document
-        const newBuilder = new Builder(builderData);
-        console.log('Builder instance created, attempting save...');
-        await newBuilder.save();
-        console.log('Builder saved successfully with ID:', newBuilder._id);
+        // Update bio if additional info provided
+        if (verificationRequest.requestDetails.additionalInfo) {
+          user.bio = verificationRequest.requestDetails.additionalInfo;
+        }
+        
+        console.log('Builder info updated in user document');
+      } else {
+        // If no request details, just mark as verified builder
+        if (!user.builderInfo) {
+          user.builderInfo = { 
+            verified: true,
+            completedProjects: 0,
+            ongoingProjects: 0,
+            rating: 0,
+            reviewCount: 0
+          };
+        } else {
+          user.builderInfo.verified = true;
+        }
       }
       
       // Save the user changes

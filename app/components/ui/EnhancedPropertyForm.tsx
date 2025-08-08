@@ -283,6 +283,7 @@ export default function EnhancedPropertyForm({
     
     // Step 4: Pricing & Media
     price: initialData?.price ? String(initialData.price) : "",
+    priceUnit: initialData?.price && initialData.price >= 10000000 ? "crore" : "lakh", // default to lakh
     priceNegotiable: initialData?.priceNegotiable || false,
     maintenanceCharges: initialData?.maintenanceCharges ? String(initialData.maintenanceCharges) : "",
     securityDeposit: initialData?.securityDeposit ? String(initialData.securityDeposit) : "",
@@ -334,7 +335,7 @@ export default function EnhancedPropertyForm({
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: type === 'number' ? parseFloat(value) || 0 : value,
+        [name]: type === 'number' ? value : value,
       }));
     }
   };
@@ -633,11 +634,19 @@ export default function EnhancedPropertyForm({
       
       const allImageUrls = [...formData.existingImages, ...newImageUrls];
       
+      // Calculate price based on unit
+      let priceNumber = parseFloat(formData.price);
+      if (formData.priceUnit === 'crore') {
+        priceNumber = priceNumber * 10000000;
+      } else {
+        priceNumber = priceNumber * 100000;
+      }
+
       // Prepare submission data
       const submissionData = {
         ...formData,
         images: allImageUrls,
-        price: parseFloat(formData.price),
+        price: priceNumber,
         area: parseFloat(formData.area),
         carpetArea: formData.carpetArea ? parseFloat(formData.carpetArea) : undefined,
         bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : undefined,
@@ -779,6 +788,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.listingType}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, listingType: value }))}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select listing type" />
@@ -795,6 +805,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.propertyType}
                         onValueChange={handlePropertyTypeChange}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select property type" />
@@ -841,6 +852,7 @@ export default function EnhancedPropertyForm({
                         <Select
                           value={formData.bedrooms}
                           onValueChange={(value) => setFormData(prev => ({ ...prev, bedrooms: value }))}
+                          required
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select BHK" />
@@ -861,6 +873,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.furnishing}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, furnishing: value }))}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select furnishing" />
@@ -882,6 +895,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.propertyAge}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, propertyAge: value }))}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select property age" />
@@ -901,6 +915,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.possessionStatus}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, possessionStatus: value }))}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select possession status" />
@@ -941,10 +956,11 @@ export default function EnhancedPropertyForm({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="address.city">City *</Label>
-                      <Select
-                        value={formData.address.city}
-                        onValueChange={(value) => handleNestedInputChange('address', 'city', value)}
-                      >
+                    <Select
+                      value={formData.address.city}
+                      onValueChange={(value) => handleNestedInputChange('address', 'city', value)}
+                      required
+                    >
                         <SelectTrigger>
                           <SelectValue placeholder="Select city" />
                         </SelectTrigger>
@@ -956,10 +972,11 @@ export default function EnhancedPropertyForm({
 
                     <div>
                       <Label htmlFor="address.locality">Locality/Sector *</Label>
-                      <Select
-                        value={formData.address.locality}
-                        onValueChange={(value) => handleNestedInputChange('address', 'locality', value)}
-                      >
+                    <Select
+                      value={formData.address.locality}
+                      onValueChange={(value) => handleNestedInputChange('address', 'locality', value)}
+                      required
+                    >
                         <SelectTrigger>
                           <SelectValue placeholder="Select locality" />
                         </SelectTrigger>
@@ -1104,6 +1121,7 @@ export default function EnhancedPropertyForm({
                         <Select
                           value={formData.bathrooms}
                           onValueChange={(value) => setFormData(prev => ({ ...prev, bathrooms: value }))}
+                          required
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select" />
@@ -1164,6 +1182,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.parking}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, parking: value }))}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select parking" />
@@ -1183,6 +1202,7 @@ export default function EnhancedPropertyForm({
                       <Select
                         value={formData.waterElectricity}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, waterElectricity: value }))}
+                        required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select availability" />
@@ -1256,15 +1276,30 @@ export default function EnhancedPropertyForm({
                       <Label htmlFor="price">
                         Expected {formData.listingType === 'rent' ? 'Rent' : 'Price'} *
                       </Label>
-                      <Input
-                        id="price"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        placeholder={formData.listingType === 'rent' ? "Monthly rent" : "Total amount"}
-                        type="number"
-                        required
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          id="price"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          placeholder={formData.listingType === 'rent' ? "Monthly rent" : "Total amount"}
+                          type="number"
+                          required
+                        />
+                        {formData.listingType === 'sale' && (
+                          <select
+                            className="bg-black border border-orange-500/30 text-white rounded px-2"
+                            value={formData.priceUnit}
+                            onChange={e => setFormData(prev => ({ ...prev, priceUnit: e.target.value }))}
+                          >
+                            <option value="lakh">Lakh</option>
+                            <option value="crore">Crore</option>
+                          </select>
+                        )}
+                        {formData.listingType === 'rent' && (
+                          <span className="text-gray-400 ml-2">per month</span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center space-x-2 pt-6">
@@ -1423,14 +1458,14 @@ export default function EnhancedPropertyForm({
 
                     <div>
                       <Label htmlFor="ownerDetails.phone">Phone Number *</Label>
-                      <Input
-                        id="ownerDetails.phone"
-                        name="ownerDetails.phone"
-                        value={formData.ownerDetails.phone}
-                        onChange={handleInputChange}
-                        placeholder="+91 9876543210"
-                        required
-                      />
+                    <Input
+                      id="ownerDetails.phone"
+                      name="ownerDetails.phone"
+                      value={formData.ownerDetails.phone}
+                      onChange={handleInputChange}
+                      placeholder="+91 9876543210"
+                      required
+                    />
                     </div>
                   </div>
 
