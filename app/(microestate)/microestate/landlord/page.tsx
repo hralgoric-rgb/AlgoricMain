@@ -1,91 +1,96 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Building, FileText, Mail, Plus, Home, User, CheckCircle, Inbox, Edit, Users, Calendar, CreditCard, Bell, Settings, Download, Trash2, Edit2, FileDown, AlertTriangle, TrendingUp, DollarSign, Clock, MapPin, Eye, BarChart3, Activity, Zap, Droplets, Wifi, Receipt, AlertCircle } from 'lucide-react';
+import { Building, FileText, Mail, Plus, Home, User, CheckCircle, Inbox, Edit, Users, Calendar, CreditCard, Bell, Settings, Download, Trash2, Edit2, FileDown, AlertTriangle, TrendingUp, DollarSign, Clock, MapPin, Eye, BarChart3, Activity, Zap, Droplets, Wifi, Receipt, AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Background from '../../_components/Background';
 import { useAuth } from '../../Context/AuthProvider';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
+import axios from 'axios';
 
 const leaseProgress = 0.6; // 60% complete
+
+// Define interfaces for API responses
+interface Property {
+  _id: string;
+  title: string;
+  rent: {
+    amount: number;
+    currency: string;
+    period: string;
+  };
+  status: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  createdAt: string;
+}
+
+interface Bill {
+  _id: string;
+  propertyId: {
+    _id: string;
+    title: string;
+  };
+  tenantId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
+  utilityType: string;
+  amount: number;
+  billingPeriod: {
+    start: string;
+    end: string;
+  };
+  dueDate: string;
+  status: string;
+  responsibleParty: string;
+  billDocument?: string;
+  notes: string;
+  paidDate?: string;
+}
+
+interface TenantData {
+  _id: string;
+  tenantId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
+  propertyId: {
+    _id: string;
+    title: string;
+  };
+  startDate: string;
+  endDate: string;
+  monthlyRent: number;
+  rentDueDate: number;
+  status: string;
+}
 
 export default function LandlordDashboard() {
   const { user } = useAuth();
   const [landlordName, setLandlordName] = useState('');
+  const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
-    totalProperties: 6,
-    monthlyIncome: 120000,
-    activeTenants: 12,
-    upcomingRentDue: 3,
+    totalProperties: 0,
+    monthlyIncome: 0,
+    activeTenants: 0,
+    upcomingRentDue: 0,
     leaseProgress: 60,
-    recentActivity: [
-      { type: 'payment', message: 'Rent received from Urban Loft', time: '2 hours ago', amount: '₹18,000' },
-      { type: 'inquiry', message: 'New inquiry for Family Home', time: '4 hours ago' },
-      { type: 'maintenance', message: 'Maintenance request resolved', time: '1 day ago' },
-      { type: 'tenant', message: 'New tenant moved in', time: '2 days ago' }
-    ]
   });
 
   // Utility Bills State
   const [utilityBills, setUtilityBills] = useState({
-    pending: [
-      { 
-        id: 1, 
-        tenantName: 'John Doe', 
-        property: 'Urban Loft', 
-        utilityType: 'electricity', 
-        amount: 2500, 
-        billingPeriod: { start: '2024-01-01', end: '2024-01-31' },
-        dueDate: '2024-02-15', 
-        responsibleParty: 'tenant',
-        billDocument: '',
-        notes: 'Monthly electricity bill'
-      },
-      { 
-        id: 2, 
-        tenantName: 'Jane Smith', 
-        property: 'Family Home', 
-        utilityType: 'water', 
-        amount: 800, 
-        billingPeriod: { start: '2024-01-01', end: '2024-01-31' },
-        dueDate: '2024-02-20', 
-        responsibleParty: 'landlord',
-        billDocument: '',
-        notes: 'Water bill for January'
-      }
-    ],
-    overdue: [
-      { 
-        id: 3, 
-        tenantName: 'Mike Johnson', 
-        property: 'City Apartment', 
-        utilityType: 'internet', 
-        amount: 1200, 
-        billingPeriod: { start: '2024-01-01', end: '2024-01-31' },
-        dueDate: '2024-02-10', 
-        responsibleParty: 'tenant',
-        billDocument: '',
-        notes: 'Internet service bill'
-      }
-    ],
-    paid: [
-      { 
-        id: 4, 
-        tenantName: 'Sarah Wilson', 
-        property: 'Garden Villa', 
-        utilityType: 'electricity', 
-        amount: 1800, 
-        billingPeriod: { start: '2023-12-01', end: '2023-12-31' },
-        dueDate: '2024-01-25', 
-        responsibleParty: 'tenant',
-        billDocument: '',
-        notes: 'December electricity bill',
-        paidDate: '2024-01-20',
-        status: 'paid'
-      }
-    ]
+    pending: [] as Bill[],
+    overdue: [] as Bill[],
+    paid: [] as Bill[]
   });
 
   const [showCreateBill, setShowCreateBill] = useState(false);
@@ -98,20 +103,113 @@ export default function LandlordDashboard() {
     billDocument: '',
     notes: ''
   });
+
+  // Fetch dashboard data on component mount
   useEffect(() => {
     if (user) {
       const firstName = user.name ? user.name.split(' ')[0] : 'User';
       setLandlordName(firstName);
+      fetchDashboardData();
     }
   }, [user]);
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'payment': return <DollarSign className="w-4 h-4 text-green-400" />;
-      case 'inquiry': return <Mail className="w-4 h-4 text-blue-400" />;
-      case 'maintenance': return <Settings className="w-4 h-4 text-orange-400" />;
-      case 'tenant': return <User className="w-4 h-4 text-purple-400" />;
-      default: return <Activity className="w-4 h-4 text-gray-400" />;
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch properties
+      const propertiesResponse = await axios.get('/microestate/api/properties');
+      const properties: Property[] = propertiesResponse.data.properties || [];
+      
+      // Calculate total properties
+      const totalProperties = properties.length;
+      
+      // Calculate monthly income from properties with active tenants
+      const rentedProperties = properties.filter(p => p.status === 'rented');
+      const monthlyIncome = rentedProperties.reduce((sum, property) => {
+        return sum + (property.rent?.amount || 0);
+      }, 0);
+      
+      // Fetch tenant data for each property to get active tenants and upcoming rent due
+      let activeTenants = 0;
+      let upcomingRentDue = 0;
+      const today = new Date();
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      for (const property of rentedProperties) {
+        try {
+          const tenantResponse = await axios.get(`/microestate/api/properties/${property._id}/tenant`);
+          const tenants: TenantData[] = tenantResponse.data.data || [];
+          
+          const activeTenantsForProperty = tenants.filter(t => t.status === 'active');
+          activeTenants += activeTenantsForProperty.length;
+          
+          // Check for upcoming rent due (rent due date within next 7 days)
+          activeTenantsForProperty.forEach(tenant => {
+            const rentDueDay = tenant.rentDueDate;
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            // Create rent due date for this month
+            const rentDueDate = new Date(currentYear, currentMonth, rentDueDay);
+            
+            // If rent due date has passed this month, check next month
+            if (rentDueDate < today) {
+              rentDueDate.setMonth(currentMonth + 1);
+            }
+            
+            // Check if rent is due within next 7 days
+            if (rentDueDate >= today && rentDueDate <= nextWeek) {
+              upcomingRentDue++;
+            }
+          });
+        } catch (error) {
+          console.log(`No tenants found for property ${property._id}`);
+        }
+      }
+      
+      setDashboardData({
+        totalProperties,
+        monthlyIncome,
+        activeTenants,
+        upcomingRentDue,
+        leaseProgress: 60 // Keep this static for now
+      });
+      
+      // Fetch bills data
+      await fetchBillsData();
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBillsData = async () => {
+    try {
+      // Fetch overdue bills
+      const overdueResponse = await axios.get('/microestate/api/bills/overdue');
+      const overdueBills: Bill[] = overdueResponse.data.bills || [];
+      
+      // For pending and paid bills, we'll need to create an endpoint or filter from all bills
+      // For now, we'll use empty arrays since there's no specific API for pending/paid bills
+      const pendingBills: Bill[] = [];
+      const paidBills: Bill[] = [];
+      
+      setUtilityBills({
+        pending: pendingBills,
+        overdue: overdueBills,
+        paid: paidBills
+      });
+    } catch (error) {
+      console.error('Error fetching bills data:', error);
+      // Set empty arrays on error
+      setUtilityBills({
+        pending: [],
+        overdue: [],
+        paid: []
+      });
     }
   };
 
@@ -149,8 +247,8 @@ export default function LandlordDashboard() {
         notes: newBill.notes
       };
 
-      // TODO: API call to create bill
-      console.log('Creating bill:', billData);
+      // API call to create bill
+      await axios.post('/microestate/api/bills', billData);
       
       // Reset form
       setShowCreateBill(false);
@@ -163,17 +261,25 @@ export default function LandlordDashboard() {
         billDocument: '',
         notes: ''
       });
+      
+      // Refresh bills data
+      await fetchBillsData();
     } catch (error) {
       console.error('Error creating bill:', error);
+      alert('Error creating bill. Please try again.');
     }
   };
 
-  const handleMarkAsPaid = async (billId: number) => {
+  const handleMarkAsPaid = async (billId: string) => {
     try {
-      // TODO: API call to mark bill as paid
-      console.log('Marking bill as paid:', billId);
+      // API call to mark bill as paid
+      await axios.post(`/microestate/api/bills/${billId}/mark-as-paid`);
+      
+      // Refresh bills data
+      await fetchBillsData();
     } catch (error) {
       console.error('Error marking bill as paid:', error);
+      alert('Error marking bill as paid. Please try again.');
     }
   };
 
@@ -205,7 +311,16 @@ export default function LandlordDashboard() {
         }
       `}</style>
       <Background />
-      <div className="container mx-auto py-10 mt-8 relative z-10">
+      
+      {loading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
+            <p className="text-white text-lg">Loading your dashboard...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto py-10 mt-8 relative z-10">
         {/* Welcome Header */}
         <motion.section className="mb-8" initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, type: 'spring' }}>
           <div className="flex items-center justify-between">
@@ -298,113 +413,35 @@ export default function LandlordDashboard() {
             </motion.div>
           ))}
         </section>
-        {/* Main Content Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
-          {/* Properties Overview */}
-          <div className="lg:col-span-2 bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Home className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
-                Recent Properties
-              </h2>
-              <Link href="/microestate/landlord/properties">
-                <Button variant="outline" className="border-transparent border-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 hover:bg-red-500 hover:text-white text-sm">
-                  View All
-                </Button>
-              </Link>
-            </div>
-            {/* Property overview cards section (replace the property cards with the correct structure) */}
-            <div className="space-y-4">
-              <div className="dashboard-gradient-card">
-                <div className="flex items-center justify-between p-4 bg-[#1a1a1f] rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                      <Building className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-semibold">Urban Loft</div>
-                      <div className="text-sm text-gray-400">₹18,000/month</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Occupied</span>
-                    <Button size="sm" variant="outline" className="border-transparent border-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 hover:bg-red-500 hover:text-white">
-                      <Eye className="w-4 h-4 text-white" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className="dashboard-gradient-card">
-                <div className="flex items-center justify-between p-4 bg-[#1a1a1f] rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                      <Building className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-semibold">Family Home</div>
-                      <div className="text-sm text-gray-400">₹35,000/month</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">Vacant</span>
-                    <Button size="sm" variant="outline" className="border-transparent border-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 hover:bg-red-500 hover:text-white">
-                      <Eye className="w-4 h-4 text-white" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Recent Activity */}
+        {/* Main Content Grid - Removed Recent Properties and Recent Activity sections */}
+        <section className="grid grid-cols-1 gap-8 animate-fadeIn">
+          {/* Lease Progress Section */}
           <div className="bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-6">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
-              Recent Activity
+              <Calendar className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
+              Lease Progress
             </h2>
-            <div className="space-y-4">
-              {dashboardData.recentActivity.map((activity, index) => (
-                <div key={index} className="dashboard-gradient-card">
-                  <div className="flex items-start gap-3 p-3 bg-[#1a1a1f] rounded-lg">
-                    {getActivityIcon(activity.type)}
-                    <div className="flex-1">
-                      <div className="text-sm text-white">{activity.message}</div>
-                      <div className="text-xs text-gray-400 mt-1">{activity.time}</div>
-                      {activity.amount && (
-                        <div className="text-xs text-green-400 mt-1">{activity.amount}</div>
-                      )}
-                    </div>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-2">{dashboardData.leaseProgress}%</div>
+                <div className="text-sm text-gray-400">Complete</div>
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between mb-2 text-sm text-gray-400">
+                  <span>Current Period</span>
+                  <span>Ends in 5 months</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        {/* Lease Progress Section */}
-        <section className="mt-8 bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-6 animate-fadeIn">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
-            Lease Progress
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white mb-2">{dashboardData.leaseProgress}%</div>
-              <div className="text-sm text-gray-400">Complete</div>
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between mb-2 text-sm text-gray-400">
-                <span>Current Period</span>
-                <span>Ends in 5 months</span>
+                <div className="w-full bg-gray-800 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-orange-400 to-red-600 h-3 rounded-full transition-all duration-700" 
+                    style={{ width: `${dashboardData.leaseProgress}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-orange-400 to-red-600 h-3 rounded-full transition-all duration-700" 
-                  style={{ width: `${dashboardData.leaseProgress}%` }}
-                ></div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white mb-2">₹{(dashboardData.monthlyIncome / Math.max(dashboardData.activeTenants, 1)).toLocaleString()}</div>
+                <div className="text-sm text-gray-400">Avg Monthly Rent</div>
               </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white mb-2">₹18,000</div>
-              <div className="text-sm text-gray-400">Monthly Rent</div>
             </div>
           </div>
         </section>
@@ -517,7 +554,7 @@ export default function LandlordDashboard() {
                <div className="space-y-4">
                  {utilityBills.pending.map((bill) => (
                    <motion.div 
-                     key={bill.id} 
+                     key={bill._id} 
                      className="bg-gradient-to-r from-yellow-500/5 to-orange-500/5 border border-yellow-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
                      whileHover={{ scale: 1.02, y: -2 }}
                    >
@@ -528,7 +565,9 @@ export default function LandlordDashboard() {
                          </div>
                          <div>
                            <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                           <div className="text-sm text-gray-400">
+                             {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                           </div>
                          </div>
                        </div>
                        <span className="text-xl font-bold text-yellow-400">₹{bill.amount.toLocaleString()}</span>
@@ -540,7 +579,7 @@ export default function LandlordDashboard() {
                      <div className="flex gap-3">
                        <Button 
                          size="sm" 
-                         onClick={() => handleMarkAsPaid(bill.id)}
+                         onClick={() => handleMarkAsPaid(bill._id)}
                          className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                        >
                          <CheckCircle className="w-4 h-4 mr-2" />
@@ -570,7 +609,7 @@ export default function LandlordDashboard() {
                <div className="space-y-4">
                  {utilityBills.overdue.map((bill) => (
                    <motion.div 
-                     key={bill.id} 
+                     key={bill._id} 
                      className="bg-gradient-to-r from-red-500/5 to-pink-500/5 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
                      whileHover={{ scale: 1.02, y: -2 }}
                    >
@@ -581,7 +620,9 @@ export default function LandlordDashboard() {
                          </div>
                          <div>
                            <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                           <div className="text-sm text-gray-400">
+                             {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
+                           </div>
                          </div>
                        </div>
                        <span className="text-xl font-bold text-red-400">₹{bill.amount.toLocaleString()}</span>
@@ -593,7 +634,7 @@ export default function LandlordDashboard() {
                      <div className="flex gap-3">
                        <Button 
                          size="sm" 
-                         onClick={() => handleMarkAsPaid(bill.id)}
+                         onClick={() => handleMarkAsPaid(bill._id)}
                          className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                        >
                          <CheckCircle className="w-4 h-4 mr-2" />
@@ -624,24 +665,26 @@ export default function LandlordDashboard() {
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                {utilityBills.paid.map((bill) => (
                  <motion.div 
-                   key={bill.id} 
+                   key={bill._id} 
                    className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border border-green-500/20 rounded-xl p-4 backdrop-blur-sm hover:shadow-lg transition-all duration-300 group"
                    whileHover={{ scale: 1.02, y: -2 }}
                  >
                    <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-3">
-                         <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
-                           {getUtilityIcon(bill.utilityType)}
-                         </div>
-                         <div>
-                           <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
-                           <div className="text-sm text-gray-400">{bill.tenantName} • {bill.property}</div>
+                     <div className="flex items-center gap-3">
+                       <div className="p-2 bg-green-500/20 rounded-lg group-hover:bg-green-500/30 transition-colors">
+                         {getUtilityIcon(bill.utilityType)}
+                       </div>
+                       <div>
+                         <span className="text-white font-semibold capitalize">{bill.utilityType}</span>
+                         <div className="text-sm text-gray-400">
+                           {bill.tenantId ? `${bill.tenantId.firstName} ${bill.tenantId.lastName}` : 'No tenant'} • {bill.propertyId ? bill.propertyId.title : 'No property'}
                          </div>
                        </div>
+                     </div>
                      <span className="text-xl font-bold text-green-400">₹{bill.amount.toLocaleString()}</span>
                    </div>
                    <div className="flex items-center justify-between text-sm">
-                     <span className="text-green-400 font-medium">Paid: {new Date(bill.paidDate!).toLocaleDateString()}</span>
+                     <span className="text-green-400 font-medium">Paid: {bill.paidDate ? new Date(bill.paidDate).toLocaleDateString() : new Date(bill.dueDate).toLocaleDateString()}</span>
                      <span className="text-gray-500 bg-gray-800/50 px-2 py-1 rounded-full text-xs capitalize">{bill.responsibleParty}</span>
                    </div>
                  </motion.div>
@@ -868,6 +911,7 @@ export default function LandlordDashboard() {
           </motion.div>
         )}
       </div>
+      )}
     </div>
   );
 } 

@@ -11,7 +11,6 @@ const navLinks = [
   { href: "/microestate/landlord", label: "Dashboard", icon: <Home className="w-4 h-4" /> },
   { href: "/microestate/landlord/properties", label: "Properties", icon: <Building className="w-4 h-4" /> },
   { href: "/microestate/landlord/tenants", label: "Tenants", icon: <Users className="w-4 h-4" /> },
-  { href: "/microestate/landlord/documents", label: "Documents", icon: <FileText className="w-4 h-4" /> },
 ];
 
 export default function LandlordNavbar() {

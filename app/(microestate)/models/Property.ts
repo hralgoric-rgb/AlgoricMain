@@ -325,6 +325,11 @@ propertySchema.methods.calculateMonthlyTotal = function(this: IProperty): number
   return total;
 };
 
+propertySchema.methods.getFullAddress = function(this: IProperty): string {
+  const { street, city, state, zipCode, country } = this.address;
+  return `${street}, ${city}, ${state} ${zipCode}, ${country}`;
+};
+
 
 
 propertySchema.methods.generateListingUrl = function(this: IProperty): string {

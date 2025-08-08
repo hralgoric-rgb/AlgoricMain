@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
-import { ArrowLeft, User, Home, Mail, Phone, Calendar, Save, DollarSign, Shield, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, User, Home, Mail, Phone, Calendar, Save, DollarSign, Shield, FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Background from '../../../../_components/Background';
+import axios from 'axios';
 
 export default function AddTenantPage() {
   const [formData, setFormData] = useState({
+    selectedProperty: '',
     tenantEmail: '',
     tenantFirstName: '',
     tenantLastName: '',
@@ -20,13 +22,32 @@ export default function AddTenantPage() {
     terms: ''
   });
   const [errors, setErrors] = useState<any>({});
-  const properties = [
-    { id: 1, name: 'Urban Loft' },
-    { id: 2, name: 'Family Home' }
-  ];
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Fetch properties on component mount
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/microestate/api/properties');
+      const availableProperties = response.data.properties?.filter((p: any) => p.status === 'available') || [];
+      setProperties(availableProperties);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      alert('Error loading properties. Please refresh the page.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const validate = () => {
     const newErrors: any = {};
+    if (!formData.selectedProperty) newErrors.selectedProperty = 'Property selection is required';
     if (!formData.tenantFirstName) newErrors.tenantFirstName = 'First name is required';
     if (!formData.tenantLastName) newErrors.tenantLastName = 'Last name is required';
     if (!formData.tenantEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.tenantEmail)) newErrors.tenantEmail = 'Valid email required';
@@ -37,6 +58,16 @@ export default function AddTenantPage() {
     if (!formData.securityDeposit || parseFloat(formData.securityDeposit) <= 0) newErrors.securityDeposit = 'Valid security deposit required';
     if (!formData.rentDueDate || parseInt(formData.rentDueDate) < 1 || parseInt(formData.rentDueDate) > 31) newErrors.rentDueDate = 'Valid rent due date required (1-31)';
     if (!formData.terms) newErrors.terms = 'Terms and conditions required';
+    if (formData.terms && formData.terms.length < 10) newErrors.terms = 'Terms must be at least 10 characters long';
+    
+    // Date validation
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+      if (endDate <= startDate) {
+        newErrors.endDate = 'End date must be after start date';
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -44,19 +75,73 @@ export default function AddTenantPage() {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-populate monthly rent when property is selected
+    if (field === 'selectedProperty' && value) {
+      const selectedProperty = properties.find(p => p._id === value);
+      if (selectedProperty && selectedProperty.rent?.amount) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          monthlyRent: selectedProperty.rent.amount.toString()
+        }));
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
       try {
-        // TODO: Submit new tenant data to API
-        const response =  await axios.post("/api/")
-        console.log('Submitting tenant data:', formData);
-        alert('Tenant added successfully!');
-      } catch (error) {
+        setSubmitting(true);
+        
+        // Prepare data for API call
+        const tenantData = {
+          tenantEmail: formData.tenantEmail,
+          tenantFirstName: formData.tenantFirstName,
+          tenantLastName: formData.tenantLastName,
+          tenantPhone: formData.tenantPhone,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          monthlyRent: parseFloat(formData.monthlyRent),
+          securityDeposit: parseFloat(formData.securityDeposit),
+          rentDueDate: parseInt(formData.rentDueDate),
+          terms: formData.terms
+        };
+
+        // Call the property-specific tenant API
+        const response = await axios.post(
+          `/microestate/api/properties/${formData.selectedProperty}/tenant`,
+          tenantData
+        );
+
+        if (response.data.success) {
+          alert('Tenant added successfully!');
+          // Reset form
+          setFormData({
+            selectedProperty: '',
+            tenantEmail: '',
+            tenantFirstName: '',
+            tenantLastName: '',
+            tenantPhone: '',
+            startDate: '',
+            endDate: '',
+            monthlyRent: '',
+            securityDeposit: '',
+            rentDueDate: '1',
+            terms: ''
+          });
+          // Refresh available properties
+          fetchProperties();
+        } else {
+          throw new Error(response.data.message || 'Failed to add tenant');
+        }
+      } catch (error: any) {
         console.error('Error adding tenant:', error);
-        alert('Error adding tenant. Please try again.');
+        const errorMessage = error.response?.data?.message || error.message || 'Error adding tenant. Please try again.';
+        alert(errorMessage);
+      } finally {
+        setSubmitting(false);
       }
     }
   };
@@ -83,7 +168,43 @@ export default function AddTenantPage() {
 
         {/* Add Tenant Form */}
         <section className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-8 animate-fadeIn">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 text-orange-500 animate-spin mr-3" />
+              <span className="text-white">Loading properties...</span>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Property Selection */}
+              <div className="border-b border-[#2a2a2f] pb-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <Home className="w-5 h-5 text-orange-500" />
+                  Property Selection
+                </h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Select Property *</label>
+                  {properties.length === 0 ? (
+                    <div className="w-full p-3 bg-[#1a1a1f] border border-red-500 rounded-xl text-red-400">
+                      No available properties found. Please add a property first or ensure you have properties with 'available' status.
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.selectedProperty}
+                      onChange={e => handleInputChange('selectedProperty', e.target.value)}
+                      className={`w-full p-3 bg-[#1a1a1f] border ${errors.selectedProperty ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white focus:outline-none focus:border-orange-500 transition-colors`}
+                    >
+                      <option value="">Select a property to assign tenant</option>
+                      {properties.map(property => (
+                        <option key={property._id} value={property._id}>
+                          {property.title} - ₹{property.rent?.amount?.toLocaleString() || 'N/A'}/month
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {errors.selectedProperty && <div className="text-red-400 text-xs mt-1">{errors.selectedProperty}</div>}
+                </div>
+              </div>
             {/* Tenant Personal Information */}
             <div className="border-b border-[#2a2a2f] pb-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -237,7 +358,7 @@ export default function AddTenantPage() {
                   onChange={e => handleInputChange('terms', e.target.value)}
                   rows={4}
                   className={`w-full p-3 bg-[#1a1a1f] border ${errors.terms ? 'border-red-500' : 'border-[#2a2a2f]'} rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors resize-none`}
-                  placeholder="Enter lease terms and conditions..."
+                  placeholder="Enter lease terms and conditions (minimum 10 characters)..."
                 />
                 {errors.terms && <div className="text-red-400 text-xs mt-1">{errors.terms}</div>}
               </div>
@@ -246,13 +367,24 @@ export default function AddTenantPage() {
             <div className="flex items-center justify-end mt-8 pt-6 border-t border-[#2a2a2f]">
               <Button
                 type="submit"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                disabled={submitting || properties.length === 0}
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save className="w-4 h-4 mr-2" />
-                Add Tenant
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Adding Tenant...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Add Tenant
+                  </>
+                )}
               </Button>
             </div>
           </form>
+          )}
         </section>
       </div>
     </div>

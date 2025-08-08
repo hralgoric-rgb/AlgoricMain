@@ -1,30 +1,85 @@
 import nodemailer from 'nodemailer';
 
 export async function sendEmail(to: string, subject: string, html: string) {
-  // Configure transporter (you should use environment variables for these values)
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_SERVER_HOST,
-    port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
-    secure: process.env.EMAIL_SERVER_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_SERVER_USER,
-      pass: process.env.EMAIL_SERVER_PASSWORD,
-    },
-  });
+  try {
+    console.log('📧 Attempting to send email to:', to);
+    console.log('📧 Email configuration check:', {
+      host: process.env.EMAIL_SERVER_HOST,
+      port: process.env.EMAIL_SERVER_PORT,
+      user: process.env.EMAIL_SERVER_USER ? '***configured***' : 'NOT SET',
+      pass: process.env.EMAIL_SERVER_PASSWORD ? '***configured***' : 'NOT SET',
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      secure: process.env.EMAIL_SERVER_SECURE === 'true'
+    });
 
-  
-  // Send email
-  const info = await transporter.sendMail({
-    from: `"Microestate 100GAJ Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+    // Validate required environment variables
+    if (!process.env.EMAIL_SERVER_HOST) {
+      throw new Error('EMAIL_SERVER_HOST environment variable is not set');
+    }
+    if (!process.env.EMAIL_SERVER_USER) {
+      throw new Error('EMAIL_SERVER_USER environment variable is not set');
+    }
+    if (!process.env.EMAIL_SERVER_PASSWORD) {
+      throw new Error('EMAIL_SERVER_PASSWORD environment variable is not set');
+    }
 
-  return info;
+    // Configure transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_SERVER_HOST,
+      port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
+      secure: process.env.EMAIL_SERVER_SECURE === 'true', // true for 465, false for other ports
+      auth: {
+        user: process.env.EMAIL_SERVER_USER,
+        pass: process.env.EMAIL_SERVER_PASSWORD,
+      },
+      // Add these options for better compatibility
+      tls: {
+        rejectUnauthorized: false // Allow self-signed certificates
+      }
+    });
+
+    // Verify SMTP connection
+    console.log('📧 Verifying SMTP connection...');
+    await transporter.verify();
+    console.log('✅ SMTP connection verified successfully');
+    
+    // Send email
+    console.log('📧 Sending email...');
+    const info = await transporter.sendMail({
+      from: `"Microestate 100GAJ Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER}>`,
+      to,
+      subject,
+      html,
+    });
+
+    console.log('✅ Email sent successfully:', {
+      messageId: info.messageId,
+      response: info.response,
+      to: to
+    });
+
+    return info;
+  } catch (error) {
+    console.error('❌ Email sending failed:', error);
+    
+    // Log specific error types
+    if (error instanceof Error) {
+      const nodeMailerError = error as any;
+      if (nodeMailerError.code === 'EAUTH') {
+        console.error('❌ Authentication failed - check EMAIL_SERVER_USER and EMAIL_SERVER_PASSWORD');
+      } else if (nodeMailerError.code === 'ECONNECTION') {
+        console.error('❌ Connection failed - check EMAIL_SERVER_HOST and EMAIL_SERVER_PORT');
+      } else if (nodeMailerError.code === 'ESOCKET') {
+        console.error('❌ Socket error - check network connection and firewall');
+      }
+    }
+    
+    throw error; // Re-throw to let caller handle
+  }
 }
 
 export function getTenantWelcomeEmailTemplate(data: {
+  tenantEmail?: string;
   tenantName: string;
   password: string;
   propertyTitle: string;
@@ -269,7 +324,7 @@ export function getTenantWelcomeEmailTemplate(data: {
             </div>
             <div class="property-item">
               <span class="property-label">Monthly Rent:</span>
-              <span class="property-value" style="color: #15803d; font-weight: bold;">$${monthlyRent.toLocaleString()}</span>
+              <span class="property-value" style="color: #15803d; font-weight: bold;">₹${monthlyRent.toLocaleString()}</span>
             </div>
             <div class="property-item">
               <span class="property-label">Lease Start Date:</span>

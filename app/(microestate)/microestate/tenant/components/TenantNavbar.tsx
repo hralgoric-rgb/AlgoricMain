@@ -9,7 +9,6 @@ import { signOut } from "next-auth/react";
 const navLinks = [
   { href: "/microestate/tenant/", label: "Dashboard", icon: <Home className="w-4 h-4" /> },
   { href: "/microestate/tenant/payments", label: "Payments", icon: <CreditCard className="w-4 h-4" /> },
-  { href: "/microestate/tenant/documents", label: "Documents", icon: <FileText className="w-4 h-4" /> },
   { href: "/microestate/tenant/profile", label: "Profile", icon: <User className="w-4 h-4" /> },
 ];
 
