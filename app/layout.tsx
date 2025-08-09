@@ -19,8 +19,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Settle - Premium Real Estate Platform",
-  description: "Housing Services for Everyone - Find your perfect property with Settle's premium real estate platform",
+  title: "Algoric - AI-Powered Real Estate Platform | Find Your Dream Property",
+  description: "Discover your perfect property with Settle's AI-powered real estate platform. Explore verified listings, virtual tours, smart tools, and connect with top agents and premium builders across India.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   robots: 'index, follow',
   authors: [{ name: 'Settle Team' }],
-  keywords: 'real estate, properties, housing, buy, sell, rent, luxury homes',
+  keywords: 'real estate, AI property search, virtual tours, property listings, real estate agents, builders, Delhi properties, Mumbai properties, Gurgaon properties, buy property, sell property, rent property, property investment, smart home integration, property price prediction',
 };
 
 export const viewport: Viewport = {
