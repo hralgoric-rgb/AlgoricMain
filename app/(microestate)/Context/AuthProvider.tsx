@@ -168,10 +168,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Clear microauth cookie
     try {
       await fetch('/microestate/api/auth/clear-microauth', {
-        method: 'POST',
-        credentials: 'include',
+      method: 'POST',
+      credentials: 'include',
       });
       console.log("✅ Microauth cookie cleared");
+      // Redirect to main page only after clearing the cookie
+      return; // Prevents double redirect below
     } catch (error) {
       console.warn("⚠️ Error clearing microauth cookie:", error);
     }
@@ -182,8 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Dispatch a custom event to notify other components
     window.dispatchEvent(new CustomEvent("userLogout"));
 
-    // Redirect to login
-    router.push("/microestate/auth");
+    
   };
 
   const value = {

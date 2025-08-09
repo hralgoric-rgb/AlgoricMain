@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Building, LogOut } from 'lucide-react';
+import { Building, LogOut, Home } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../Context/AuthProvider';
@@ -33,6 +33,16 @@ function Navbar() {
                 
                 {/* Right side buttons */}
                 <div className="flex items-center gap-3">
+                    {/* Home button - always visible */}
+                    <Button
+                        variant="outline"
+                        className="h-10 px-4 text-sm border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200 flex items-center gap-2"
+                        onClick={() => router.push("/")}
+                    >
+                        <Home className="w-4 h-4" />
+                        Home
+                    </Button>
+
                     {user ? (
                         // Show logout button and user info when authenticated
                         <>

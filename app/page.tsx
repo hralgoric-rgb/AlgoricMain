@@ -1,6 +1,7 @@
 "use client";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
+import ServicesSidebar from "./components/ServicesSidebar";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
@@ -351,6 +352,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white overflow-y-hidden">
       <Navbar />
+      <ServicesSidebar />
       <SubNavbar items={navItems} />
       {/* Mobile Navigation Dots - Alternative to SubNavbar on mobile */}
       {/* <div className="fixed bottom-4 left-0 right-0 z-40 flex justify-center md:hidden">

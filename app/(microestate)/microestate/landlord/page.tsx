@@ -480,10 +480,7 @@ export default function LandlordDashboard() {
                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded bg-black/80 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-lg">Add a new property</span>
                 </motion.div>
               </Link>
-              <Button variant="outline" className="border-transparent border-gradient-to-r from-orange-500 to-red-500 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 hover:bg-red-500 hover:text-white font-semibold rounded-xl px-6 py-3 transition-all duration-300 hover:scale-105">
-                <BarChart3 className="w-4 h-4 mr-2 text-orange-500" />
-                View Reports
-              </Button>
+              
             </div>
           </div>
         </motion.section>

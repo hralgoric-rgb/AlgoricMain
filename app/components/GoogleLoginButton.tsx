@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 export default function GoogleLoginButton() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/equity";
+  const redirect = searchParams.get("redirect") || "/";
 
   const handleCredentialResponse = async (response: any) => {
   try {
@@ -28,7 +28,7 @@ export default function GoogleLoginButton() {
     document.cookie = `authToken=${authToken}; path=/;`;
     toast.success("Successfully logged in!");
     setTimeout(() => {
-      window.location.href = redirect;
+      window.location.reload();
     }, 1000);
   } catch (_error) {
     toast.error("Login failed. Try again.");

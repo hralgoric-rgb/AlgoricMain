@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, FileText, CreditCard, User, Menu, Users, Building } from "lucide-react";
+import { Home, FileText, CreditCard, User, Menu, Users, Building, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "next-auth/react";
 
@@ -75,6 +75,16 @@ export default function LandlordNavbar() {
           })}
         </div>
         <div className="flex items-center gap-4">
+          {/* Microestate Home Button */}
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-400/40 text-orange-400 hover:bg-orange-500/20 hover:border-orange-400 transition-all duration-200 font-medium"
+            onClick={() => router.push("/microestate")}
+            aria-label="Go to Microestate Home"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden md:inline">Microestate</span>
+          </button>
+          
           {/* Avatar with tooltip */}
           <div className="relative group">
             <button
