@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Home, FileText, CreditCard, User, Menu, Users, Building, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/microestate/landlord", label: "Dashboard", icon: <Home className="w-4 h-4" /> },
@@ -53,7 +54,15 @@ export default function LandlordNavbar() {
           <button className="lg:hidden flex-shrink-0" onClick={() => setDrawerOpen(!drawerOpen)} aria-label="Open menu">
             <Menu className="w-6 h-6 sm:w-7 sm:h-7 text-orange-400" />
           </button>
-          <span className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-lg truncate">Microestate</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Image 
+              src="/logoSettle.png" 
+              alt="Settle Logo" 
+              width={56} 
+              height={56}
+              className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain flex-shrink-0"
+            />
+          </div>
           <span className="ml-1 sm:ml-3 text-xs sm:text-sm font-semibold text-orange-200 bg-orange-500/10 px-2 sm:px-3 py-1 rounded-lg hidden md:inline whitespace-nowrap">Landlord Portal</span>
         </div>
         <div className="hidden lg:flex gap-2 xl:gap-4 ml-4 xl:ml-8 items-center">
@@ -75,14 +84,14 @@ export default function LandlordNavbar() {
           })}
         </div>
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          {/* Microestate Home Button */}
+          {/* Settle Home Button */}
           <button
             className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 lg:px-4 py-2 rounded-full bg-orange-500/10 border border-orange-400/40 text-orange-400 hover:bg-orange-500/20 hover:border-orange-400 transition-all duration-200 font-medium text-xs sm:text-sm lg:text-base"
             onClick={() => router.push("/microestate")}
-            aria-label="Go to Microestate Home"
+            aria-label="Go to Settle Home"
           >
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Microestate</span>
+            <span className="hidden sm:inline">Settle</span>
           </button>
           
           {/* Avatar with tooltip */}

@@ -276,7 +276,7 @@ function Page() {
 
                             <p className="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-12 leading-relaxed px-2">
                                 Join thousands of landlords and tenants who trust{" "}
-                                <span className="text-orange-400 font-semibold">MicroEstate</span>{" "}
+                                <span className="text-orange-400 font-semibold">Settle</span>{" "}
                                 for their property management needs.
                             </p>
 

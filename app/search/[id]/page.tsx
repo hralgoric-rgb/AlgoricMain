@@ -1803,13 +1803,13 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                       {property.address?.city}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <span className="text-xs bg-black/5 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-medium">
                         {property.bedrooms} Beds
                       </span>
-                      <span className="text-xs bg-black/5 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-medium">
                         {property.bathrooms} Baths
                       </span>
-                      <span className="text-xs bg-black/5 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full font-medium">
                         {property.area} sqft
                       </span>
                     </div>

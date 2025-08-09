@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import AuthProvider from '../Context/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'Microestate Dashboard | 100गज',
+  title: 'Settle Dashboard | 100गज',
   description: 'Manage properties, listings, and insights.',
 };
 

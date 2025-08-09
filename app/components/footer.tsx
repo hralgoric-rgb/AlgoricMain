@@ -200,7 +200,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/legal"
+                  href="/privacy-policy"
                   className="hover:text-beige transition-all duration-300 inline-block"
                 >
                   Privacy Policy
@@ -208,7 +208,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/legal"
+                  href="/terms-of-service"
                   className="hover:text-beige transition-all duration-300 inline-block"
                 >
                   Terms of Service
@@ -242,11 +242,11 @@ export default function Footer() {
                   />
                 </svg>
                 <span className="group-hover:text-beige transition-all duration-300">
-                  S.No. 123, IT Park, Hinjewadi Phase 1,
+                  SN-259/3/2/2, PN-47, KALWAD NR OLD
                   <br />
-                  Pune, Maharashtra 411057
+                  Airport (Pune), Pune City,
                   <br />
-                  India
+                  Pune- 411032, Maharashtra
                 </span>
               </li>
               <li className="flex items-start group">

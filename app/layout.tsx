@@ -19,13 +19,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Algoric - Premium Real Estate Platform",
-  description: "Housing Services for Everyone - Find your perfect property with Algoric's premium real estate platform",
+  title: "Settle - Premium Real Estate Platform",
+  description: "Housing Services for Everyone - Find your perfect property with Settle's premium real estate platform",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/tabIcon.png", sizes: "1024x1024", type: "image/png" }
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/tabIcon.png",
   },
   robots: 'index, follow',
-  authors: [{ name: 'Algoric Team' }],
+  authors: [{ name: 'Settle Team' }],
   keywords: 'real estate, properties, housing, buy, sell, rent, luxury homes',
 };
 

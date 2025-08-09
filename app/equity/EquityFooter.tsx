@@ -58,8 +58,8 @@ export default function EquityFooter() {
             <ul className="space-y-3">
               <li><Link href="/equity/contact" className="hover:text-[#B6FF3F] transition-all duration-300 inline-block">Contact Us</Link></li>
               <li><Link href="/equity/faq" className="hover:text-[#B6FF3F] transition-all duration-300 inline-block">FAQ</Link></li>
-              <li><Link href="/equity/legal" className="hover:text-[#B6FF3F] transition-all duration-300 inline-block">Privacy Policy</Link></li>
-              <li><Link href="/equity/legal" className="hover:text-[#B6FF3F] transition-all duration-300 inline-block">Terms of Service</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-[#B6FF3F] transition-all duration-300 inline-block">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-[#B6FF3F] transition-all duration-300 inline-block">Terms of Service</Link></li>
             </ul>
           </div>
 
@@ -85,11 +85,12 @@ export default function EquityFooter() {
                   />
                   <circle cx="12" cy="9" r="2.5" />
                 </svg>
-                <span className="group-hover:text-[#B6FF3F] transition-all duration-300">
-                  S.No. 123, IT Park,<br />
-                  Hinjewadi Phase 1,<br />
-                  Pune, Maharashtra 411057<br />
-                  India
+                <span className="group-hover:text-beige transition-all duration-300">
+                  SN-259/3/2/2, PN-47, KALWAD NR OLD
+                  <br />
+                  Airport (Pune), Pune City,
+                  <br />
+                  Pune- 411032, Maharashtra
                 </span>
               </li>
 

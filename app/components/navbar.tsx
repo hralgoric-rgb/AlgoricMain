@@ -820,11 +820,11 @@ export default function Navbar() {
             </div>
             <div className="flex items-center pl-52">
               <Link href="/" className="flex items-center group mr-16">
-                <div className="h-16 w-18 flex items-center justify-center text-white font-bold text-xs transition-all duration-300">
+                <div className="h-16 w-18 flex items-center justify-center text-white font-bold text-xs transition-all duration-300 bg-transparent">
                   <Image
                     src={`/logoF.png`}
                     alt="Algoric"
-                    className="object-contain"
+                    className="object-contain bg-transparent"
                     width={72}
                     height={36}
                     style={{ width: "auto", height: "100%" }}
@@ -909,11 +909,11 @@ export default function Navbar() {
           {/* Mobile menu button */}
           <div className="custom:hidden flex items-center justify-between py-2">
             <Link href="/" className="flex items-center">
-              <div className="h-10 w-12 flex items-center justify-center text-white">
+              <div className="h-10 w-12 flex items-center justify-center text-white bg-transparent">
                 <Image
                   src={`/logoF.png`}
                   alt="Algoric"
-                  className="object-contain"
+                  className="object-contain bg-transparent"
                   width={48}
                   height={24}
                   style={{ width: "auto", height: "100%" }}

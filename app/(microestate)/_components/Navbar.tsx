@@ -5,6 +5,7 @@ import { Building, LogOut, Home } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../Context/AuthProvider';
+import Image from 'next/image';
 
 function Navbar() {
     const router = useRouter();
@@ -25,10 +26,15 @@ function Navbar() {
             <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
                 {/* Logo */}
                 <div className="flex items-center space-x-2 sm:space-x-4 mr-4 sm:mr-8">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25">
-                        <Building className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center">
+                        <Image 
+                            src="/logoSettle.png" 
+                            alt="Settle Logo" 
+                            width={64} 
+                            height={64}
+                            className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                        />
                     </div>
-                    <span className="text-lg sm:text-2xl font-bold text-white tracking-wide">microestate</span>
                 </div>
                 
                 {/* Right side buttons */}

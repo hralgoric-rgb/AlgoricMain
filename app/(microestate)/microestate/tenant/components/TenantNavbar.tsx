@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, FileText, CreditCard, User, Menu, QrCode, ArrowLeft } from "lucide-react";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/microestate/tenant/", label: "Dashboard", icon: <Home className="w-4 h-4" /> },
@@ -51,7 +52,15 @@ export default function TenantNavbar() {
           <button className="lg:hidden" onClick={() => setDrawerOpen(!drawerOpen)} aria-label="Open menu">
             <Menu className="w-7 h-7 text-orange-400" />
           </button>
-          <span className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-500 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-lg">Microestate</span>
+          <div className="flex items-center gap-3">
+            <Image 
+              src="/logoSettle.png" 
+              alt="Settle Logo" 
+              width={56} 
+              height={56}
+              className="w-12 h-12 md:w-14 md:h-14 object-contain"
+            />
+          </div>
           <span className="ml-3 text-sm font-semibold text-orange-200 bg-orange-500/10 px-3 py-1 rounded-lg hidden md:inline">Tenant Portal</span>
         </div>
         <div className="hidden lg:flex gap-4 ml-8 items-center">
@@ -73,14 +82,14 @@ export default function TenantNavbar() {
           })}
         </div>
         <div className="flex items-center gap-4">
-          {/* Microestate Home Button */}
+          {/* Settle Home Button */}
           <button
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-400/40 text-orange-400 hover:bg-orange-500/20 hover:border-orange-400 transition-all duration-200 font-medium"
             onClick={() => router.push("/microestate")}
-            aria-label="Go to Microestate Home"
+            aria-label="Go to Settle Home"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden md:inline">Microestate</span>
+            <span className="hidden md:inline">Settle</span>
           </button>
           
           {/* Avatar with tooltip */}
