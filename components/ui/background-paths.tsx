@@ -653,7 +653,7 @@ export function BackgroundPaths() {
   const firstPartWords = ["Find", "your"];
   const highlightWord = "Perfect";
   const secondPartWords = ["Home", "with"];
-  const brandNameWords = ["Algo", "ric"];
+  const brandNameWords = ["ALGORIC"];
 
   // Calculate delays for animations
   const firstPartDelay = 0;
