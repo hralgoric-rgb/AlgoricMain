@@ -195,11 +195,11 @@ export default function PropertyListingPage() {
 
       {/* Main Content */}
       <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 xl:px-12 py-4 sm:py-8">
           {/* Header */}
-          <div className="mb-8 text-center">
+          <div className="mb-6 sm:mb-8 text-center">
             <motion.h1
-              className="text-4xl sm:text-5xl font-bold text-white mb-4"
+              className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-4"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -210,21 +210,22 @@ export default function PropertyListingPage() {
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-8 relative overflow-hidden group max-w-6xl mx-auto">
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6 border border-gray-800/50 mb-6 sm:mb-8 relative overflow-hidden group max-w-6xl mx-auto">
             {/* Search Bar */}
-            <div className="relative z-10 mb-6">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative z-10 mb-4 sm:mb-6">
+              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <input
                 type="text"
-                placeholder="Search properties by name, location, or type..."
+                placeholder="Search properties..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-black/40 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-300"
+                className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-black/40 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-300 text-sm sm:text-base"
               />
             </div>
 
             {/* Filter Tabs */}
-            <div className="relative z-10 flex flex-wrap gap-2 mb-6">
+            <div className="relative z-10 mb-4 sm:mb-6 overflow-x-auto">
+              <div className="flex gap-2 pb-2 min-w-max sm:min-w-0 sm:flex-wrap">
               {propertyTypes.map((type, index) => (
                 <button
                   key={type.value}
@@ -239,10 +240,11 @@ export default function PropertyListingPage() {
                   {type.label}
                 </button>
               ))}
+              </div>
             </div>
 
             {/* Advanced Filters */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
               {/* Risk Level */}
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -251,7 +253,7 @@ export default function PropertyListingPage() {
                 <select
                   value={selectedRisk}
                   onChange={(e) => setSelectedRisk(e.target.value)}
-                  className="w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-black/40 border border-gray-700 rounded-lg px-2 sm:px-3 py-2 text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                 >
                   {riskLevels.map((risk) => (
                     <option key={risk.value} value={risk.value}>
@@ -269,7 +271,7 @@ export default function PropertyListingPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-black/40 border border-gray-700 rounded-lg px-2 sm:px-3 py-2 text-white focus:outline-none focus:border-purple-500 text-sm sm:text-base"
                 >
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -285,82 +287,18 @@ export default function PropertyListingPage() {
                   Results
                 </label>
                 <div className="flex items-center justify-center h-10 bg-black/40 border border-gray-700 rounded-lg text-white">
-                  <span className="text-sm font-medium">
+                  <span className="text-xs sm:text-sm font-medium">
                     {filteredProperties.length} Properties
                   </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Price and Yield Range Sliders */}
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Price per Share: ₹{priceRange[0].toLocaleString()} - ₹
-                  {priceRange[1].toLocaleString()}
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="0"
-                    max="10000"
-                    step="100"
-                    value={priceRange[0]}
-                    onChange={(e) =>
-                      setPriceRange([parseInt(e.target.value), priceRange[1]])
-                    }
-                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max="10000"
-                    step="100"
-                    value={priceRange[1]}
-                    onChange={(e) =>
-                      setPriceRange([priceRange[0], parseInt(e.target.value)])
-                    }
-                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Current Yield: {yieldRange[0]}% - {yieldRange[1]}%
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="0"
-                    max="15"
-                    step="0.5"
-                    value={yieldRange[0]}
-                    onChange={(e) =>
-                      setYieldRange([parseFloat(e.target.value), yieldRange[1]])
-                    }
-                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <input
-                    type="range"
-                    min="0"
-                    max="15"
-                    step="0.5"
-                    value={yieldRange[1]}
-                    onChange={(e) =>
-                      setYieldRange([yieldRange[0], parseFloat(e.target.value)])
-                    }
-                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                  />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Properties Grid */}
-          <div className="relative z-10 max-w-7xl mx-auto px-4">
+          <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-4">
             {filteredProperties.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                 {filteredProperties.map((property, index) => {
                   const glowColors = [
                     "rgba(249, 115, 22, 0.3)", // orange

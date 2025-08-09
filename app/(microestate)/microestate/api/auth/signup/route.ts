@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
     const phone = formData.get('phone') as string;
     const role = formData.get('role') as 'landlord' | 'tenant';
     
-    const profileImage = formData.get('profileImage') as File | null;
     const qrCode = formData.get('qrCode') as File | null;
 
     console.log('📝 Received signup data:', {
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
       email,
       phone,
       role,
-      hasProfileImage: !!profileImage,
       hasQrCode: !!qrCode
     });
 
@@ -74,18 +72,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle profile image upload
-    let profileImageUrl: string | undefined;
-    if (profileImage) {
-      try {
-        profileImageUrl = await uploadToImageKit(profileImage);
-      } catch (uploadError) {
-        console.warn('Profile image upload failed:', uploadError);
-        // Continue without profile image upload
-      }
-    }
-
-
      // Generate verification code
     const verificationCode = generateVerificationCode();
     const verificationTokenExpiry = new Date();
@@ -103,7 +89,6 @@ export async function POST(request: NextRequest) {
       emailVerified: false,
       verificationToken: verificationCode,
       verificationTokenExpiry,
-      ...(profileImageUrl && { profileImage: profileImageUrl }),
       ...(qrCodeUrl && { qrCode: qrCodeUrl }),
     });
 

@@ -193,6 +193,146 @@ body {
   transform-style: preserve-3d;
 }
 
+/* Mobile responsiveness improvements */
+@layer utilities {
+  /* Custom mobile breakpoints */
+  .xs\:inline {
+    @media (min-width: 475px) {
+      display: inline;
+    }
+  }
+  
+  /* Better text sizing for mobile */
+  .text-mobile-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-mobile-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-mobile-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-mobile-2xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .text-mobile-3xl {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  /* Better padding for mobile */
+  .p-mobile-safe {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  .px-mobile-safe {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .py-mobile-safe {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+  
+  /* Better gaps for mobile */
+  .gap-mobile {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  /* Mobile touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Prevent horizontal scroll on mobile */
+  .mobile-safe {
+    @apply max-w-full overflow-x-hidden;
+  }
+  
+  /* Better grid layouts for mobile */
+  .grid-mobile-1 {
+    @apply grid-cols-1;
+  }
+  
+  .grid-mobile-2 {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+  
+  .grid-mobile-3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .grid-mobile-4 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+  
+  /* Ensure no content exceeds viewport */
+  * {
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+  
+  /* Better button sizing on mobile */
+  button, .btn {
+    @apply min-h-[44px] touch-target;
+  }
+  
+  /* Better form elements on mobile */
+  input, select, textarea {
+    @apply min-h-[44px] text-base; /* Prevents zoom on iOS */
+  }
+  
+  /* Better spacing on mobile */
+  .space-y-4 > * + * {
+    @apply mt-3;
+  }
+  
+  .space-y-6 > * + * {
+    @apply mt-4;
+  }
+  
+  .space-y-8 > * + * {
+    @apply mt-6;
+  }
+}
+
+/* Tablet specific */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container {
+    @apply px-6;
+  }
+}
+
+/* Prevent layout shift */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply overflow-x-hidden;
+  }
+  
+  /* Ensure images don't break layout */
+  img {
+    @apply max-w-full h-auto;
+  }
+  
+  /* Better focus styles for mobile */
+  *:focus {
+    @apply outline-2 outline-offset-2;
+  }
+}
+
 /* Hide scrollbar but maintain functionality */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
@@ -387,4 +527,65 @@ body {
 
 .animate-slideIn {
   animation: slideIn 0.4s ease-out;
+}
+
+/* Mobile responsive utilities */
+@media (min-width: 475px) {
+  .xs\:inline {
+    display: inline;
+  }
+  .xs\:hidden {
+    display: none;
+  }
+}
+
+@media (max-width: 474px) {
+  .xs\:inline {
+    display: none;
+  }
+  .xs\:hidden {
+    display: inline;
+  }
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 640px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Ensure cards don't overflow */
+  .card-container {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Better text wrapping */
+  .text-wrap {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  /* Touch-friendly button sizes */
+  .btn-touch {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better image responsiveness */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Ensure no horizontal scroll */
+  .property-detail-container {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 }

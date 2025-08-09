@@ -71,11 +71,11 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <div
-      className="relative bg-purple-400/20 backdrop-blur-md rounded-3xl border border-[#a78bfa] transition-all duration-500 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#a78bfa] hover:shadow-[0_0_16px_4px_#a78bfa99,0_0_40px_8px_#a78bfa33] hover:border-[#a78bfa] hover:bg-[#a78bfa11] focus:bg-[#a78bfa11] active:shadow-[0_0_32px_8px_#a78bfaee,0_0_60px_16px_#a78bfa55] active:border-[#a78bfa]"
+      className="relative bg-purple-400/20 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-[#a78bfa] transition-all duration-500 overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#a78bfa] hover:shadow-[0_0_16px_4px_#a78bfa99,0_0_40px_8px_#a78bfa33] hover:border-[#a78bfa] hover:bg-[#a78bfa11] focus:bg-[#a78bfa11] active:shadow-[0_0_32px_8px_#a78bfaee,0_0_60px_16px_#a78bfa55] active:border-[#a78bfa] w-full"
       tabIndex={0}
     >
       {/* Enhanced Property Image */}
-      <div className="relative h-52 bg-gradient-to-br from-gray-800/50 to-gray-900/50 overflow-hidden">
+      <div className="relative h-40 sm:h-48 md:h-52 bg-gradient-to-br from-gray-800/50 to-gray-900/50 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent z-10" />
 
         {/* Animated background pattern */}
@@ -97,43 +97,43 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         />
 
         {/* Enhanced AI Score Badge */}
-        <div className="absolute top-4 left-4 z-20">
+        <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-20">
           <div
-            className={`px-3 py-2 rounded-xl text-xs font-bold backdrop-blur-md border border-[#B6FF3F] text-[#B6FF3F] bg-transparent`}
+            className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs font-bold backdrop-blur-md border border-[#B6FF3F] text-[#B6FF3F] bg-transparent`}
           >
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               className="inline-block mr-1"
             >
-              <Zap className="w-3 h-3" />
+              <Zap className="w-2 h-2 sm:w-3 sm:h-3" />
             </motion.div>
             AI Score: {property.aiScore}
           </div>
         </div>
 
         {/* Enhanced Risk Level Badge */}
-        <div className="absolute top-4 right-4 z-20">
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-20">
           <div
-            className={`px-3 py-2 rounded-xl text-xs font-bold backdrop-blur-md border ${getRiskColor(
+            className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs font-bold backdrop-blur-md border ${getRiskColor(
               property.riskLevel
             )}`}
           >
-            <Shield className="w-3 h-3 inline mr-1" />
+            <Shield className="w-2 h-2 sm:w-3 sm:h-3 inline mr-1" />
             {property.riskLevel} Risk
           </div>
         </div>
 
         {/* Enhanced Property Type */}
-        <div className="absolute bottom-4 left-4 z-20">
-          <div className="px-3 py-2 rounded-xl text-xs font-bold bg-black/60 backdrop-blur-md text-white border border-white/20">
-            <Building2 className="w-3 h-3 inline mr-1" />
+        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-20">
+          <div className="px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs font-bold bg-black/60 backdrop-blur-md text-white border border-white/20">
+            <Building2 className="w-2 h-2 sm:w-3 sm:h-3 inline mr-1" />
             {property.propertyType}
           </div>
         </div>
 
         {/* Enhanced property image placeholder */}
-        <div className="relative w-full h-60 rounded-2xl overflow-hidden">
+        <div className="relative w-full h-full rounded-2xl overflow-hidden">
           {property.images && property.images.length > 0 ? (
             <Image
               src={property.images[0] || "/images/placeholder-property.jpg"}
@@ -144,11 +144,11 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           ) : (
             // Enhanced placeholder UI
             <div className="w-full h-full flex items-center justify-center relative bg-gradient-to-br from-orange-500/20 to-red-500/20">
-              <div className="w-20 h-20 flex items-center justify-center rounded-2xl bg-purple-400/80 shadow-lg shadow-purple-400/30 backdrop-blur-md">
-                <Building2 className="w-12 h-12 text-white" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-2xl bg-purple-400/80 shadow-lg shadow-purple-400/30 backdrop-blur-md">
+                <Building2 className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
               </div>
-              <div className="absolute top-4 right-8">
-                <Sparkles className="w-4 h-4 text-yellow-400/60" />
+              <div className="absolute top-4 right-6 sm:right-8">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400/60" />
               </div>
             </div>
           )}
@@ -156,31 +156,31 @@ export default function PropertyCard({ property }: PropertyCardProps) {
       </div>
 
       {/* Enhanced Property Details */}
-      <div className="p-6 relative">
+      <div className="p-3 sm:p-4 md:p-6 relative">
         {/* Header */}
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-white mb-2">
+        <div className="mb-3 sm:mb-4 md:mb-6">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-2 line-clamp-2">
             {property.title}
           </h3>
-          <div className="flex items-center text-gray-400 text-sm mb-3">
-            <MapPin className="w-4 h-4 mr-1" />
-            {property.location}
+          <div className="flex items-center text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2 md:mb-3">
+            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+            <span className="truncate">{property.location}</span>
           </div>
-          <p className="text-gray-300 text-sm line-clamp-2 leading-relaxed">
+          <p className="text-gray-300 text-xs sm:text-sm line-clamp-2 leading-relaxed">
             {property.description}
           </p>
         </div>
 
         {/* Enhanced Key Metrics */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10 transition-all duration-300">
-            <div className="text-2xl font-bold text-[#B6FF3F] mb-1">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-6">
+          <div className="bg-black/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 border border-white/10 transition-all duration-300">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#B6FF3F] mb-1">
               {property.currentYield}%
             </div>
             <div className="text-xs text-gray-400">Current Yield</div>
           </div>
-          <div className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-white/10 transition-all duration-300">
-            <div className="text-2xl font-bold text-[#B6FF3F] mb-1">
+          <div className="bg-black/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 border border-white/10 transition-all duration-300">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold text-[#B6FF3F] mb-1">
               {/* For now, this is static data. It will be generated by the ML team later. */}
               {/* +{property.predictedAppreciation}% */}+ 12.3%
             </div>
@@ -189,17 +189,17 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
 
         {/* Enhanced Share Information */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm text-gray-400">Available Shares</span>
-            <span className="text-sm font-semibold text-white">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex justify-between items-center mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm text-gray-400">Available Shares</span>
+            <span className="text-xs sm:text-sm font-semibold text-white">
               {property.availableShares.toLocaleString()} /{" "}
               {property.totalShares.toLocaleString()}
             </span>
           </div>
 
           {/* Enhanced Progress Bar */}
-          <div className="relative w-full bg-gray-800/50 backdrop-blur-sm rounded-full h-3 mb-3 overflow-hidden border border-white/10">
+          <div className="relative w-full bg-gray-800/50 backdrop-blur-sm rounded-full h-2 sm:h-3 mb-2 sm:mb-3 overflow-hidden border border-white/10">
             <div
               className="bg-[#B6FF3F] h-full rounded-full relative overflow-hidden"
               style={{ width: `${sharesAvailablePercentage}%` }}
@@ -208,32 +208,32 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             </div>
           </div>
 
-          <div className="text-xs text-gray-400 mb-4">
+          <div className="text-xs text-gray-400 mb-3 sm:mb-4">
             {sharesAvailablePercentage.toFixed(1)}% shares available
           </div>
 
           {/* Enhanced Price per Share */}
-          <div className="flex justify-between items-center mb-4 p-3 bg-purple-400/30 text-white rounded-xl border border-purple-400/40">
-            <span className="text-sm text-white">Price per Share</span>
-            <span className="text-xl font-bold text-white">
+          <div className="flex justify-between items-center mb-3 sm:mb-4 p-2 sm:p-3 bg-purple-400/30 text-white rounded-lg sm:rounded-xl border border-purple-400/40">
+            <span className="text-xs sm:text-sm text-white">Price per Share</span>
+            <span className="text-base sm:text-lg md:text-xl font-bold text-white">
               ₹{property.pricePerShare.toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Enhanced Features */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <div className="flex flex-wrap gap-2">
             {property?.features?.slice(0, 3).map((feature, index) => (
               <span
                 key={index}
-                className="text-xs px-3 py-1 bg-white/10 backdrop-blur-sm text-white rounded-full border border-white/20"
+                className="text-xs px-2 sm:px-3 py-1 bg-white/10 backdrop-blur-sm text-white rounded-full border border-white/20"
               >
                 {feature}
               </span>
             ))}
             {property?.features?.length > 3 && (
-              <span className="text-xs px-3 py-1 bg-[#a78bfa] text-white rounded-full border border-[#a78bfa]">
+              <span className="text-xs px-2 sm:px-3 py-1 bg-[#a78bfa] text-white rounded-full border border-[#a78bfa]">
                 +1 more
               </span>
             )}
@@ -241,16 +241,16 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
 
         {/* Enhanced Additional Metrics */}
-        <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-6 text-sm">
           <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-[#a78bfa]">
-            <span className="text-white">Occupancy</span>
-            <span className="text-white font-semibold">
+            <span className="text-white text-xs sm:text-sm">Occupancy</span>
+            <span className="text-white font-semibold text-xs sm:text-sm">
               {property.currentOccupancy}%
             </span>
           </div>
           <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-[#a78bfa]">
-            <span className="text-white">Monthly Income</span>
-            <span className="text-green-400 font-semibold">
+            <span className="text-white text-xs sm:text-sm">Monthly Income</span>
+            <span className="text-green-400 font-semibold text-xs sm:text-sm">
               ₹
               {property.monthlyRental
                 ? (Number(property.monthlyRental) / 12).toLocaleString()
@@ -260,16 +260,17 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
 
         {/* Enhanced Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Link href={`/equity/property/${property.id}`} className="flex-1">
-            <Button className="w-full bg-[#B6FF3F] hover:bg-[#d1ff4a] text-black font-semibold py-3 rounded-xl shadow-lg transition-all duration-300">
-              <Eye className="w-4 h-4 mr-2" />
-              View Details
-              <ArrowUpRight className="w-4 h-4 ml-2" />
+            <Button className="w-full bg-[#B6FF3F] hover:bg-[#d1ff4a] text-black font-semibold py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg transition-all duration-300 text-xs sm:text-sm md:text-base">
+              <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">View Details</span>
+              <span className="xs:hidden">View</span>
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
             </Button>
           </Link>
-          <Button className="rounded-xl bg-[#B6FF3F] text-white font-semibold px-4 py-3 shadow-md border-none hover:shadow-[0_0_16px_2px_#B6FF3F] transition-all duration-300">
-            <Target className="w-4 h-4 text-white" />
+          <Button className="rounded-lg sm:rounded-xl bg-[#B6FF3F] text-white font-semibold px-2 sm:px-3 md:px-4 py-2 sm:py-3 shadow-md border-none hover:shadow-[0_0_16px_2px_#B6FF3F] transition-all duration-300">
+            <Target className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </Button>
         </div>
       </div>

@@ -308,23 +308,23 @@ export default function PortfolioPage() {
 
 				<EquityNavigation />
 
-				<div className='container mx-auto px-4 py-8 pt-24 relative z-10 flex items-center justify-center min-h-[calc(100vh-6rem)]'>
+				<div className='container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-20 sm:pt-24 relative z-10 flex items-center justify-center min-h-[calc(100vh-6rem)]'>
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='max-w-md mx-auto text-center'
+						className='max-w-sm sm:max-w-md mx-auto text-center'
 					>
-						<div className='backdrop-blur-xl bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl'>
-							<Shield className='w-16 h-16 text-purple-400 mx-auto mb-4' />
-							<h1 className='text-3xl font-bold text-white mb-4 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent'>
+						<div className='backdrop-blur-xl bg-white/5 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl'>
+							<Shield className='w-12 h-12 sm:w-16 sm:h-16 text-purple-400 mx-auto mb-3 sm:mb-4' />
+							<h1 className='text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent'>
 								Authentication Required
 							</h1>
-							<p className='text-purple-200 mb-6'>
+							<p className='text-purple-200 mb-4 sm:mb-6 text-sm sm:text-base'>
 								Please sign in to access your portfolio dashboard
 							</p>
 							<Button
 								onClick={() => setShowAuthModal(true)}
-								className='backdrop-blur-xl bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 text-white px-6 py-3 rounded-xl border border-white/20 transition-all duration-300 shadow-lg shadow-purple-500/25'
+								className='backdrop-blur-xl bg-gradient-to-r from-purple-600/80 to-blue-600/80 hover:from-purple-500/90 hover:to-blue-500/90 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-white/20 transition-all duration-300 shadow-lg shadow-purple-500/25 text-sm sm:text-base'
 							>
 								Sign In
 							</Button>
@@ -350,35 +350,35 @@ export default function PortfolioPage() {
 			<EquityNavigation />
 
 			{/* Header */}
-			<div className='bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800 pt-20'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+			<div className='bg-gradient-to-r from-black via-gray-900 to-black border-b border-gray-800 pt-16 sm:pt-20'>
+				<div className='max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8'>
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='flex items-center justify-between'
+						className='flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-0'
 					>
-						<div>
-							<h1 className='text-4xl font-bold text-white mb-2'>
+						<div className='w-full lg:w-auto'>
+							<h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2'>
 								My Portfolio
 								<span className='text-orange-500 ml-2'>Dashboard</span>
 							</h1>
-							<p className='text-gray-300 text-lg'>
+							<p className='text-gray-300 text-sm sm:text-base lg:text-lg'>
 								Track your commercial real estate investments and performance
 							</p>
 						</div>
-						<div className='flex items-center gap-3'>
+						<div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full lg:w-auto'>
 							<Button
 								variant='outline'
-								className='border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white'
+								className='border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white text-sm sm:text-base px-3 sm:px-4 py-2'
 							>
-								<Download className='w-4 h-4 mr-2' />
+								<Download className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
 								Export Report
 							</Button>
 							<Button
 								variant='outline'
-								className='border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white'
+								className='border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white text-sm sm:text-base px-3 sm:px-4 py-2'
 							>
-								<Share2 className='w-4 h-4 mr-2' />
+								<Share2 className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
 								Share Portfolio
 							</Button>
 						</div>
@@ -386,13 +386,13 @@ export default function PortfolioPage() {
 				</div>
 			</div>
 
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+			<div className='max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8'>
 				{/* Portfolio Summary */}
 				{portfolioMetrics && (
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='mb-8'
+						className='mb-6 sm:mb-8'
 					>
 						<PortfolioSummary portfolio={portfolioMetrics} />
 					</motion.div>
@@ -403,18 +403,18 @@ export default function PortfolioPage() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.2 }}
-					className='bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8'
+					className='bg-gray-900/50 backdrop-blur-sm rounded-xl p-3 sm:p-4 lg:p-6 border border-gray-800 mb-6 sm:mb-8'
 				>
-					<div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
+					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6'>
 						{/* Filter */}
-						<div>
-							<label className='block text-sm font-medium text-gray-400 mb-2'>
+						<div className='sm:col-span-2 lg:col-span-1'>
+							<label className='block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2'>
 								Filter Properties
 							</label>
 							<select
 								value={selectedFilter}
 								onChange={(e) => setSelectedFilter(e.target.value)}
-								className='w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500'
+								className='w-full bg-black/40 border border-gray-700 rounded-lg px-2 sm:px-3 py-2 text-white text-sm sm:text-base focus:outline-none focus:border-orange-500'
 							>
 								{filterOptions.map((option) => (
 									<option key={option.value} value={option.value}>
@@ -425,14 +425,14 @@ export default function PortfolioPage() {
 						</div>
 
 						{/* Sort */}
-						<div>
-							<label className='block text-sm font-medium text-gray-400 mb-2'>
+						<div className='sm:col-span-2 lg:col-span-1'>
+							<label className='block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2'>
 								Sort By
 							</label>
 							<select
 								value={sortBy}
 								onChange={(e) => setSortBy(e.target.value)}
-								className='w-full bg-black/40 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500'
+								className='w-full bg-black/40 border border-gray-700 rounded-lg px-2 sm:px-3 py-2 text-white text-sm sm:text-base focus:outline-none focus:border-orange-500'
 							>
 								{sortOptions.map((option) => (
 									<option key={option.value} value={option.value}>
@@ -443,45 +443,46 @@ export default function PortfolioPage() {
 						</div>
 
 						{/* View Mode */}
-						<div>
-							<label className='block text-sm font-medium text-gray-400 mb-2'>
+						<div className='sm:col-span-1 lg:col-span-1'>
+							<label className='block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2'>
 								View Mode
 							</label>
-							<div className='flex gap-2'>
+							<div className='flex gap-1 sm:gap-2'>
 								<button
 									onClick={() => setViewMode("grid")}
-									className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+									className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
 										viewMode === "grid"
 											? "bg-orange-500 text-white"
 											: "bg-gray-800 text-gray-300 hover:bg-gray-700"
 									}`}
 								>
-									<Grid3X3 className='w-4 h-4' />
-									Grid
+									<Grid3X3 className='w-3 h-3 sm:w-4 sm:h-4' />
+									<span className='hidden xs:inline'>Grid</span>
 								</button>
 								<button
 									onClick={() => setViewMode("list")}
-									className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+									className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
 										viewMode === "list"
 											? "bg-orange-500 text-white"
 											: "bg-gray-800 text-gray-300 hover:bg-gray-700"
 									}`}
 								>
-									<List className='w-4 h-4' />
-									List
+									<List className='w-3 h-3 sm:w-4 sm:h-4' />
+									<span className='hidden xs:inline'>List</span>
 								</button>
 							</div>
 						</div>
 
 						{/* Add Investment */}
-						<div>
-							<label className='block text-sm font-medium text-gray-400 mb-2'>
+						<div className='sm:col-span-1 lg:col-span-1'>
+							<label className='block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2'>
 								Actions
 							</label>
 							<Link href='/equity/property'>
-								<Button className='w-full bg-orange-500 hover:bg-orange-600 text-white'>
-									<Plus className='w-4 h-4 mr-2' />
-									Add Investment
+								<Button className='w-full bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm px-2 sm:px-3 py-2'>
+									<Plus className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
+									<span className='hidden xs:inline'>Add Investment</span>
+									<span className='xs:hidden'>Add</span>
 								</Button>
 							</Link>
 						</div>
@@ -494,8 +495,8 @@ export default function PortfolioPage() {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.3 }}
 				>
-					<div className='flex items-center justify-between mb-6'>
-						<h2 className='text-2xl font-bold text-white'>
+					<div className='flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-0'>
+						<h2 className='text-xl sm:text-2xl font-bold text-white'>
 							Your Properties
 							<span className='text-orange-500 ml-2'>
 								({filteredProperties.length})
@@ -505,9 +506,9 @@ export default function PortfolioPage() {
 
 					{filteredProperties.length > 0 ? (
 						<div
-							className={`grid gap-6 ${
+							className={`grid gap-4 sm:gap-6 ${
 								viewMode === "grid"
-									? "md:grid-cols-2 lg:grid-cols-3"
+									? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
 									: "grid-cols-1"
 							}`}
 						>
@@ -522,19 +523,19 @@ export default function PortfolioPage() {
 										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: index * 0.1 }}
-										className='bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 hover:border-orange-500/50 transition-all duration-300 p-6'
+										className='bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 hover:border-orange-500/50 transition-all duration-300 p-4 sm:p-6'
 									>
 										{/* Header */}
-										<div className='flex items-start justify-between mb-4'>
-											<div>
-												<h3 className='text-lg font-bold text-white mb-1'>
+										<div className='flex items-start justify-between mb-3 sm:mb-4'>
+											<div className='min-w-0 flex-1 mr-3'>
+												<h3 className='text-base sm:text-lg font-bold text-white mb-1 break-words'>
 													{property.name || "Unnamed Property"}
 												</h3>
-												<div className='text-sm text-gray-400'>
+												<div className='text-xs sm:text-sm text-gray-400 break-words'>
 													{property.location || "Location not specified"}
 												</div>
 											</div>
-											<div className='flex items-center gap-2'>
+											<div className='flex items-center gap-2 flex-shrink-0'>
 												<div
 													className={`px-2 py-1 rounded-full text-xs font-bold ${getRiskColor(
 														property.riskLevel
@@ -546,18 +547,18 @@ export default function PortfolioPage() {
 										</div>
 
 										{/* Investment Details */}
-										<div className='grid grid-cols-2 gap-4 mb-4'>
-											<div className='bg-black/40 rounded-lg p-3'>
-												<div className='text-xl font-bold text-white mb-1'>
+										<div className='grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4'>
+											<div className='bg-black/40 rounded-lg p-2 sm:p-3'>
+												<div className='text-lg sm:text-xl font-bold text-white mb-1 break-all'>
 													₹{property.currentValue.toLocaleString()}
 												</div>
 												<div className='text-xs text-gray-400'>
 													Current Value
 												</div>
 											</div>
-											<div className='bg-black/40 rounded-lg p-3'>
+											<div className='bg-black/40 rounded-lg p-2 sm:p-3'>
 												<div
-													className={`text-xl font-bold mb-1 ${getPerformanceColor(
+													className={`text-lg sm:text-xl font-bold mb-1 ${getPerformanceColor(
 														property.performance
 													)}`}
 												>
@@ -569,17 +570,17 @@ export default function PortfolioPage() {
 										</div>
 
 										{/* Shares Info */}
-										<div className='mb-4'>
+										<div className='mb-3 sm:mb-4'>
 											<div className='flex justify-between items-center mb-2'>
-												<span className='text-sm text-gray-400'>
+												<span className='text-xs sm:text-sm text-gray-400'>
 													Shares Owned
 												</span>
-												<span className='text-sm font-semibold text-white'>
+												<span className='text-xs sm:text-sm font-semibold text-white break-all'>
 													{property.sharesOwned} /{" "}
 													{property.totalShares.toLocaleString()}
 												</span>
 											</div>
-											<div className='text-sm text-gray-400 mb-2'>
+											<div className='text-xs sm:text-sm text-gray-400 mb-2'>
 												Ownership:{" "}
 												{property.totalShares > 0
 													? (
@@ -592,23 +593,23 @@ export default function PortfolioPage() {
 										</div>
 
 										{/* Performance Metrics */}
-										<div className='grid grid-cols-2 gap-4 mb-4 text-sm'>
-											<div className='flex items-center justify-between'>
+										<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4 text-xs sm:text-sm'>
+											<div className='flex items-center justify-between bg-black/20 rounded-lg p-2'>
 												<span className='text-gray-400'>Monthly Income</span>
-												<span className='text-green-400 font-semibold'>
+												<span className='text-green-400 font-semibold break-all'>
 													₹{property.monthlyIncome.toLocaleString()}
 												</span>
 											</div>
-											<div className='flex items-center justify-between'>
+											<div className='flex items-center justify-between bg-black/20 rounded-lg p-2'>
 												<span className='text-gray-400'>Current Yield</span>
 												<span className='text-orange-400 font-semibold'>
 													{property.currentYield}%
 												</span>
 											</div>
-											<div className='flex items-center justify-between'>
+											<div className='flex items-center justify-between bg-black/20 rounded-lg p-2'>
 												<span className='text-gray-400'>Total Returns</span>
 												<span
-													className={`font-semibold ${getPerformanceColor(
+													className={`font-semibold break-all ${getPerformanceColor(
 														property.performance
 													)}`}
 												>
@@ -616,7 +617,7 @@ export default function PortfolioPage() {
 													{property.totalReturns.toLocaleString()}
 												</span>
 											</div>
-											<div className='flex items-center justify-between'>
+											<div className='flex items-center justify-between bg-black/20 rounded-lg p-2'>
 												<span className='text-gray-400'>AI Score</span>
 												<span className='text-purple-400 font-semibold'>
 													{property.aiScore}
@@ -625,32 +626,32 @@ export default function PortfolioPage() {
 										</div>
 
 										{/* Action Buttons */}
-										<div className='flex gap-2'>
+										<div className='flex flex-col sm:flex-row gap-2'>
 											<Link
 												href={`/equity/property/${property.id}`}
 												className='flex-1'
 											>
 												<Button
 													size='sm'
-													className='w-full bg-orange-500 hover:bg-orange-600 text-white'
+													className='w-full bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm py-2'
 												>
-													<Eye className='w-4 h-4 mr-2' />
+													<Eye className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
 													View Details
 												</Button>
 											</Link>
 											<Button
 												size='sm'
 												variant='outline'
-												className='border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white'
+												className='border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white sm:w-auto w-full'
 											>
-												<BarChart3 className='w-4 h-4' />
+												<BarChart3 className='w-3 h-3 sm:w-4 sm:h-4' />
 											</Button>
 										</div>
 
 										{/* Performance Indicator */}
-										<div className='mt-4 flex items-center gap-2 text-sm'>
+										<div className='mt-3 sm:mt-4 flex items-center gap-2 text-xs sm:text-sm'>
 											<PerformanceIcon
-												className={`w-4 h-4 ${getPerformanceColor(
+												className={`w-3 h-3 sm:w-4 sm:h-4 ${getPerformanceColor(
 													property.performance
 												)}`}
 											/>
@@ -667,29 +668,29 @@ export default function PortfolioPage() {
 							})}
 						</div>
 					) : (
-						<div className='text-center py-12'>
-							<Target className='w-16 h-16 text-gray-600 mx-auto mb-4' />
-							<h3 className='text-xl font-semibold text-white mb-2'>
+						<div className='text-center py-8 sm:py-12'>
+							<Target className='w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-3 sm:mb-4' />
+							<h3 className='text-lg sm:text-xl font-semibold text-white mb-2'>
 								{selectedFilter === "all"
 									? "No properties in your portfolio"
 									: "No properties match your filter"}
 							</h3>
-							<p className='text-gray-400 mb-6'>
+							<p className='text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base px-4'>
 								{selectedFilter === "all"
 									? "Start building your portfolio by adding your first property investment."
 									: "Try adjusting your filter criteria to see more properties."}
 							</p>
 							{selectedFilter === "all" ? (
 								<Link href='/equity/property'>
-									<Button className='bg-orange-500 hover:bg-orange-600 text-white'>
-										<Plus className='w-4 h-4 mr-2' />
+									<Button className='bg-orange-500 hover:bg-orange-600 text-white text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3'>
+										<Plus className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
 										Browse Properties
 									</Button>
 								</Link>
 							) : (
 								<Button
 									onClick={() => setSelectedFilter("all")}
-									className='bg-orange-500 hover:bg-orange-600 text-white'
+									className='bg-orange-500 hover:bg-orange-600 text-white text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3'
 								>
 									Show All Properties
 								</Button>
@@ -703,34 +704,34 @@ export default function PortfolioPage() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.5 }}
-					className='mt-12 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-6 border border-purple-500/20'
+					className='mt-8 sm:mt-12 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-4 sm:p-6 border border-purple-500/20'
 				>
-					<div className='flex items-center gap-3 mb-4'>
-						<div className='w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center'>
-							<Zap className='w-5 h-5 text-purple-400' />
+					<div className='flex items-center gap-3 mb-3 sm:mb-4'>
+						<div className='w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-500/20 flex items-center justify-center'>
+							<Zap className='w-4 h-4 sm:w-5 sm:h-5 text-purple-400' />
 						</div>
-						<h3 className='text-xl font-bold text-white'>Portfolio Insights</h3>
+						<h3 className='text-lg sm:text-xl font-bold text-white'>Portfolio Insights</h3>
 					</div>
 
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+					<div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6'>
 						<div>
-							<h4 className='text-lg font-semibold text-white mb-3'>
+							<h4 className='text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3'>
 								Performance Summary
 							</h4>
-							<div className='space-y-2 text-sm'>
-								<div className='flex justify-between'>
+							<div className='space-y-2 text-xs sm:text-sm'>
+								<div className='flex justify-between items-center'>
 									<span className='text-gray-400'>Best Performer:</span>
-									<span className='text-green-400 font-semibold'>
+									<span className='text-green-400 font-semibold break-all text-right ml-2'>
 										{portfolioMetrics?.bestPerformer}
 									</span>
 								</div>
-								<div className='flex justify-between'>
+								<div className='flex justify-between items-center'>
 									<span className='text-gray-400'>Worst Performer:</span>
-									<span className='text-red-400 font-semibold'>
+									<span className='text-red-400 font-semibold break-all text-right ml-2'>
 										{portfolioMetrics?.worstPerformer}
 									</span>
 								</div>
-								<div className='flex justify-between'>
+								<div className='flex justify-between items-center'>
 									<span className='text-gray-400'>Average Yield:</span>
 									<span className='text-orange-400 font-semibold'>
 										{portfolioMetrics?.averageYield.toFixed(1)}%
@@ -740,10 +741,10 @@ export default function PortfolioPage() {
 						</div>
 
 						<div>
-							<h4 className='text-lg font-semibold text-white mb-3'>
+							<h4 className='text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3'>
 								AI Recommendations
 							</h4>
-							<div className='text-sm text-gray-300'>
+							<div className='text-xs sm:text-sm text-gray-300 leading-relaxed'>
 								Consider rebalancing your portfolio by reducing retail exposure
 								and increasing data center investments for better risk-adjusted
 								returns.

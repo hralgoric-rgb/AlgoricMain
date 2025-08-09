@@ -111,32 +111,32 @@ export default function EquityNavigation() {
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex items-center justify-between h-16'>
 						{/* Logo */}
-						<div className='flex items-center'>
+						<div className='flex items-center flex-shrink-0'>
 							<div className='w-8 h-8 bg-[#a78bfa] rounded-lg flex items-center justify-center mr-3'>
 								<Building2 className='w-5 h-5 text-white' />
 							</div>
 							<div className='flex flex-col'>
-								<span className='text-white font-bold text-lg'>Algoric</span>
-								<span className='text-gray-300 text-xs'>Equity Platform</span>
+								<span className='text-white font-bold text-base sm:text-lg'>Algoric</span>
+								<span className='text-gray-300 text-xs hidden sm:block'>Equity Platform</span>
 							</div>
 						</div>
 
 						{/* Desktop Navigation Links */}
-						<div className='hidden md:flex items-center space-x-8'>
+						<div className='hidden md:flex items-center space-x-4 lg:space-x-8'>
 							{navItems.map((item) => {
 								const isActive = pathname === item.href;
 								return (
 									<Link
 										key={item.href}
 										href={item.href}
-										className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+										className={`flex items-center space-x-2 px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 ${
 											isActive
 												? "bg-[#a78bfa] text-white"
 												: "text-gray-300 hover:text-white hover:bg-[#a78bfa]/20 hover:border hover:border-[#a78bfa]/30"
 										}`}
 									>
 										<item.icon className='w-4 h-4' />
-										<span className='font-medium'>{item.label}</span>
+										<span className='font-medium text-sm lg:text-base'>{item.label}</span>
 									</Link>
 								);
 							})}
@@ -144,14 +144,14 @@ export default function EquityNavigation() {
 							{isAuthenticated ? (
 								<Link
 									href='/equity/property/post-dashboard'
-									className='ml-4 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium'
+									className='ml-2 lg:ml-4 px-3 lg:px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium text-sm lg:text-base'
 								>
 									<span>Post Property</span>
 								</Link>
 							) : (
 								<button
 									onClick={() => setShowAuth(true)}
-									className='ml-4 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium'
+									className='ml-2 lg:ml-4 px-3 lg:px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium text-sm lg:text-base'
 								>
 									<span>Post Property</span>
 								</button>
@@ -160,7 +160,7 @@ export default function EquityNavigation() {
 							{isAuthenticated && kycStatus !== "accepted" && !loading && (
 								<Link
 									href='/equity/kyc'
-									className='ml-4 px-4 py-2 rounded-lg bg-gradient-to-r from-[#a78bfa] to-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium shadow-md hover:from-purple-500 hover:to-purple-800'
+									className='ml-2 lg:ml-4 px-3 lg:px-4 py-2 rounded-lg bg-gradient-to-r from-[#a78bfa] to-purple-700 text-white border border-purple-400 transition-all duration-300 flex items-center gap-2 font-medium shadow-md hover:from-purple-500 hover:to-purple-800 text-sm lg:text-base'
 								>
 									<span>KYC</span>
 								</Link>
@@ -171,14 +171,14 @@ export default function EquityNavigation() {
 						{/* Mobile Menu Button */}
 						<div className='md:hidden'>
 							<button
-								className='text-white p-2'
+								className='text-white p-2 rounded-lg hover:bg-white/10 transition-colors'
 								onClick={() => setMobileOpen(!mobileOpen)}
 								aria-label='Toggle menu'
 							>
 								{mobileOpen ? (
-									<X className='w-6 h-6' />
+									<X className='w-5 h-5' />
 								) : (
-									<Menu className='w-6 h-6' />
+									<Menu className='w-5 h-5' />
 								)}
 							</button>
 						</div>
@@ -191,9 +191,9 @@ export default function EquityNavigation() {
 						initial={{ opacity: 0, height: 0 }}
 						animate={{ opacity: 1, height: "auto" }}
 						exit={{ opacity: 0, height: 0 }}
-						className='md:hidden bg-black/95 backdrop-blur-sm border-t border-[#a78bfa]/30'
+						className='md:hidden bg-black/95 backdrop-blur-sm border-t border-[#a78bfa]/30 max-h-screen overflow-y-auto'
 					>
-						<div className='px-4 py-4 space-y-2'>
+						<div className='px-4 py-4 space-y-2 max-w-full'>
 							{navItems.map((item) => {
 								const isActive = pathname === item.href;
 								return (
@@ -207,7 +207,7 @@ export default function EquityNavigation() {
 										}`}
 										onClick={() => setMobileOpen(false)}
 									>
-										<item.icon className='w-5 h-5' />
+										<item.icon className='w-5 h-5 flex-shrink-0' />
 										<span className='font-medium'>{item.label}</span>
 									</Link>
 								);

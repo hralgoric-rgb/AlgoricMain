@@ -25,7 +25,6 @@ export default function TenantProfilePage() {
     const [lastname , setlastname] = useState("")
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [profilePic, setProfilePic] = useState("");
     // firstName
 
   function handleSave() {
@@ -50,7 +49,6 @@ export default function TenantProfilePage() {
       setPhone(userData.phone || "");
       setlastname(userData.lastName || " ")
            setEmail(userData.email || "")
-           setProfilePic(userData.profilePic || "")
 
     } catch (error) {
       console.log("Error while getting current user", error);
@@ -61,13 +59,6 @@ export default function TenantProfilePage() {
 }, [userId]); // ✅ re-run when userId is available
 
 
-  function handleAvatarChange(e) {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex flex-col overflow-x-hidden">
       <TenantNavbar />
@@ -77,13 +68,11 @@ export default function TenantProfilePage() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <img src={profilePic} alt="avatar" className="w-24 h-24 rounded-full object-cover border-4 border-orange-400 shadow-lg" />
-              {edit && (
-                <label className="absolute bottom-0 right-0 bg-orange-500 text-white rounded-full p-1 cursor-pointer shadow-lg">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                  <Edit className="w-4 h-4" />
-                </label>
-              )}
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center border-4 border-orange-400 shadow-lg">
+                <span className="text-white font-bold text-3xl select-none">
+                  {firstName ? firstName.charAt(0).toUpperCase() : "T"}
+                </span>
+              </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-white"> {firstName} {lastname}</div>

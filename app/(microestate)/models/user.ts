@@ -9,7 +9,6 @@ export interface IUser extends Document {
   password: string;
   phone: string;
   role: "landlord" | "tenant";
-  profileImage?: string;
   emailVerified: boolean;
   verificationToken?: string;
   verificationTokenExpiry?: Date;
@@ -67,9 +66,6 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ["landlord", "tenant"],
       required: [true, "Role is required"],
-    },
-    profileImage: {
-      type: String,
     },
     emailVerified: {
       type: Boolean,

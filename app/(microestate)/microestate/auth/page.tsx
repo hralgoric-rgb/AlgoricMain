@@ -370,21 +370,21 @@ const Login = () => {
 
   const renderMainView = () => (
     <>
-      <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
+      <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
         <div className="relative flex items-center justify-center mb-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 transform hover:rotate-12 transition-transform duration-300">
-            <Building className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 transform hover:rotate-12 transition-transform duration-300">
+            <Building className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
           Welcome to ALGORIC
         </h2>
-        <p className="text-center text-gray-300 text-sm">
+        <p className="text-center text-gray-300 text-xs sm:text-sm">
           Your gateway to modern real estate management
         </p>
       </div>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <form onSubmit={handleLogin} className="space-y-4 animate-slideIn">
           <div className="space-y-4">{loginFields.map(renderInputField)}</div>
 
@@ -429,21 +429,21 @@ const Login = () => {
           <p className="text-center text-gray-400 text-sm mb-4">
             Don't have an account?
           </p>
-          <div className="grid grid-cols-2 gap-3">
-            <Link href="/microestate/register/tenant">
+          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+            <Link href="/microestate/register/tenant" className="w-full">
               <Button
                 variant="outline"
-                className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200"
+                className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 h-auto"
               >
-                Register as Tenant
+                <span className="break-words">Register as Tenant</span>
               </Button>
             </Link>
-            <Link href="/microestate/register/landlord">
+            <Link href="/microestate/register/landlord" className="w-full">
               <Button
                 variant="outline"
-                className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200"
+                className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50 transition-all duration-200 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 h-auto"
               >
-                Register as Landlord
+                <span className="break-words">Register as Landlord</span>
               </Button>
             </Link>
           </div>
@@ -454,21 +454,21 @@ const Login = () => {
 
   const renderForgotPasswordView = () => (
     <>
-      <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
+      <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
         <div className="relative flex items-center justify-center mb-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-            <Lock className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
           Reset Password
         </h2>
-        <p className="text-center text-gray-300 text-sm">
+        <p className="text-center text-gray-300 text-xs sm:text-sm">
           Enter your email to receive reset instructions
         </p>
       </div>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <form
           onSubmit={handleForgotPassword}
           className="space-y-4 animate-slideIn"
@@ -546,24 +546,24 @@ const Login = () => {
 
   const renderResetPasswordView = () => (
     <>
-      <div className="relative px-8 py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
+      <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gradient-to-r from-orange-600/10 to-orange-400/10">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-orange-400/5"></div>
         <div className="relative flex items-center justify-center mb-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-            <Key className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <Key className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
           Set New Password
         </h2>
-        <p className="text-center text-gray-300 text-sm">
+        <p className="text-center text-gray-300 text-xs sm:text-sm">
           Enter your new password below
         </p>
-        <p className="text-center text-orange-400 text-xs mt-2">
+        <p className="text-center text-orange-400 text-xs mt-2 break-all px-2">
           For: {resetEmail}
         </p>
       </div>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <form
           onSubmit={handleResetPassword}
           className="space-y-4 animate-slideIn"
@@ -724,16 +724,16 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden flex flex-col justify-between">
       <FloatingCircles />
       <ParticleBackground />
-      <div className="flex flex-col items-center justify-center flex-1 py-20 relative z-10">
-        <div className="relative z-10 w-full max-w-lg mx-auto px-2">
-          <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-orange-500/20 rounded-3xl shadow-2xl shadow-orange-500/10 overflow-hidden transform hover:scale-[1.01] transition-all duration-500">
+      <div className="flex flex-col items-center justify-center flex-1 py-12 sm:py-20 relative z-10 px-4 sm:px-6">
+        <div className="relative z-10 w-full max-w-lg mx-auto">
+          <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl border border-orange-500/20 rounded-2xl sm:rounded-3xl shadow-2xl shadow-orange-500/10 overflow-hidden transform hover:scale-[1.01] transition-all duration-500">
             {currentView === "main" && renderMainView()}
             {currentView === "forgot-password" && renderForgotPasswordView()}
             {currentView === "reset-password" && renderResetPasswordView()}
           </div>
         </div>
       </div>
-      <footer className="w-full py-6 bg-black/80 border-t border-orange-500/10 text-gray-400 text-center text-xs relative z-10">
+      <footer className="w-full py-4 sm:py-6 bg-black/80 border-t border-orange-500/10 text-gray-400 text-center text-xs relative z-10">
         &copy; {new Date().getFullYear()} Microestate. All rights reserved.
       </footer>
     </div>

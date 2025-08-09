@@ -183,32 +183,34 @@ export default function PropertiesPage() {
         <FloatingCircles />
         <ParticleBackground />
         <AnimatedGradient />
-        <div className="container mx-auto py-4 mt-8 relative z-10">
+        <div className="container mx-auto py-4 sm:py-6 lg:py-8 mt-4 sm:mt-6 lg:mt-8 relative z-10 px-4 sm:px-6 lg:px-8">
 
           {/* Header */}
-          <section className="mb-8 animate-fadeIn">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-white">My Properties</h1>
-                <p className="text-gray-400">Manage your property listings</p>
+          <section className="mb-6 sm:mb-8 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+              <div className="w-full sm:w-auto">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">My Properties</h1>
+                <p className="text-gray-400 text-sm sm:text-base">Manage your property listings</p>
               </div>
-              <div className="flex gap-2">
-                <Link href="/microestate/landlord/properties/add">
-                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Link href="/microestate/landlord/properties/add" className="w-full sm:w-auto">
+                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 sm:px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 w-full sm:w-auto">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Property
+                    <span className="hidden sm:inline">Add Property</span>
+                    <span className="sm:hidden">Add</span>
                   </Button>
                 </Link>
-                <Button onClick={fetchProperties} className="bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-gray-500/25 transition-all duration-300 hover:scale-105">
+                <Button onClick={fetchProperties} className="bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-xl px-4 sm:px-6 py-3 shadow-lg shadow-gray-500/25 transition-all duration-300 hover:scale-105 w-full sm:w-auto">
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
+                  <span className="sm:hidden">Sync</span>
                 </Button>
               </div>
             </div>
 
             {/* Search and Filter */}
-            <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6">
-              <div className="flex flex-col md:flex-row gap-4">
+            <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-4 sm:p-6">
+              <div className="flex flex-col gap-4">
                 <div className="flex-1">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -217,15 +219,15 @@ export default function PropertiesPage() {
                       placeholder="Search properties..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none"
+                      className="w-full pl-10 pr-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white placeholder-gray-400 focus:border-orange-500 focus:outline-none text-sm sm:text-base"
                     />
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:border-orange-500 focus:outline-none"
+                    className="flex-1 px-4 py-3 bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl text-white focus:border-orange-500 focus:outline-none text-sm sm:text-base"
                   >
                     <option value="all">All Status</option>
                     <option value="available">Available</option>
@@ -233,8 +235,9 @@ export default function PropertiesPage() {
                     <option value="maintenance">Maintenance</option>
                     <option value="inactive">Inactive</option>
                   </select>
-                  <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
-                    <Filter className="w-4 h-4" />
+                  <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white px-4 py-3 w-full sm:w-auto">
+                    <Filter className="w-4 h-4 mr-2 sm:mr-0" />
+                    <span className="sm:hidden">Filter</span>
                   </Button>
                 </div>
               </div>
@@ -244,72 +247,76 @@ export default function PropertiesPage() {
           {/* Properties Grid */}
           <section className="animate-fadeIn">
             {filteredProperties.length === 0 ? (
-              <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-12 text-center">
-                <Building className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">No Properties Found</h3>
-                <p className="text-gray-400 mb-6">
+              <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-8 sm:p-12 text-center">
+                <Building className="w-12 h-12 sm:w-16 sm:h-16 text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">No Properties Found</h3>
+                <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6">
                   {searchTerm || statusFilter !== "all"
                     ? "No properties match your search criteria."
                     : "You haven't added any properties yet."}
                 </p>
-                <Link href="/microestate/landlord/properties/add">
-                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105">
+                <Link href="/microestate/landlord/properties/add" className="inline-block w-full sm:w-auto">
+                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 sm:px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 w-full sm:w-auto">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Your First Property
                   </Button>
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 {filteredProperties.map((property) => (
                   <div
                     key={property._id}
-                    className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-6 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 hover:scale-105"
+                    className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-4 sm:p-6 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 hover:scale-105"
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-1">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-white mb-1 truncate">
                           {property.title}
                         </h3>
-                        <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{property.address.street}, {property.address.city}</span>
+                        <div className="flex items-start gap-2 text-gray-400 text-xs sm:text-sm mb-2">
+                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" />
+                          <span className="break-words">{property.address.street}, {property.address.city}</span>
                         </div>
                         {getStatusBadge(property.status)}
                       </div>
-                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                      <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white ml-2 flex-shrink-0">
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </div>
 
-                    <div className="space-y-3 mb-6">
+                    <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Monthly Rent:</span>
-                        <span className="text-white font-semibold">
+                        <span className="text-gray-400 text-xs sm:text-sm">Monthly Rent:</span>
+                        <span className="text-white font-semibold text-sm sm:text-base">
                           ₹{property.rent.amount.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Status:</span>
-                        <span className="text-white capitalize">{property.status}</span>
+                        <span className="text-gray-400 text-xs sm:text-sm">Status:</span>
+                        <span className="text-white capitalize text-sm sm:text-base">{property.status}</span>
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Link href={`/microestate/landlord/properties/${property._id}`} className="flex-1">
-                        <Button variant="outline" className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
-                          <Eye className="w-4 h-4 mr-2" />
+                        <Button variant="outline" className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white text-xs sm:text-sm py-2 sm:py-3">
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           View
                         </Button>
                       </Link>
-                      <Link href={`/microestate/landlord/properties/${property._id}/edit`}>
-                        <Button variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
-                          <Edit className="w-4 h-4" />
+                      <div className="flex gap-2 sm:gap-1">
+                        <Link href={`/microestate/landlord/properties/${property._id}/edit`} className="flex-1 sm:flex-none">
+                          <Button variant="outline" className="w-full sm:w-auto border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white text-xs sm:text-sm py-2 sm:py-3 px-3">
+                            <Edit className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-0" />
+                            <span className="ml-1 sm:hidden">Edit</span>
+                          </Button>
+                        </Link>
+                        <Button variant="outline" className="flex-1 sm:flex-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-xs sm:text-sm py-2 sm:py-3 px-3">
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-0" />
+                          <span className="ml-1 sm:hidden">Delete</span>
                         </Button>
-                      </Link>
-                      <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      </div>
                     </div>
                   </div>
                 ))}

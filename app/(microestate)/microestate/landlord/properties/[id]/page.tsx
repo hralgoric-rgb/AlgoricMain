@@ -271,16 +271,16 @@ export default function PropertyDetailsPage() {
     switch (activeTab) {
       case "overview":
         return (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Property Images */}
-            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 flex items-center gap-2">
                 <Eye className="w-5 h-5 text-orange-400" />
                 Property Images
               </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div className="lg:col-span-2">
-                  <div className="aspect-[3/2] bg-gray-800 rounded-xl overflow-hidden shadow-lg">
+                  <div className="aspect-[16/10] sm:aspect-[3/2] bg-gray-800 rounded-xl overflow-hidden shadow-lg">
                     <img
                       src={
                         property.images[0] || "/images/placeholder-property.jpg"
@@ -290,13 +290,13 @@ export default function PropertyDetailsPage() {
                     />
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="grid grid-cols-3 lg:grid-cols-1 gap-2 sm:gap-3">
                   {property.images
                     .slice(1, 4)
                     .map((image: string, index: number) => (
                       <div
                         key={index + 1}
-                        className="aspect-[3/2] bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+                        className="aspect-square lg:aspect-[3/2] bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
                       >
                         <img
                           src={image}
@@ -306,8 +306,8 @@ export default function PropertyDetailsPage() {
                       </div>
                     ))}
                   {property.images.length === 1 && (
-                    <div className="aspect-[3/2] bg-gray-800 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-500 text-sm">
+                    <div className="aspect-square lg:aspect-[3/2] bg-gray-800 rounded-lg flex items-center justify-center">
+                      <span className="text-gray-500 text-xs sm:text-sm text-center px-2">
                         No additional images
                       </span>
                     </div>
@@ -317,56 +317,56 @@ export default function PropertyDetailsPage() {
             </div>
 
             {/* Property Details and Financial Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 flex items-center gap-2">
                   <Building className="w-5 h-5 text-orange-400" />
                   Property Details
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <Building className="w-4 h-4" />
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex justify-between items-center py-2 sm:py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2 text-sm sm:text-base">
+                      <Building className="w-4 h-4 flex-shrink-0" />
                       Type:
                     </span>
-                    <span className="text-white font-medium capitalize">
+                    <span className="text-white font-medium capitalize text-sm sm:text-base">
                       {property.propertyType}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <Users className="w-4 h-4" />
+                  <div className="flex justify-between items-center py-2 sm:py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2 text-sm sm:text-base">
+                      <Users className="w-4 h-4 flex-shrink-0" />
                       Bedrooms:
                     </span>
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-sm sm:text-base">
                       {property.bedrooms}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <Building className="w-4 h-4" />
+                  <div className="flex justify-between items-center py-2 sm:py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2 text-sm sm:text-base">
+                      <Building className="w-4 h-4 flex-shrink-0" />
                       Bathrooms:
                     </span>
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-sm sm:text-base">
                       {property.bathrooms}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-700/50">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
+                  <div className="flex justify-between items-center py-2 sm:py-3 border-b border-gray-700/50">
+                    <span className="text-gray-400 flex items-center gap-2 text-sm sm:text-base">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
                       Area:
                     </span>
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-sm sm:text-base">
                       {property.squareFootage?.toLocaleString()} sq ft
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-3">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
+                  <div className="flex justify-between items-center py-2 sm:py-3">
+                    <span className="text-gray-400 flex items-center gap-2 text-sm sm:text-base">
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
                       Furnished:
                     </span>
                     <span
-                      className={`font-medium ${
+                      className={`font-medium text-sm sm:text-base ${
                         property.features.furnished
                           ? "text-green-400"
                           : "text-gray-400"
@@ -378,35 +378,27 @@ export default function PropertyDetailsPage() {
                 </div>
               </div>
 
-              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-orange-400" />
                   Financial Summary
                 </h3>
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-orange-500/10 to-orange-400/10 border border-orange-500/20 rounded-xl p-4">
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="bg-gradient-to-r from-orange-500/10 to-orange-400/10 border border-orange-500/20 rounded-xl p-3 sm:p-4">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-white mb-1">
+                      <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
                         ₹{property.rent.amount.toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-400">Monthly Rent</div>
+                      <div className="text-xs sm:text-sm text-gray-400">Monthly Rent</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <div className="text-xl font-bold text-white mb-1">
+                  <div className="flex justify-center">
+                    <div className="bg-gray-800/50 rounded-lg p-3 sm:p-4 text-center max-w-xs w-full">
+                      <div className="text-lg sm:text-xl font-bold text-white mb-1">
                         ₹{property.securityDeposit.toLocaleString()}
                       </div>
                       <div className="text-xs text-gray-400">
                         Security Deposit
-                      </div>
-                    </div>
-                    <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <div className="text-xl font-bold text-white mb-1">
-                        {tenants?.length || 0}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        Active Tenants
                       </div>
                     </div>
                   </div>
@@ -415,28 +407,28 @@ export default function PropertyDetailsPage() {
             </div>
 
             {/* Amenities Section */}
-            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-orange-400" />
                 Amenities & Features
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {Object.entries(property.features).map(
                   ([feature, available]) => (
                     <div
                       key={feature}
-                      className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border ${
                         available
                           ? "bg-green-500/10 border-green-500/20 text-green-400"
                           : "bg-gray-800/50 border-gray-700/50 text-gray-500"
                       }`}
                     >
                       <CheckCircle
-                        className={`w-4 h-4 ${
+                        className={`w-4 h-4 flex-shrink-0 ${
                           available ? "text-green-400" : "text-gray-600"
                         }`}
                       />
-                      <span className="text-sm font-medium capitalize">
+                      <span className="text-xs sm:text-sm font-medium capitalize truncate">
                         {feature.replace(/([A-Z])/g, " $1").trim()}
                       </span>
                     </div>
@@ -447,12 +439,12 @@ export default function PropertyDetailsPage() {
 
             {/* Property Description */}
             {property.description && (
-              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-orange-400" />
                   Description
                 </h3>
-                <p className="text-gray-300 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
                   {property.description}
                 </p>
               </div>
@@ -462,22 +454,22 @@ export default function PropertyDetailsPage() {
 
       case "tenants":
         return (
-          <div className="space-y-8">
-            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="bg-[#1a1a1f] border border-[#2a2a2f] rounded-xl p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
                   <Users className="w-5 h-5 text-orange-400" />
                   Current Tenants
                   {tenantsLoading && (
                     <Loader2 className="w-4 h-4 animate-spin ml-2" />
                   )}
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={fetchTenants}
                     disabled={tenantsLoading}
                     variant="outline"
-                    className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                    className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white text-sm sm:text-base"
                   >
                     <RefreshCw
                       className={`w-4 h-4 mr-2 ${
@@ -489,7 +481,7 @@ export default function PropertyDetailsPage() {
                   <Button
                     onClick={() => setActiveTab("add-tenant")}
                     disabled={property.status !== "available"}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-3 sm:px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Tenant
@@ -498,7 +490,7 @@ export default function PropertyDetailsPage() {
               </div>
 
               {property.status !== "available" && (
-                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm">
+                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-xs sm:text-sm">
                   <AlertTriangle className="w-4 h-4 inline mr-2" />
                   Property is currently {property.status}. New tenants can only
                   be added to available properties.
@@ -506,64 +498,65 @@ export default function PropertyDetailsPage() {
               )}
 
               {tenantsError ? (
-                <div className="text-center py-12">
-                  <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                  <h4 className="text-white font-medium mb-2">
+                <div className="text-center py-8 sm:py-12">
+                  <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-4" />
+                  <h4 className="text-white font-medium mb-2 text-sm sm:text-base">
                     Error Loading Tenants
                   </h4>
-                  <p className="text-gray-400 mb-4">{tenantsError}</p>
+                  <p className="text-gray-400 mb-4 text-xs sm:text-sm px-4">{tenantsError}</p>
                   <Button
                     onClick={fetchTenants}
                     variant="outline"
-                    className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                    className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white text-sm sm:text-base"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Try Again
                   </Button>
                 </div>
               ) : tenants.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {tenants.map((lease) => (
                     <div
                       key={lease._id}
-                      className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 hover:border-orange-500/30 transition-colors"
+                      className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-3 sm:p-4 hover:border-orange-500/30 transition-colors"
                     >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-orange-400" />
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
                         </div>
-                        <div className="flex-1">
-                          <h4 className="text-white font-medium">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white font-medium text-sm sm:text-base truncate">
                             {lease.tenantId.firstName} {lease.tenantId.lastName}
                           </h4>
-                          <p className="text-gray-400 text-sm">
+                          <p className="text-gray-400 text-xs sm:text-sm truncate">
                             {lease.tenantId.email}
                           </p>
                         </div>
-                        {getLeaseStatusBadge(lease.status)}
+                        <div className="flex-shrink-0">
+                          {getLeaseStatusBadge(lease.status)}
+                        </div>
                       </div>
 
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
+                      <div className="space-y-2 text-xs sm:text-sm">
+                        <div className="flex justify-between items-center">
                           <span className="text-gray-400">Phone:</span>
-                          <span className="text-white">
+                          <span className="text-white truncate ml-2">
                             {lease.tenantId.phone}
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-center">
                           <span className="text-gray-400">Monthly Rent:</span>
                           <span className="text-white">
                             ₹{lease.monthlyRent.toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Lease Period:</span>
-                          <span className="text-white text-xs">
-                            {formatDate(lease.startDate)} -{" "}
-                            {formatDate(lease.endDate)}
+                        <div className="flex justify-between items-start">
+                          <span className="text-gray-400 flex-shrink-0">Lease Period:</span>
+                          <span className="text-white text-right text-xs ml-2">
+                            {formatDate(lease.startDate)} - {formatDate(lease.endDate)}
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-center">
                           <span className="text-gray-400">Rent Due:</span>
                           <span className="text-white">
                             {lease.rentDueDate} of each month
@@ -571,18 +564,18 @@ export default function PropertyDetailsPage() {
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-gray-700/50 flex gap-2">
+                      <div className="mt-3 sm:mt-4 pt-3 border-t border-gray-700/50 flex flex-col sm:flex-row gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 text-xs"
+                          className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 text-xs sm:text-sm"
                         >
                           View Details
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 border-red-500 text-red-400 hover:bg-red-500 hover:text-white text-xs"
+                          className="flex-1 border-red-500 text-red-400 hover:bg-red-500 hover:text-white text-xs sm:text-sm"
                         >
                           Terminate
                         </Button>
@@ -591,18 +584,18 @@ export default function PropertyDetailsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <h4 className="text-white font-medium mb-2">
+                <div className="text-center py-8 sm:py-12 px-4">
+                  <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-500 mx-auto mb-4" />
+                  <h4 className="text-white font-medium mb-2 text-sm sm:text-base">
                     No Tenants Assigned
                   </h4>
-                  <p className="text-gray-400 mb-4">
+                  <p className="text-gray-400 mb-4 text-xs sm:text-sm">
                     This property currently has no tenants assigned.
                   </p>
                   <Button
                     onClick={() => setActiveTab("add-tenant")}
                     disabled={property.status !== "available"}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl px-3 sm:px-4 py-2 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add First Tenant
@@ -755,35 +748,39 @@ export default function PropertyDetailsPage() {
         <FloatingCircles />
         <ParticleBackground />
         <AnimatedGradient />
-        <div className="container mx-auto py-10 mt-24 relative z-10">
+        <div className="container mx-auto py-6 sm:py-8 lg:py-10 mt-16 sm:mt-20 lg:mt-24 relative z-10 px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <section className="mb-8 animate-fadeIn">
-            <div className="flex items-center gap-4 mb-6">
-              <Link href="/microestate/landlord/properties">
-                <Button
-                  variant="outline"
-                  className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Properties
-                </Button>
-              </Link>
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-white">
-                  {property.title}
-                </h1>
-                <div className="flex items-center gap-4 mt-2">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <MapPin className="w-4 h-4" />
-                    <span>{`${property.address.street}, ${property.address.city}`}</span>
+          <section className="mb-6 sm:mb-8 animate-fadeIn">
+            <div className="flex flex-col gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <Link href="/microestate/landlord/properties">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white text-sm sm:text-base"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Properties
+                  </Button>
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white truncate">
+                    {property.title}
+                  </h1>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                    <div className="flex items-center gap-2 text-gray-400 text-sm sm:text-base min-w-0">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{`${property.address.street}, ${property.address.city}`}</span>
+                    </div>
+                    <div className="flex-shrink-0">
+                      {getStatusBadge(property.status)}
+                    </div>
                   </div>
-                  {getStatusBadge(property.status)}
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
-                  className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                  className="flex-1 sm:flex-none border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white text-sm sm:text-base"
                   onClick={handleEditProperty}
                 >
                   <Edit className="w-4 h-4 mr-2" />
@@ -791,7 +788,7 @@ export default function PropertyDetailsPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  className="flex-1 sm:flex-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-sm sm:text-base"
                   onClick={confirmDelete}
                   disabled={deleteLoading}
                 >
@@ -803,19 +800,20 @@ export default function PropertyDetailsPage() {
 
             {/* Tabs */}
             <div className="bg-glass border border-orange-500/30 shadow-xl rounded-2xl p-2">
-              <div className="flex space-x-1">
+              <div className="flex flex-wrap gap-1">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl font-medium transition-all duration-300 text-sm sm:text-base flex-1 sm:flex-none justify-center ${
                       activeTab === tab.id
                         ? "bg-orange-500 text-white shadow-lg"
                         : "text-gray-400 hover:text-white hover:bg-[#1a1a1f]"
                     }`}
                   >
                     <tab.icon className="w-4 h-4" />
-                    {tab.label}
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                   </button>
                 ))}
               </div>
@@ -829,32 +827,32 @@ export default function PropertyDetailsPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#1a1a1f] border border-red-500/30 rounded-xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a1f] border border-red-500/30 rounded-xl p-4 sm:p-6 max-w-md w-full">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-400" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg sm:text-xl font-semibold text-white">
                 Delete Property
               </h3>
             </div>
-            <p className="text-gray-300 mb-6">
+            <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
               Are you sure you want to delete "{property?.title}"? This action
               cannot be undone.
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
                 onClick={cancelDelete}
-                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 text-sm sm:text-base"
                 disabled={deleteLoading}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleDeleteProperty}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm sm:text-base"
                 disabled={deleteLoading}
               >
                 {deleteLoading ? (

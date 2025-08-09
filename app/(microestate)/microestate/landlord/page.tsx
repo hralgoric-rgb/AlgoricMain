@@ -455,163 +455,165 @@ export default function LandlordDashboard() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto py-10 mt-8 relative z-10">
+        <div className="container mx-auto py-6 sm:py-8 lg:py-10 mt-4 sm:mt-6 lg:mt-8 relative z-10 px-4 sm:px-6 lg:px-8">
         {/* Welcome Header */}
-        <motion.section className="mb-8" initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, type: 'spring' }}>
-          <div className="flex items-center justify-between">
-            <motion.div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border-2 border-gradient-to-r from-orange-500 to-red-500 p-6 rounded-2xl shadow-xl" whileHover={{ scale: 1.03, rotate: 1 }}>
-              <motion.div className="w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center text-3xl font-bold text-transparent bg-clip-text" animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+        <motion.section className="mb-6 sm:mb-8" initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, type: 'spring' }}>
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6">
+            <motion.div className="flex items-center gap-3 sm:gap-4 bg-white/5 backdrop-blur-xl border-2 border-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6 rounded-2xl shadow-xl w-full lg:w-auto" whileHover={{ scale: 1.02, rotate: 1 }}>
+              <motion.div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center text-2xl sm:text-3xl font-bold text-transparent bg-clip-text" animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
                 {landlordName ? landlordName[0] : 'U'}
               </motion.div>
-              <div>
-                <div className="text-4xl font-bold text-gray-300 font-sans">Welcome back, <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">{landlordName || 'User'}</span></div>
-                <div className="text-sm text-gray-400 mt-1">Here's your property overview</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xl sm:text-2xl lg:text-4xl font-bold text-gray-300 font-sans break-words">Welcome back, <span className="text-xl sm:text-2xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">{landlordName || 'User'}</span></div>
+                <div className="text-xs sm:text-sm text-gray-400 mt-1">Here's your property overview</div>
               </div>
             </motion.div>
             {/* Quick Actions */}
-            <div className="flex gap-3">
-              <Link href="/microestate/landlord/properties/add">
-                <motion.div whileHover={{ scale: 1.08, boxShadow: '0 0 16px 4px #ff6a00' }} className="relative group">
-                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300">
+            <div className="flex gap-3 w-full lg:w-auto justify-end">
+              <Link href="/microestate/landlord/properties/add" className="w-full sm:w-auto">
+                <motion.div whileHover={{ scale: 1.08, boxShadow: '0 0 16px 4px #ff6a00' }} className="relative group w-full">
+                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl px-4 sm:px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 w-full sm:w-auto">
                     <motion.span initial={{ scale: 1 }} whileHover={{ scale: 1.2, rotate: 10 }} className="inline-block">
                       <Plus className="w-4 h-4 mr-2" />
                     </motion.span>
+                    <span className="hidden sm:inline">Add Property</span>
+                    <span className="sm:hidden">Add</span>
                   </Button>
                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded bg-black/80 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-lg">Add a new property</span>
                 </motion.div>
               </Link>
-              
             </div>
           </div>
         </motion.section>
         {/* Key Metrics Cards */}
-        <section className="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {[
             {
-              icon: <Building className="w-8 h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
+              icon: <Building className="w-6 h-6 sm:w-8 sm:h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
               stat: dashboardData.totalProperties,
               label: 'Total Properties',
               sub: '+2 this month',
               subColor: 'text-green-400',
-              trendIcon: <TrendingUp className="w-5 h-5 text-green-400" />,
+              trendIcon: <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />,
             },
             {
-              icon: <DollarSign className="w-8 h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
+              icon: <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
               stat: dashboardData.monthlyIncome,
               label: 'Monthly Income',
               sub: '+12% from last month',
               subColor: 'text-green-400',
-              trendIcon: <TrendingUp className="w-5 h-5 text-green-400" />,
+              trendIcon: <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />,
               prefix: '₹',
             },
             {
-              icon: <Users className="w-8 h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
+              icon: <Users className="w-6 h-6 sm:w-8 sm:h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
               stat: dashboardData.activeTenants,
               label: 'Active Tenants',
               sub: 'All payments on time',
               subColor: 'text-green-400',
-              trendIcon: <CheckCircle className="w-5 h-5 text-green-400" />,
+              trendIcon: <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />,
             },
             {
-              icon: <Calendar className="w-8 h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
+              icon: <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />,
               stat: dashboardData.upcomingRentDue,
               label: 'Upcoming Rent Due',
               sub: 'Due in 5 days',
               subColor: 'text-yellow-400',
-              trendIcon: <Clock className="w-5 h-5 text-yellow-400" />,
+              trendIcon: <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />,
             },
           ].map((card, i) => (
             <motion.div
               key={card.label}
-              className="bg-white/5 backdrop-blur-xl border-2 border-gradient-to-r from-orange-500 to-red-500 rounded-2xl shadow-xl p-6 h-full flex flex-col justify-between cursor-pointer group"
+              className="bg-white/5 backdrop-blur-xl border-2 border-gradient-to-r from-orange-500 to-red-500 rounded-2xl shadow-xl p-4 sm:p-6 h-full flex flex-col justify-between cursor-pointer group"
               style={{ perspective: 1000 }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * i, duration: 0.7, type: 'spring' }}
               whileHover={{ scale: 1.04, rotateX: 8, translateZ: 40 }}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <motion.div whileHover={{ rotate: 10 }} className="transition-transform duration-300">
                   {card.icon}
                 </motion.div>
                 {card.trendIcon}
               </div>
-              <div className="text-3xl font-bold text-white mb-1">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1">
                 {card.prefix || ''}
                 <CountUp end={card.stat} duration={1.2} separator="," />
               </div>
-              <div className="text-sm text-gray-400 font-semibold">{card.label}</div>
+              <div className="text-xs sm:text-sm text-gray-400 font-semibold">{card.label}</div>
               <div className={`text-xs mt-2 ${card.subColor}`}>{card.sub}</div>
             </motion.div>
           ))}
         </section>
         {/* Main Content Grid - Removed Recent Properties and Recent Activity sections */}
-        <section className="grid grid-cols-1 gap-8 animate-fadeIn">
+        <section className="grid grid-cols-1 gap-6 sm:gap-8 animate-fadeIn">
           {/* Lease Progress Section */}
-          <div className="bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-6">
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
+          <div className="bg-glass border border-transparent border-gradient-to-r from-orange-500 to-red-500 shadow-xl rounded-2xl p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 flex items-center gap-2">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500" />
               Lease Progress
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">{dashboardData.leaseProgress}%</div>
-                <div className="text-sm text-gray-400">Complete</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white mb-2">{dashboardData.leaseProgress}%</div>
+                <div className="text-xs sm:text-sm text-gray-400">Complete</div>
               </div>
               <div className="flex-1">
-                <div className="flex justify-between mb-2 text-sm text-gray-400">
+                <div className="flex justify-between mb-2 text-xs sm:text-sm text-gray-400">
                   <span>Current Period</span>
                   <span>Ends in 5 months</span>
                 </div>
-                <div className="w-full bg-gray-800 rounded-full h-3">
+                <div className="w-full bg-gray-800 rounded-full h-2 sm:h-3">
                   <div 
-                    className="bg-gradient-to-r from-orange-400 to-red-600 h-3 rounded-full transition-all duration-700" 
+                    className="bg-gradient-to-r from-orange-400 to-red-600 h-2 sm:h-3 rounded-full transition-all duration-700" 
                     style={{ width: `${dashboardData.leaseProgress}%` }}
                   ></div>
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white mb-2">₹{(dashboardData.monthlyIncome / Math.max(dashboardData.activeTenants, 1)).toLocaleString()}</div>
-                <div className="text-sm text-gray-400">Avg Monthly Rent</div>
+                <div className="text-xl sm:text-2xl font-bold text-white mb-2">₹{(dashboardData.monthlyIncome / Math.max(dashboardData.activeTenants, 1)).toLocaleString()}</div>
+                <div className="text-xs sm:text-sm text-gray-400">Avg Monthly Rent</div>
               </div>
             </div>
           </div>
         </section>
 
                  {/* Utility Bills Section */}
-         <section className="mt-8 bg-gradient-to-br from-[#1a1a1f] via-[#1f1f25] to-[#2a2a2f] border border-orange-500/20 shadow-2xl rounded-2xl p-8 animate-fadeIn relative overflow-hidden">
+         <section className="mt-6 sm:mt-8 bg-gradient-to-br from-[#1a1a1f] via-[#1f1f25] to-[#2a2a2f] border border-orange-500/20 shadow-2xl rounded-2xl p-4 sm:p-6 lg:p-8 animate-fadeIn relative overflow-hidden">
            {/* Background Pattern */}
            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 opacity-50"></div>
-           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full -translate-y-32 translate-x-32"></div>
-           <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-red-500/10 to-transparent rounded-full translate-y-24 -translate-x-24"></div>
+           <div className="absolute top-0 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full -translate-y-16 sm:-translate-y-32 translate-x-16 sm:translate-x-32"></div>
+           <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-48 sm:h-48 bg-gradient-to-tr from-red-500/10 to-transparent rounded-full translate-y-12 sm:translate-y-24 -translate-x-12 sm:-translate-x-24"></div>
            
            <div className="relative z-10">
-             <div className="flex items-center justify-between mb-8">
-               <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/25">
-                   <Receipt className="w-7 h-7 text-white" />
+             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+               <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
+                   <Receipt className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                  </div>
-                 <div>
-                   <h2 className="text-2xl font-bold text-white">Utility Bills Management</h2>
-                   <p className="text-gray-400 text-sm">Track and manage all utility expenses</p>
+                 <div className="min-w-0 flex-1">
+                   <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Utility Bills Management</h2>
+                   <p className="text-gray-400 text-xs sm:text-sm">Track and manage all utility expenses</p>
                  </div>
                </div>
-               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                  <Button 
                    onClick={() => {
                      setShowCreateBill(true);
                      fetchAvailableTenants(); // Fetch tenants when modal opens
                    }}
-                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/30"
+                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl px-4 sm:px-6 py-3 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/30 w-full sm:w-auto"
                  >
-                   <Plus className="w-5 h-5 mr-2" />
-                   Create Bill
+                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                   <span className="hidden sm:inline">Create Bill</span>
+                   <span className="sm:hidden">Create</span>
                  </Button>
                </motion.div>
              </div>
 
                      {/* Utility Stats Cards */}
-           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
              {(() => {
                const stats = calculateUtilityStats();
                return [
@@ -622,7 +624,7 @@ export default function LandlordDashboard() {
                    color: 'text-yellow-400',
                    bgColor: 'bg-gradient-to-br from-yellow-500/10 to-orange-500/10',
                    borderColor: 'border-yellow-500/20',
-                   icon: <Clock className="w-6 h-6" />
+                   icon: <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
                  },
                  {
                    title: 'Overdue Bills',
@@ -631,7 +633,7 @@ export default function LandlordDashboard() {
                    color: 'text-red-400',
                    bgColor: 'bg-gradient-to-br from-red-500/10 to-pink-500/10',
                    borderColor: 'border-red-500/20',
-                   icon: <AlertCircle className="w-6 h-6" />
+                   icon: <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                  },
                  {
                    title: 'This Month Paid',
@@ -640,7 +642,7 @@ export default function LandlordDashboard() {
                    color: 'text-green-400',
                    bgColor: 'bg-gradient-to-br from-green-500/10 to-emerald-500/10',
                    borderColor: 'border-green-500/20',
-                   icon: <CheckCircle className="w-6 h-6" />
+                   icon: <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                  },
                  {
                    title: 'Average Bill',
@@ -649,44 +651,44 @@ export default function LandlordDashboard() {
                    color: 'text-blue-400',
                    bgColor: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10',
                    borderColor: 'border-blue-500/20',
-                   icon: <BarChart3 className="w-6 h-6" />
+                   icon: <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
                  }
                ].map((stat, index) => (
                  <motion.div
                    key={stat.title}
-                   className={`${stat.bgColor} ${stat.borderColor} border rounded-2xl p-6 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer`}
+                   className={`${stat.bgColor} ${stat.borderColor} border rounded-2xl p-4 sm:p-6 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer`}
                    initial={{ opacity: 0, y: 20 }}
                    animate={{ opacity: 1, y: 0 }}
                    transition={{ delay: index * 0.1 }}
                    whileHover={{ scale: 1.02, y: -2 }}
                  >
-                   <div className="flex items-center justify-between mb-4">
+                   <div className="flex items-center justify-between mb-3 sm:mb-4">
                      <div className={`${stat.color} p-2 rounded-xl bg-white/5 group-hover:bg-white/10 transition-colors`}>
                        {stat.icon}
                      </div>
                      <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded-full">{stat.count} bills</span>
                    </div>
-                   <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
-                   <div className="text-sm text-gray-400 font-medium">{stat.title}</div>
+                   <div className={`text-lg sm:text-xl lg:text-2xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
+                   <div className="text-xs sm:text-sm text-gray-400 font-medium">{stat.title}</div>
                  </motion.div>
                ));
              })()}
            </div>
 
                      {/* Bills Lists */}
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
              {/* Pending Bills */}
-             <div className="bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-yellow-500/20 rounded-2xl p-6 shadow-lg">
-               <div className="flex items-center gap-3 mb-6">
-                 <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                   <Clock className="w-5 h-5 text-white" />
+             <div className="bg-gradient-to-br from-[#1a1a1f] to-[#1f1f25] border border-yellow-500/20 rounded-2xl p-4 sm:p-6 shadow-lg">
+               <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                   <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                  </div>
-                 <div>
-                   <h3 className="text-xl font-bold text-white">Pending Bills</h3>
-                   <p className="text-sm text-gray-400">{utilityBills.pending.length} bills awaiting payment</p>
+                 <div className="min-w-0 flex-1">
+                   <h3 className="text-lg sm:text-xl font-bold text-white">Pending Bills</h3>
+                   <p className="text-xs sm:text-sm text-gray-400">{utilityBills.pending.length} bills awaiting payment</p>
                  </div>
                </div>
-               <div className="space-y-4">
+               <div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
                  {utilityBills.pending.length === 0 ? (
                    <div className="text-center py-8">
                      <Clock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -880,19 +882,19 @@ export default function LandlordDashboard() {
                transition={{ type: "spring", damping: 25, stiffness: 300 }}
              >
                              {/* Header */}
-               <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-b border-orange-500/30 p-6 relative overflow-hidden">
+               <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-b border-orange-500/30 p-4 sm:p-6 relative overflow-hidden">
                  {/* Background Pattern */}
                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5"></div>
                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
                  
                  <div className="flex items-start justify-between relative z-10 gap-4">
-                   <div className="flex items-start gap-4 flex-1 min-w-0">
-                     <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
-                       <Receipt className="w-6 h-6 text-white" />
+                   <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
+                       <Receipt className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                      </div>
                      <div className="flex-1 min-w-0">
-                       <h3 className="text-2xl font-bold text-white drop-shadow-sm mb-1">Create Utility Bill</h3>
-                       {/* <p className="text-sm text-gray-300 font-medium leading-relaxed break-words">Add a new utility bill for your tenant</p> */}
+                       <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white drop-shadow-sm mb-1">Create Utility Bill</h3>
+                       <p className="text-xs sm:text-sm text-gray-300 font-medium leading-relaxed break-words">Add a new utility bill for your tenant</p>
                      </div>
                    </div>
                    <Button 
@@ -910,15 +912,15 @@ export default function LandlordDashboard() {
                          notes: ''
                        });
                      }}
-                     className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 w-10 h-10 p-0 rounded-xl shadow-lg flex-shrink-0"
+                     className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:border-orange-500/50 transition-all duration-300 w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-xl shadow-lg flex-shrink-0"
                    >
-                     <span className="text-xl font-bold">×</span>
+                     <span className="text-lg sm:text-xl font-bold">×</span>
                    </Button>
                  </div>
                </div>
 
                              {/* Form Content */}
-               <div className="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar min-h-0">
+               <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1 overflow-y-auto custom-scrollbar min-h-0">
                 {/* Utility Type */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-white flex items-center gap-2">
@@ -929,7 +931,7 @@ export default function LandlordDashboard() {
                     <select
                       value={newBill.utilityType}
                       onChange={(e) => setNewBill({...newBill, utilityType: e.target.value})}
-                      className="w-full p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none"
+                      className="w-full p-3 sm:p-4 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 appearance-none text-sm sm:text-base"
                     >
                       <option value="">Select utility type</option>
                       <option value="electricity">⚡ Electricity</option>
@@ -939,7 +941,7 @@ export default function LandlordDashboard() {
                       <option value="trash">🗑️ Trash</option>
                       <option value="other">📄 Other</option>
                     </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -958,10 +960,10 @@ export default function LandlordDashboard() {
                       type="number"
                       value={newBill.amount}
                       onChange={(e) => setNewBill({...newBill, amount: e.target.value})}
-                      className="w-full p-4 pl-12 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
+                      className="w-full p-3 sm:p-4 pl-10 sm:pl-12 bg-[#1a1a1f] border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300 text-sm sm:text-base"
                       placeholder="0.00"
                     />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                    <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
                       ₹
                     </div>
                   </div>

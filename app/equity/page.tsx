@@ -122,32 +122,32 @@ export default function EquityDashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative pt-8 pb-10 px-2 sm:px-4 md:px-6 lg:px-8"
+          className="relative pt-6 sm:pt-8 pb-8 sm:pb-10 px-4 sm:px-6 lg:px-8"
         >
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-12 sm:mb-16">
               <motion.div
                 initial={{ opacity: 0, y: 50, scale: 0.8 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
                 whileHover={{ scale: 1.05, y: -2 }}
-                className="inline-flex items-center gap-3 px-4 py-2 sm:px-6 sm:py-3 bg-purple-900/20 rounded-full border border-purple-400/30 mb-8 group cursor-pointer text-xs sm:text-sm"
+                className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-purple-900/20 rounded-full border border-purple-400/30 mb-6 sm:mb-8 group cursor-pointer text-xs sm:text-sm"
               >
                 <motion.div
                   initial={{ rotate: -180, scale: 0 }}
                   animate={{ rotate: 0, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
               >
-                  <Shield className="w-5 h-5 text-white group-hover:text-gray-200 transition-colors duration-300" />
+                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover:text-gray-200 transition-colors duration-300" />
                 </motion.div>
-                <span className="text-sm font-medium text-white group-hover:text-gray-200 transition-colors duration-300">Welcome to Your Investment Dashboard</span>
+                <span className="text-xs sm:text-sm font-medium text-white group-hover:text-gray-200 transition-colors duration-300">Welcome to Your Investment Dashboard</span>
               </motion.div>
 
               <motion.h1 
                 initial={{ opacity: 0, y: 60, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
-                className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 group"
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 group px-2"
               >
                 <motion.span 
                   initial={{ opacity: 0, x: -50 }}
@@ -171,7 +171,7 @@ export default function EquityDashboard() {
                 initial={{ opacity: 0, y: 40, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 1, delay: 1.2, ease: "easeOut" }}
-                className="text-base sm:text-lg md:text-xl text-white max-w-2xl sm:max-w-3xl mx-auto leading-relaxed px-2"
+                className="text-sm sm:text-base md:text-lg lg:text-xl text-white max-w-2xl sm:max-w-3xl mx-auto leading-relaxed px-4"
               >
                 Start with ₹2,500. Own premium office buildings, data centers & warehouses. 
                 Earn monthly rental income from Day 1.
@@ -179,9 +179,7 @@ export default function EquityDashboard() {
             </div>
 
             {/* Quick Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 sm:mb-16 w-full">
-              {stats.map((stat, index) => {
-                // All cards use purple/blue theme
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-10 lg:mb-16 w-full px-2">{stats.map((stat, index) => {
                 const borderColor = 'border-[#a78bfa] shadow-[0_0_24px_2px_#a78bfa55]';
                 const glowText = 'text-[#a78bfa] drop-shadow-[0_0_8px_#a78bfa99]';
                 const iconBg = 'from-[#a78bfa]/80 to-[#60a5fa]/60';
@@ -198,19 +196,19 @@ export default function EquityDashboard() {
                       y: -10,
                     }}
                     whileTap={{ scale: 0.98 }}
-                    className={`relative rounded-2xl p-6 min-w-[220px] max-w-xs bg-black/60 backdrop-blur-md border-2 ${borderColor} transition-all duration-300 flex flex-col gap-4 overflow-hidden group`}
+                    className={`relative rounded-2xl p-4 sm:p-6 w-full max-w-sm mx-auto sm:max-w-none bg-black/60 backdrop-blur-md border-2 ${borderColor} transition-all duration-300 flex flex-col gap-3 sm:gap-4 overflow-hidden group`}
                     style={{ fontFamily: 'var(--font-sans, Inter, sans-serif)' }}
                   >
                     {/* Glow border overlay */}
                     <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ boxShadow: 'inset 0 2px 16px #fff2' }} />
-                    <div className="flex items-center gap-3 z-10">
-                      <div className={`rounded-xl p-3 bg-gradient-to-br ${iconBg} shadow-inner`}>{React.createElement(stat.icon, { className: 'w-7 h-7' })}</div>
+                    <div className="flex items-center gap-2 sm:gap-3 z-10">
+                      <div className={`rounded-xl p-2 sm:p-3 bg-gradient-to-br ${iconBg} shadow-inner`}>{React.createElement(stat.icon, { className: 'w-5 h-5 sm:w-7 sm:h-7' })}</div>
                       <span className={`text-xs font-semibold px-2 py-1 rounded-full bg-black/40 border border-[#B6FF3F] text-[#B6FF3F]`}>{stat.change}</span>
                         </div>
                     <div className="flex items-end gap-2 z-10">
-                      <span className={`text-3xl sm:text-4xl font-extrabold leading-tight ${glowText} font-mono`}>{stat.value}</span>
+                      <span className={`text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight ${glowText} font-mono`}>{stat.value}</span>
                       {/* Mini growth chart indicator */}
-                      <svg width="40" height="16" viewBox="0 0 40 16" fill="none" className="ml-2">
+                      <svg width="32" height="12" viewBox="0 0 40 16" fill="none" className="ml-1 sm:ml-2">
                         <polyline
                           points="0,14 8,10 16,12 24,6 32,8 40,2"
                           stroke="#B6FF3F"
@@ -222,7 +220,7 @@ export default function EquityDashboard() {
                         />
                       </svg>
                     </div>
-                    <div className="text-sm text-gray-300 font-medium z-10">{stat.title}</div>
+                    <div className="text-xs sm:text-sm text-gray-300 font-medium z-10">{stat.title}</div>
                     {/* Glassmorphism/blur effect */}
                     <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ backdropFilter: 'blur(8px)' }} />
                   </motion.div>
@@ -233,22 +231,22 @@ export default function EquityDashboard() {
         </motion.section>
 
         {/* Investment Steps Section with Glowing Borders */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="text-center mb-16"
+              className="text-center mb-12 sm:mb-16"
             >
-              <h2 className="text-3xl font-bold text-white mb-4 underline decoration-[#a78bfa] underline-offset-4">Start Investing in 4 Simple Steps</h2>
-              <p className="text-lg text-white max-w-2xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 underline decoration-[#a78bfa] underline-offset-4">Start Investing in 4 Simple Steps</h2>
+              <p className="text-base sm:text-lg text-white max-w-2xl mx-auto px-4">
                 Get started with commercial real estate investing in minutes
               </p>
             </motion.div>
 
-            <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+            <div className="flex flex-col gap-6 sm:gap-8 justify-center items-stretch max-w-5xl mx-auto">
               {[
                 {
                   title: "Create Account",
@@ -285,36 +283,38 @@ export default function EquityDashboard() {
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.7, delay: idx * 0.15 }}
                   whileHover={{
-                    scale: 1.04,
+                    scale: 1.02,
                     boxShadow: '0 0 32px 8px #a78bfa88',
-                    y: -8
+                    y: -4
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="relative flex-1 min-w-[220px] max-w-xs bg-black/70 backdrop-blur-lg border-2 border-[#a78bfa] rounded-2xl p-8 shadow-lg transition-all duration-300 group overflow-hidden flex flex-col items-center justify-between"
+                  className="relative w-full max-w-md mx-auto sm:max-w-none bg-black/70 backdrop-blur-lg border-2 border-[#a78bfa] rounded-2xl p-6 sm:p-8 shadow-lg transition-all duration-300 group overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6"
                   style={{ fontFamily: 'var(--font-sans, Inter, sans-serif)' }}
                 >
                   {/* Glowing step number */}
-                  <div className="absolute -top-4 -right-4 w-9 h-9 bg-[#a78bfa] text-black font-bold text-lg flex items-center justify-center rounded-full shadow-[0_0_16px_2px_#a78bfa99] border-2 border-white/30 z-20">
+                  <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-9 sm:h-9 bg-[#a78bfa] text-black font-bold text-base sm:text-lg flex items-center justify-center rounded-full shadow-[0_0_16px_2px_#a78bfa99] border-2 border-white/30 z-20 flex-shrink-0">
                     {step.step}
                   </div>
                   {/* Time badge */}
-                  <div className="absolute top-4 right-4 text-xs text-[#a78bfa] bg-[#a78bfa]/10 px-2 py-1 rounded-full font-medium border border-[#a78bfa]/30 z-20">
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 text-xs text-[#a78bfa] bg-[#a78bfa]/10 px-2 py-1 rounded-full font-medium border border-[#a78bfa]/30 z-20">
                     {step.time}
                   </div>
-                  {/* Glowing icon */}
-                  <div className="mb-6 mt-2">
-                    <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#a78bfa]/80 to-[#60a5fa]/60 shadow-[0_0_24px_4px_#a78bfa55]">
-                      {step.icon && React.createElement(step.icon, { className: 'w-9 h-9 text-white drop-shadow-[0_0_8px_#a78bfa]' })}
+                  {/* Icon container */}
+                  <div className="flex-shrink-0">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#a78bfa]/80 to-[#60a5fa]/60 shadow-[0_0_24px_4px_#a78bfa55]">
+                      {step.icon && React.createElement(step.icon, { className: 'w-7 h-7 sm:w-9 sm:h-9 text-white drop-shadow-[0_0_8px_#a78bfa]' })}
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3 text-center drop-shadow-[0_0_8px_#a78bfa99] group-hover:text-[#a78bfa] transition-colors duration-300">{step.title}</h3>
-                  <p className="text-white text-center mb-4 text-sm leading-relaxed opacity-90">
-                    {step.description}
-                  </p>
-                  <div className="flex-grow" />
-                  <div className="flex items-center gap-2 text-sm text-[#B6FF3F] font-semibold mb-0 mt-4">
-                    <CheckCircle className="w-5 h-5 text-[#B6FF3F] drop-shadow-[0_0_6px_#B6FF3F]" />
-                    <span className="drop-shadow-[0_0_6px_#B6FF3F]">Easy & Secure</span>
+                  {/* Content */}
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3 drop-shadow-[0_0_8px_#a78bfa99] group-hover:text-[#a78bfa] transition-colors duration-300">{step.title}</h3>
+                    <p className="text-white text-sm sm:text-base mb-3 sm:mb-4 leading-relaxed opacity-90">
+                      {step.description}
+                    </p>
+                    <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-[#B6FF3F] font-semibold">
+                      <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#B6FF3F] drop-shadow-[0_0_6px_#B6FF3F]" />
+                      <span className="drop-shadow-[0_0_6px_#B6FF3F]">Easy & Secure</span>
+                    </div>
                   </div>
                   {/* Purple glow border overlay */}
                   <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ boxShadow: '0 0 32px 4px #a78bfa33, inset 0 2px 16px #fff2' }} />
@@ -325,40 +325,40 @@ export default function EquityDashboard() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-4xl mx-auto text-center">
+        <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-purple-900/30 to-green-900/30 rounded-3xl border border-purple-400 p-12 shadow-lg shadow-purple-400/40"
+              className="bg-gradient-to-br from-purple-900/30 to-green-900/30 rounded-3xl border border-purple-400 p-8 sm:p-12 shadow-lg shadow-purple-400/40"
             >
-              <Star className="w-12 h-12 text-purple-400 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-white mb-4">
+              <Star className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400 mx-auto mb-4 sm:mb-6" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">
                 Ready to Start Building Wealth?
               </h2>
-              <p className="text-lg text-white mb-8 max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg text-white mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
                 Join thousands of investors earning monthly income from premium commercial properties.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/equity/property">
+              <div className="flex flex-col gap-3 sm:gap-4 justify-center items-center max-w-md mx-auto">
+                <Link href="/equity/property" className="w-full">
                   <Button 
                     size="lg"
-                    className="bg-[#a78bfa] hover:bg-[#c4b5fd] text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group border-none"
+                    className="w-full bg-[#a78bfa] hover:bg-[#c4b5fd] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group border-none"
                   >
-                    <Building2 className="w-5 h-5 mr-2" />
+                    <Building2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Start Investing
-                    <ArrowUpRight className="w-5 h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link href="/equity/portfolio">
+                <Link href="/equity/portfolio" className="w-full">
                   <Button 
                     variant="outline"
                     size="lg"
-                    className="border-white/20 text-white hover:bg-white/10 px-8 py-4 rounded-xl text-lg font-semibold backdrop-blur-md"
+                    className="w-full border-white/20 text-white hover:bg-white/10 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold backdrop-blur-md"
                   >
-                    <Eye className="w-5 h-5 mr-2" />
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Explore Dashboard
                   </Button>
                 </Link>

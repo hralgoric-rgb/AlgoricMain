@@ -874,6 +874,25 @@ export default function UserProfile() {
                             <Button
                               variant="outline"
                               className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white gap-2"
+                              onClick={async () => {
+                                try {
+                                  // Clear all authentication tokens
+                                  sessionStorage.removeItem("authToken");
+                                  localStorage.removeItem("authToken");
+                                  document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                                  
+                                  // Show success message
+                                  toast.success("Successfully logged out");
+                                  
+                                  // Redirect to home page
+                                  setTimeout(() => {
+                                    router.push("/");
+                                  }, 1000);
+                                } catch (error) {
+                                  console.error("Logout error:", error);
+                                  toast.error("Error logging out");
+                                }
+                              }}
                             >
                               <LogOut className="w-4 h-4" /> Logout
                             </Button>

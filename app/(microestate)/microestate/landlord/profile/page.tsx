@@ -25,8 +25,6 @@ export default function LandlordProfile() {
 const [email, setEmail] = useState("");
 const [phone, setPhone] = useState("");
 
-const [profilePic, setProfilePic] = useState("");
-
 
   // Password states
   const [oldPassword, setOldPassword] = useState("");
@@ -58,7 +56,6 @@ const [profilePic, setProfilePic] = useState("");
       setrole(userData.role || "")
       setuserID(userData._id || " ")
       setEmail(userData.email || " ")
-      setProfilePic(userData.profilePic || "");
 
      } catch (error) {
       console.error("Error fetching user data:", error);
@@ -102,10 +99,11 @@ const [profilePic, setProfilePic] = useState("");
 
         <div className="bg-[#181c24] border border-orange-500/20 rounded-2xl shadow-xl p-6 flex flex-col sm:flex-row gap-8 items-center animate-fadeIn">
           <div className="relative group">
-            <img src={profilePic} alt="Profile" className="w-28 h-28 rounded-full border-4 border-orange-500 object-cover shadow-lg" />
-            <label className="absolute bottom-2 right-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-2 cursor-pointer shadow-lg transition">
-              <input type="file" accept="image/*" className="hidden" />
-            </label>
+            <div className="w-28 h-28 rounded-full border-4 border-orange-500 bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-4xl select-none">
+                {name ? name.charAt(0).toUpperCase() : "L"}
+              </span>
+            </div>
           </div>
           <div className="flex-1 flex flex-col gap-2 items-center sm:items-start">
             <div className="flex items-center gap-2">

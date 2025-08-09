@@ -564,7 +564,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md transition-all duration-300 bg-black/65`}
+        className={`fixed top-0 left-0 right-0 z-[70] backdrop-blur-md transition-all duration-300 bg-black/65`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main navigation - desktop */}
@@ -972,7 +972,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="custom:hidden bg-black/65 backdrop-blur-md sticky top-14 z-50 w-full"
+            className="custom:hidden bg-black/90 backdrop-blur-md fixed top-14 left-0 right-0 z-[60] w-full shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto"
           >
             <div className="px-4 pt-2 pb-4 space-y-2">
               <Link
@@ -1069,8 +1069,9 @@ export default function Navbar() {
                 <>
                   <div className="block px-4 py-3 text-white">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center"></div>
-                      <span className="font-medium">{"User"}</span>
+                      <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold">
+                        U
+                      </div>
                     </div>
                     <Link
                       href="/profile"
@@ -1080,11 +1081,11 @@ export default function Navbar() {
                       Profile
                     </Link>
                     <Link
-                      href="/my-properties"
+                      href="/favourites"
                       className="block px-2 py-2 text-white hover:bg-gray-700 rounded-md transition-all text-sm"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      My Properties
+                      Favourites
                     </Link>
                     <button
                       onClick={() => {

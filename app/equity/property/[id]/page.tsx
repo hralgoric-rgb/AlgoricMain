@@ -304,64 +304,64 @@ export default function PropertyDetailPage({
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <div className="bg-gradient-to-b from-gray-900 to-black border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-4 mb-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
             <Button
               onClick={() => router.back()}
               variant="outline"
               size="sm"
-              className="border-gray-600 text-gray-300 hover:bg-gray-800"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 self-start"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
 
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <PropertyIcon className="w-6 h-6 text-purple-500" />
-                <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-white via-[#a78bfa] to-white bg-clip-text text-transparent">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                <PropertyIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 flex-shrink-0" />
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white bg-gradient-to-r from-white via-[#a78bfa] to-white bg-clip-text text-transparent break-words">
                   {property.projectName || property.title}
                 </h1>
               </div>
-              <div className="flex items-center gap-4 text-gray-400">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-gray-400 text-sm">
                 {property.locality && (
                   <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>
+                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">
                       {property.locality}{property.address?.city && `, ${property.address.city}`}
                     </span>
                   </div>
                 )}
                 {property.currentROI && (
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                     <span>{property.currentROI}% ROI</span>
                   </div>
                 )}
                 <div className="flex items-center gap-1">
-                  <Shield className="w-4 h-4" />
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                   <span>AI Score: {getAIScore()}/100</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 self-start sm:self-auto">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
                 className="border-gray-600 text-gray-300 hover:bg-gray-800"
               >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
+                <Share2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Share</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Property Images */}
@@ -370,15 +370,15 @@ export default function PropertyDetailPage({
               animate={{ opacity: 1, y: 0 }}
               className="relative"
             >
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-800">
+              <div className="aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-gray-800">
                 <img
                   src={property.images?.[0] || "/placeholder-property.jpg"}
                   alt={property.projectName || property.title || "Property Image"}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-4 right-4">
-                  <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
-                    <span className="text-white text-sm font-semibold">
+                <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
+                  <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2 sm:px-3 py-1">
+                    <span className="text-white text-xs sm:text-sm font-semibold">
                       {property.availableShares.toLocaleString()} shares
                       available
                     </span>
@@ -392,60 +392,60 @@ export default function PropertyDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800"
+              className="bg-gray-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-800"
             >
-              <h2 className="text-2xl font-bold text-white mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
                 Property Overview
               </h2>
               {property.description && (
-                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-4 sm:mb-6">
                   {property.description}
                 </p>
               )}
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {property.totalArea && (
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Building2 className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div className="text-white font-semibold">
+                    <div className="text-white font-semibold text-sm sm:text-base">
                       {property.totalArea.toLocaleString()} sq ft
                     </div>
-                    <div className="text-gray-400 text-sm">Total Area</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Total Area</div>
                   </div>
                 )}
                 {property.builtYear && (
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Calendar className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div className="text-white font-semibold">
+                    <div className="text-white font-semibold text-sm sm:text-base">
                       {property.builtYear}
                     </div>
-                    <div className="text-gray-400 text-sm">Year Built</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Year Built</div>
                   </div>
                 )}
                 {property.currentOccupancy !== undefined && (
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Users className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Users className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div className="text-white font-semibold">
+                    <div className="text-white font-semibold text-sm sm:text-base">
                       {property.currentOccupancy}%
                     </div>
-                    <div className="text-gray-400 text-sm">Occupancy</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Occupancy</div>
                   </div>
                 )}
                 {property.currentROI && (
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Target className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-400 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Target className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <div className="text-white font-semibold">
+                    <div className="text-white font-semibold text-sm sm:text-base">
                       {property.currentROI}%
                     </div>
-                    <div className="text-gray-400 text-sm">Annual ROI</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Annual ROI</div>
                   </div>
                 )}
               </div>
@@ -457,13 +457,13 @@ export default function PropertyDetailPage({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 rounded-xl p-6 border border-purple-800/40"
+                className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 rounded-xl p-4 sm:p-6 border border-purple-800/40"
               >
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                  <Star className="w-5 h-5 mr-2 text-purple-400" />
+                <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center">
+                  <Star className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-400" />
                   Investment Highlights
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {property.highlights.map((highlight, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
@@ -485,44 +485,42 @@ export default function PropertyDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800"
             >
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                <Info className="w-5 h-5 mr-2 text-purple-400" />
+              <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center">
+                <Info className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-400" />
                 Property Details
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                <div className="space-y-2 sm:space-y-3">
                   {property.totalValuation && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Total Valuation</span>
-                      <span className="text-white font-semibold">₹{property.totalValuation} Cr</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Total Valuation</span>
+                      <span className="text-white font-semibold text-sm">₹{property.totalValuation} Cr</span>
                     </div>
                   )}
                   {property.possessionStatus && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Possession Status</span>
-                      <span className="text-white font-semibold">{property.possessionStatus}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Possession Status</span>
+                      <span className="text-white font-semibold text-sm">{property.possessionStatus}</span>
                     </div>
                   )}
                   {property.pinCode && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Pin Code</span>
-                      <span className="text-white font-semibold">{property.pinCode}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Pin Code</span>
+                      <span className="text-white font-semibold text-sm">{property.pinCode}</span>
                     </div>
                   )}
                   {property.minimumHoldingPeriod && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Min. Holding Period</span>
-                      <span className="text-white font-semibold">{property.minimumHoldingPeriod}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Min. Holding Period</span>
+                      <span className="text-white font-semibold text-sm">{property.minimumHoldingPeriod}</span>
                     </div>
                   )}
-                </div>
-                <div className="space-y-3">
                   {(property.minimumInvestmentTicket || property.customTicketAmount) && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Min Investment</span>
-                      <span className="text-white font-semibold">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Min Investment</span>
+                      <span className="text-white font-semibold text-sm">
                         {property.minimumInvestmentTicket === "Custom Amount" && property.customTicketAmount ? 
                           `₹${property.customTicketAmount.toLocaleString()}` : 
                           property.minimumInvestmentTicket
@@ -531,25 +529,25 @@ export default function PropertyDetailPage({
                     </div>
                   )}
                   {property.targetRaiseAmount && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Target Raise</span>
-                      <span className="text-white font-semibold">₹{property.targetRaiseAmount} Cr</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Target Raise</span>
+                      <span className="text-white font-semibold text-sm">₹{property.targetRaiseAmount} Cr</span>
                     </div>
                   )}
                   {property.ownershipSplit && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Ownership Split</span>
-                      <span className="text-white font-semibold">{property.ownershipSplit}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Ownership Split</span>
+                      <span className="text-white font-semibold text-sm">{property.ownershipSplit}</span>
                     </div>
                   )}
                   {property.virtualTourLink && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Virtual Tour</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">Virtual Tour</span>
                       <a 
                         href={property.virtualTourLink} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-purple-400 hover:text-purple-300 font-semibold"
+                        className="text-purple-400 hover:text-purple-300 font-semibold text-sm"
                       >
                         View Tour
                       </a>
@@ -559,13 +557,13 @@ export default function PropertyDetailPage({
               </div>
               
               {property.exitOptions.length > 0 && (
-                <div className="mt-6 pt-4 border-t border-gray-700">
-                  <h4 className="text-white font-semibold mb-3">Exit Options</h4>
+                <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-700">
+                  <h4 className="text-white font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Exit Options</h4>
                   <div className="flex flex-wrap gap-2">
                     {property.exitOptions.map((option, index) => (
                       <span 
                         key={index}
-                        className="px-3 py-1 bg-purple-900/30 text-purple-300 rounded-full text-sm border border-purple-800/40"
+                        className="px-2 sm:px-3 py-1 bg-purple-900/30 text-purple-300 rounded-full text-xs sm:text-sm border border-purple-800/40"
                       >
                         {option}
                       </span>
@@ -578,22 +576,22 @@ export default function PropertyDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              className="grid grid-cols-1 gap-4 sm:gap-6"
             >
               {property.features && property.features.length > 0 && (
-                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800">
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
                     <CheckCircle
-                      className="w-5 h-5"
+                      className="w-4 h-4 sm:w-5 sm:h-5"
                       style={{ color: "#B6FF3F" }}
                     />
                     Key Features
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {property.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[#B6FF3F]" />
-                        <span className="text-gray-300">{feature}</span>
+                      <div key={index} className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#B6FF3F] flex-shrink-0" />
+                        <span className="text-gray-300 text-sm sm:text-base">{feature}</span>
                       </div>
                     ))}
                   </div>
@@ -601,16 +599,16 @@ export default function PropertyDetailPage({
               )}
 
               {property.amenities && property.amenities.length > 0 && (
-                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <Star className="w-5 h-5 text-purple-500" />
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800">
+                  <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                     Amenities
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {property.amenities.map((amenity, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[#a78bfa]" />
-                        <span className="text-gray-300">{amenity}</span>
+                      <div key={index} className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#a78bfa] flex-shrink-0" />
+                        <span className="text-gray-300 text-sm sm:text-base">{amenity}</span>
                       </div>
                     ))}
                   </div>
@@ -642,76 +640,76 @@ export default function PropertyDetailPage({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+              className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800"
             >
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                <Calculator className="w-5 h-5 mr-2 text-purple-400" />
+              <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center">
+                <Calculator className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-400" />
                 Financial Analysis
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {getGrossIncome() > 0 && (
                   <div className="text-center">
                     <div
-                      className="text-2xl font-bold"
+                      className="text-lg sm:text-xl lg:text-2xl font-bold"
                       style={{ color: "#B6FF3F" }}
                     >
                       {formatCurrency(getGrossIncome())}
                     </div>
-                    <div className="text-gray-400">Annual Gross Income</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Annual Gross Income</div>
                   </div>
                 )}
                 {getOperatingExpenses() > 0 && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-red-400">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-400">
                       {formatCurrency(getOperatingExpenses())}
                     </div>
-                    <div className="text-gray-400">Operating Expenses</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Operating Expenses</div>
                   </div>
                 )}
                 {getNetIncome() > 0 && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-white">
                       {formatCurrency(getNetIncome())}
                     </div>
-                    <div className="text-gray-400">Annual Net Income</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Annual Net Income</div>
                   </div>
                 )}
                 {getCapRate() > 0 && (
                   <div className="text-center">
                     <div
-                      className="text-2xl font-bold"
+                      className="text-lg sm:text-xl lg:text-2xl font-bold"
                       style={{ color: "#a78bfa" }}
                     >
                       {getCapRate()}%
                     </div>
-                    <div className="text-gray-400">Cap Rate</div>
+                    <div className="text-gray-400 text-xs sm:text-sm">Cap Rate</div>
                   </div>
                 )}
               </div>
               
               {/* Additional Financial Metrics */}
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-700">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {property.monthlyRental && (
                     <div className="bg-gray-800/50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-400">Monthly Rental</div>
-                      <div className="text-lg font-semibold text-white">
+                      <div className="text-xs sm:text-sm text-gray-400">Monthly Rental</div>
+                      <div className="text-sm sm:text-base lg:text-lg font-semibold text-white">
                         {formatCurrency(property.monthlyRental)}
                       </div>
                     </div>
                   )}
                   {property.totalPropertyValue && property.totalArea && (
                     <div className="bg-gray-800/50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-400">Price Per Sq Ft</div>
-                      <div className="text-lg font-semibold text-white">
+                      <div className="text-xs sm:text-sm text-gray-400">Price Per Sq Ft</div>
+                      <div className="text-sm sm:text-base lg:text-lg font-semibold text-white">
                         ₹{Math.round(property.totalPropertyValue / property.totalArea).toLocaleString()}
                       </div>
                     </div>
                   )}
                   {property.currentOccupancy !== undefined && (
                     <div className="bg-gray-800/50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-400">Occupancy Rate</div>
-                      <div className="text-lg font-semibold text-green-400">
+                      <div className="text-xs sm:text-sm text-gray-400">Occupancy Rate</div>
+                      <div className="text-sm sm:text-base lg:text-lg font-semibold text-green-400">
                         {property.currentOccupancy}%
                       </div>
                     </div>
@@ -864,30 +862,30 @@ export default function PropertyDetailPage({
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
+          <div className="lg:col-span-1 min-w-0">
+            <div className="lg:sticky lg:top-8 space-y-4 sm:space-y-6 min-w-0 overflow-hidden">
               {/* Investment Panel */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 }}
-                className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-gray-800"
+                className="bg-gradient-to-br from-gray-900 to-black rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-6 border border-gray-800 w-full max-w-full overflow-hidden"
               >
-                <h2 className="text-xl font-bold text-white mb-6">
+                <h2 className="text-base sm:text-lg lg:text-xl font-bold text-white mb-3 sm:mb-4 lg:mb-6 break-words">
                   Invest in This Property
                 </h2>
 
                 {/* Share Information */}
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-400">Price per Share</span>
-                    <span className="text-2xl font-bold text-white">
+                    <span className="text-gray-400 text-sm flex-shrink-0">Price per Share</span>
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-white break-all text-right min-w-0">
                       ₹{property.pricePerShare.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-gray-400">Available Shares</span>
-                    <span className="text-white font-semibold">
+                  <div className="flex justify-between items-center mb-3 sm:mb-4">
+                    <span className="text-gray-400 text-sm flex-shrink-0">Available Shares</span>
+                    <span className="text-white font-semibold text-sm break-all text-right min-w-0">
                       {property.availableShares.toLocaleString()} /{" "}
                       {property.totalShares.toLocaleString()}
                     </span>
@@ -915,9 +913,9 @@ export default function PropertyDetailPage({
                 </div>
 
                 {/* Share Selection */}
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-gray-400">Select Shares</span>
+                    <span className="text-gray-400 text-sm">Select Shares</span>
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
@@ -925,11 +923,11 @@ export default function PropertyDetailPage({
                         onClick={() =>
                           setSelectedShares(Math.max(1, selectedShares - 1))
                         }
-                        className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 w-8 h-8 p-0 flex-shrink-0"
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
-                      <span className="text-lg font-bold text-white px-4">
+                      <span className="text-base sm:text-lg font-bold text-white px-2 sm:px-3 min-w-[3rem] text-center">
                         {selectedShares}
                       </span>
                       <Button
@@ -943,26 +941,26 @@ export default function PropertyDetailPage({
                             )
                           )
                         }
-                        className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 w-8 h-8 p-0 flex-shrink-0"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="bg-black/40 rounded-lg p-4 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Total Investment</span>
-                      <span className="text-xl font-bold text-white">
+                  <div className="bg-black/40 rounded-lg p-3 sm:p-4 space-y-3">
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-gray-400 text-sm flex-shrink-0">Total Investment</span>
+                      <span className="text-base sm:text-lg lg:text-xl font-bold text-white break-all text-right min-w-0">
                         ₹{getTotalInvestment().toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-gray-400 text-sm flex-shrink-0">
                         Expected Monthly Income
                       </span>
                       <span
-                        className="text-lg font-semibold"
+                        className="text-sm sm:text-base lg:text-lg font-semibold break-all text-right min-w-0"
                         style={{ color: "#B6FF3F" }}
                       >
                         ₹{getExpectedMonthlyIncome().toLocaleString()}
@@ -974,10 +972,12 @@ export default function PropertyDetailPage({
                 {/* Buy Button */}
                 <Button
                   onClick={handleBuyShares}
-                  className="w-full bg-[#d1ff4a] hover:bg-[#b6e944] text-black font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105"
+                  className="w-full bg-[#d1ff4a] hover:bg-[#b6e944] text-black font-semibold py-2 sm:py-3 rounded-lg transition-all duration-300 text-xs sm:text-sm lg:text-base overflow-hidden"
                 >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Express Interest
+                  <div className="flex items-center justify-center w-full min-w-0">
+                    <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2 flex-shrink-0" />
+                    <span className="truncate">Express Interest</span>
+                  </div>
                 </Button>
               </motion.div>
 
@@ -986,18 +986,18 @@ export default function PropertyDetailPage({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
-                className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800"
+                className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800"
               >
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                  <BarChart3 className="w-5 h-5 mr-2 text-purple-400" />
+                <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 flex items-center">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-400" />
                   Market Analysis
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {property.appreciationRate && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Expected Appreciation</span>
+                      <span className="text-gray-400 text-sm">Expected Appreciation</span>
                       <span
-                        className="font-semibold"
+                        className="font-semibold text-sm sm:text-base"
                         style={{ color: "#B6FF3F" }}
                       >
                         +{property.appreciationRate}%
@@ -1006,16 +1006,16 @@ export default function PropertyDetailPage({
                   )}
                   {property.currentYield && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Current Yield</span>
-                      <span className="text-white font-semibold">
+                      <span className="text-gray-400 text-sm">Current Yield</span>
+                      <span className="text-white font-semibold text-sm sm:text-base">
                         {property.currentYield}%
                       </span>
                     </div>
                   )}
                   {property.status && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Property Status</span>
-                      <span className={`font-semibold capitalize ${
+                      <span className="text-gray-400 text-sm">Property Status</span>
+                      <span className={`font-semibold capitalize text-sm sm:text-base ${
                         property.status === 'active' ? 'text-green-400' : 
                         property.status === 'pending_approval' ? 'text-yellow-400' : 
                         'text-gray-400'
@@ -1025,9 +1025,9 @@ export default function PropertyDetailPage({
                     </div>
                   )}
                   <div>
-                    <div className="text-gray-400 mb-2">Investment Type</div>
+                    <div className="text-gray-400 mb-2 text-sm">Investment Type</div>
                     <div
-                      className="text-sm font-semibold"
+                      className="text-xs sm:text-sm font-semibold"
                       style={{ color: "#B6FF3F" }}
                     >
                       Fractional Commercial Real Estate
