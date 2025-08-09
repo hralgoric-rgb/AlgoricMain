@@ -444,7 +444,7 @@ export default function ContactUs() {
                             viewport={{ once: true }}
                             className="text-lg text-gray-600 max-w-2xl mx-auto"
                         >
-                            At 100gaj, we are dedicated to providing exceptional customer service. Our approach is centered around understanding your unique needs and delivering personalized solutions that exceed your expectations.
+                            At Algoric, we are dedicated to providing exceptional customer service. Our approach is centered around understanding your unique needs and delivering personalized solutions that exceed your expectations.
                         </motion.p>
                     </div>
                 </div>
@@ -500,17 +500,17 @@ export default function ContactUs() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
                             {
-                                quote: "The 100gaj team made the process of finding our dream home effortless. Their attention to detail and personalized service were exceptional.",
+                                quote: "The Algoric team made the process of finding our dream home effortless. Their attention to detail and personalized service were exceptional.",
                                 author: "Rahul Sharma",
                                 role: "Homeowner",
                             },
                             {
-                                quote: "As a first-time buyer, I was nervous, but 100gaj guided me through every step. I couldn't be happier with my new home.",
+                                quote: "As a first-time buyer, I was nervous, but Algoric guided me through every step. I couldn't be happier with my new home.",
                                 author: "Priya Patel",
                                 role: "First-time Buyer",
                             },
                             {
-                                quote: "Selling my property was quick and hassle-free thanks to 100gaj. Their professionalism and market knowledge are unmatched.",
+                                quote: "Selling my property was quick and hassle-free thanks to Algoric. Their professionalism and market knowledge are unmatched.",
                                 author: "Vikram Malhotra",
                                 role: "Property Seller",
                             },

@@ -378,7 +378,7 @@ const Login = () => {
           </div>
         </div>
         <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent mb-2">
-          Welcome to 100 GAJ
+          Welcome to ALGORIC
         </h2>
         <p className="text-center text-gray-300 text-sm">
           Your gateway to modern real estate management

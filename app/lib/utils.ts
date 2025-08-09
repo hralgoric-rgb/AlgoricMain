@@ -62,7 +62,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
   
   // Send email
   const info = await transporter.sendMail({
-    from: `"100GAJ Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+    from: `"ALGORIC Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
@@ -126,19 +126,19 @@ export function getVerificationEmailTemplate(verificationCode: string): string {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://yourdomain.com/logo.png" alt="100GAJ Logo" class="logo">
+          <img src="https://yourdomain.com/logoF.png" alt="ALGORIC Logo" class="logo">
           <h2>Verify Your Email Address</h2>
         </div>
         <div class="content">
-          <p>Thank you for signing up with 100GAJ! Please use the verification code below to complete your registration:</p>
+          <p>Thank you for signing up with ALGORIC! Please use the verification code below to complete your registration:</p>
           
           <div class="verification-code">${verificationCode}</div>
           
           <p>This code will expire in 24 hours. If you did not create an account, please ignore this email.</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} 100GAJ. All rights reserved.</p>
-          <p>If you have any questions, please contact our support team at support@100gaj.com</p>
+          <p>&copy; ${new Date().getFullYear()} ALGORIC. All rights reserved.</p>
+          <p>If you have any questions, please contact our support team at support@algoric.com</p>
         </div>
       </div>
     </body>
@@ -201,7 +201,7 @@ export function getPasswordResetEmailTemplate(verificationCode: string): string 
           <h2>Reset Your Password</h2>
         </div>
         <div class="content">
-          <p>You requested a password reset for your 100GAJ account. Click the button below to create a new password:</p>
+          <p>You requested a password reset for your ALGORIC account. Click the button below to create a new password:</p>
           
           <div style="text-align: center;">
             <p class="button">${verificationCode}</p>
@@ -210,7 +210,7 @@ export function getPasswordResetEmailTemplate(verificationCode: string): string 
           <p>This code will expire in 1 hour. If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} 100GAJ. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} ALGORIC. All rights reserved.</p>
         </div>
       </div>
     </body>

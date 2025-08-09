@@ -1,12 +1,12 @@
-/**
- * Test script to verify 100Gaj Chatbot API connectivity
+/*
+ * Test script to verify Algoric Chatbot API connectivity
  * Run this with: node test-chatbot-api.js
  */
 
 const CHATBOT_API_URL = 'https://100gaj-chatbot-production.up.railway.app';
 
 async function testApiHealth() {
-  console.log('🔍 Testing 100Gaj Chatbot API Health...\n');
+  console.log('🔍 Testing Algoric Chatbot API Health...\n');
   
   try {
     console.log(`Connecting to: ${CHATBOT_API_URL}`);
@@ -81,7 +81,7 @@ async function testChatEndpoint() {
 }
 
 async function runTests() {
-  console.log('🤖 100Gaj Chatbot API Test Suite');
+  console.log('🤖 Algoric Chatbot API Test Suite');
   console.log('=====================================\n');
   
   const healthResult = await testApiHealth();

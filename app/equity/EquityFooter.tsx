@@ -14,11 +14,11 @@ export default function EquityFooter() {
           {/* Left Section */}
           <div className="md:col-span-4">
             <div className="flex items-center mb-6">
-              <Image src="/logo.png" alt="100 Gaj Logo" width={50} height={50} />
-              <h3 className="text-2xl font-bold text-[#a78bfa] ml-4">100Gaj Equity</h3>
+              <Image src="/logoF.png" alt="Algoric Logo" width={50} height={50} />
+              <h3 className="text-2xl font-bold text-[#a78bfa] ml-4">Algoric Equity</h3>
             </div>
             <p className="mb-6 text-sm leading-relaxed text-gray-300">
-              Invest in premium commercial real estate with ease. Build your wealth, diversify your portfolio, and earn monthly income with 100Gaj Equity Platform.
+              Invest in premium commercial real estate with ease. Build your wealth, diversify your portfolio, and earn monthly income with Algoric Equity Platform.
             </p>
             <div className="flex space-x-5">
               {/* Instagram */}
@@ -109,12 +109,12 @@ export default function EquityFooter() {
                     d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 0l8 7 8-7"
                   />
                 </svg>
-                 <a
-        href="mailto:info@100gaj.com"
-        className="group-hover:text-[#B6FF3F] transition-all duration-300"
-      >
-        contact@100gaj.com
-      </a>
+                <a
+                  href="mailto:info@algoric.com"
+                  className="hover:text-purple-200"
+                >
+                  contact@algoric.com
+                </a>
               </li>
 
               {/* Phone */}
@@ -166,7 +166,7 @@ export default function EquityFooter() {
         </div>
 
         <div className="mt-12 border-t border-[#a78bfa]/20 pt-8 text-center text-gray-400 text-sm">
-          © {new Date().getFullYear()} 100Gaj Equity Platform. All rights reserved.
+          © {new Date().getFullYear()} Algoric Equity Platform. All rights reserved.
         </div>
       </div>
     </footer>

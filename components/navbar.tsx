@@ -42,7 +42,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-orange-500">100Gaj</span>
+              <span className="text-2xl font-bold text-orange-500">Algoric</span>
             </Link>
           </div>
 

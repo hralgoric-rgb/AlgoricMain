@@ -192,7 +192,7 @@ interface UserInvestment {
 
 ### Prerequisites
 - Node.js 18+
-- Existing 100Gaj project setup
+- Existing Algoric project setup
 - Tailwind CSS configured
 - Shadcn/UI components installed
 
@@ -240,7 +240,7 @@ Updated navbar includes:
 ### Branding
 - Colors defined in `globals.css` CSS variables
 - Logo and company name in navbar
-- Consistent with existing 100Gaj branding
+- Consistent with existing Algoric branding
 
 ### Features
 - Easy to add new property types

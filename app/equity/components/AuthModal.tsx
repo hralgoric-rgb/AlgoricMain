@@ -461,7 +461,7 @@ export default function AuthModal({
 							<div className='p-8'>
 								{/* Title */}
 								<h2 className='text-2xl font-bold text-orange-500 text-center mb-6'>
-									Welcome to 100 GAJ
+									Welcome to ALGORIC
 								</h2>
 
 								{/* Main auth view (login/signup) */}
@@ -703,7 +703,7 @@ export default function AuthModal({
 												</button>
 
 												<p className='text-sm text-gray-600 text-center'>
-													By submitting, I accept 100 GAJ&apos;s{" "}
+													By submitting, I accept ALGORIC&apos;s{" "}
 													<a
 														href='#'
 														className='text-orange-500 hover:text-orange-600'

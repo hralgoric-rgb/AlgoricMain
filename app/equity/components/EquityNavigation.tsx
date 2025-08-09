@@ -116,7 +116,7 @@ export default function EquityNavigation() {
 								<Building2 className='w-5 h-5 text-white' />
 							</div>
 							<div className='flex flex-col'>
-								<span className='text-white font-bold text-lg'>100Gaj</span>
+								<span className='text-white font-bold text-lg'>Algoric</span>
 								<span className='text-gray-300 text-xs'>Equity Platform</span>
 							</div>
 						</div>

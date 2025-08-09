@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.CONTACT_EMAIL || process.env.EMAIL_USER, // Send to configured email or default to sender
-      subject: "New Contact Form Submission from 100Gaj",
+      subject: "New Contact Form Submission from Algoric",
       html: `
         <h2>New Contact Form Submission</h2>
         <p><strong>Name:</strong> ${fullName}</p>

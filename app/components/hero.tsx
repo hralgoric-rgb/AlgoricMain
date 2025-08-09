@@ -11,7 +11,7 @@ export default function Hero() {
       <div className="container mx-auto px-4 z-10">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            Find Your Perfect <span className="text-orange-500">100 Gaj</span> Plot
+            Find Your Perfect <span className="text-orange-500">Algoric</span> Plot
           </h1>
           <p className="text-xl text-gray-300 mb-8">
             Discover premium residential plots in prime locations. Your dream home starts here.

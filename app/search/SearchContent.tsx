@@ -1598,7 +1598,7 @@ const SearchPage = () => {
         <div className="container mx-auto px-0 md:px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="hidden md:flex items-center pl-4 md:pl-0">
-              <Image src="/logo.png" alt="100Gaj" width={64} height={64} />
+              <Image src="/logoF.png" alt="Algoric" width={64} height={64} />
             </div>
 
             <div className="flex items-center gap-3 flex-1 px-4 md:px-0 md:ml-8 md:max-w-xl">
@@ -2223,7 +2223,7 @@ const SearchPage = () => {
       {/* Mobile View Toggle Buttons - Only visible on small screens */}
       <div className="md:hidden flex-shrink-0 z-20 bg-black py-2 px-4 flex justify-between border-b border-gray-800">
         <div className="flex items-center">
-          <Image src="/logo.png" height={40} width={40} alt="100Gaj" className="mr-2" />
+          <Image src="/logoF.png" height={40} width={40} alt="Algoric" className="mr-2" />
           <div className="text-xs text-gray-400">
             <span className="font-medium text-orange-600">
               {filteredSearchItems.length}

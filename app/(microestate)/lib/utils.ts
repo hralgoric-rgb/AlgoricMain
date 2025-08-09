@@ -46,7 +46,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
     // Send email
     console.log('📧 Sending email...');
     const info = await transporter.sendMail({
-      from: `"Microestate 100GAJ Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER}>`,
+      from: `"Microestate Algoric Properties" <${process.env.EMAIL_FROM || process.env.EMAIL_SERVER_USER}>`,
       to,
       subject,
       html,
@@ -285,14 +285,14 @@ export function getTenantWelcomeEmailTemplate(data: {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://yourdomain.com/logo.png" alt="100GAJ Logo" class="logo">
-          <h1>Welcome to 100GAJ MicroEstate</h1>
+          <img src="https://yourdomain.com/logoF.png" alt="ALGORIC Logo" class="logo">
+          <h1>Welcome to Algoric MicroEstate</h1>
         </div>
         
         <div class="content">
           <div class="welcome-message">
             <h2 style="margin-top: 0; color: #92400e;">Hello ${tenantName}! 👋</h2>
-            <p style="margin-bottom: 0;">Your landlord has created a tenant account for you and assigned you to a property. Welcome to the 100GAJ MicroEstate platform!</p>
+            <p style="margin-bottom: 0;">Your landlord has created a tenant account for you and assigned you to a property. Welcome to the Algoric MicroEstate platform!</p>
           </div>
 
           <div class="credentials-box">
@@ -383,13 +383,13 @@ export function getTenantWelcomeEmailTemplate(data: {
             <a href="${process.env.NEXTAUTH_URL}/microestate/help">Help Center</a> |
             <a href="${process.env.NEXTAUTH_URL}/microestate/contact">Contact Support</a>
           </div>
-          <p>&copy; ${new Date().getFullYear()} 100GAJ MicroEstate. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} Algoric MicroEstate. All rights reserved.</p>
           <p style="margin-top: 5px;">
             This email was sent because a landlord added you as a tenant on our platform.<br>
             If you believe this was sent in error, please contact us immediately.
           </p>
           <p style="margin-top: 10px; font-size: 10px; color: #9ca3af;">
-            100GAJ MicroEstate | 123 Business Ave, Suite 100 | City, State 12345
+            Algoric MicroEstate | 123 Business Ave, Suite 100 | City, State 12345
           </p>
         </div>
       </div>

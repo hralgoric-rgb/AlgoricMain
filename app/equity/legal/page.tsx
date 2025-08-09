@@ -240,12 +240,12 @@ export default function Legal() {
               <p className="text-lg text-white">
                 <strong>4. Intellectual Property</strong>
                 All content on this website—including logos, text, images, and
-                software—is the property of 100gaj or its content suppliers, and
+                software—is the property of Algoric or its content suppliers, and
                 is protected by intellectual property laws.
               </p>
               <p className="text-lg text-white">
                 <strong>5. Limitation of Liability</strong>
-                100gaj is not liable for:
+                Algoric is not liable for:
               </p>
               <ul className="list-disc list-inside text-lg text-white space-y-2">
                 <li>
@@ -301,7 +301,7 @@ export default function Legal() {
             >
               <ul className="list-disc list-inside text-lg text-white space-y-2">
                 <li>
-                  100gaj acts solely as a platform for property listings and
+                  Algoric acts solely as a platform for property listings and
                   user interactions.
                 </li>
                 <li>

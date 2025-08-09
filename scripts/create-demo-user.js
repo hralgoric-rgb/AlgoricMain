@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 // MongoDB connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/100gaj', {
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/algoric', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -43,7 +43,7 @@ const createDemoUser = async () => {
     await connectDB();
     
     // Demo user data
-    const demoEmail = 'demo@100gaj.com';
+    const demoEmail = 'demo@algoric.com';
     const demoPassword = 'demo123';
     
     // Check if demo user already exists
@@ -94,7 +94,7 @@ const createDemoAgent = async () => {
     await connectDB();
     
     // Demo agent data
-    const demoEmail = 'agent@100gaj.com';
+    const demoEmail = 'agent@algoric.com';
     const demoPassword = 'agent123';
     
     // Check if demo agent already exists
@@ -127,7 +127,7 @@ const createDemoAgent = async () => {
       },
       agentInfo: {
         licenseNumber: 'REA12345',
-        agency: '100Gaj Realty',
+        agency: 'Algoric Realty',
         experience: 5,
         specializations: ['Residential', 'Commercial', 'Investment'],
         languages: ['English', 'Hindi'],

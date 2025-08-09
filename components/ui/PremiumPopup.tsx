@@ -232,7 +232,7 @@ export default function PremiumPopup() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
                 >
-                  Unlock exclusive features and get the most out of 100Gaj
+                  Unlock exclusive features and get the most out of Algoric
                 </motion.p>
                 
                 <div className="space-y-4 mb-6">

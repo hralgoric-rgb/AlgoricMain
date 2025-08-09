@@ -370,7 +370,7 @@ export default function SellProperty() {
       <section className="py-20 px-4 relative bg-gradient-to-b from-black to-gray-900">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
-            Why Choose <span className="text-orange-500">100Gaj</span>
+            Why Choose <span className="text-orange-500">Algoric</span>
           </h2>
           <p className="text-gray-400 text-center max-w-2xl mx-auto mb-16">
             We make selling or renting properties easier than ever before with
@@ -481,7 +481,7 @@ export default function SellProperty() {
               Ready to List Your Property?
             </h2>
             <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-              Join thousands of successful property sellers on 100Gaj. Start
+              Join thousands of successful property sellers on Algoric. Start
               your journey today!
             </p>
             <Button

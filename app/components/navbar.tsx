@@ -822,8 +822,8 @@ export default function Navbar() {
               <Link href="/" className="flex items-center group mr-16">
                 <div className="h-16 w-18 flex items-center justify-center text-white font-bold text-xs transition-all duration-300">
                   <Image
-                    src={`/logo.png`}
-                    alt="100Gaj"
+                    src={`/logoF.png`}
+                    alt="Algoric"
                     className="object-contain"
                     width={72}
                     height={36}
@@ -911,8 +911,8 @@ export default function Navbar() {
             <Link href="/" className="flex items-center">
               <div className="h-10 w-12 flex items-center justify-center text-white">
                 <Image
-                  src={`/logo.png`}
-                  alt="100Gaj"
+                  src={`/logoF.png`}
+                  alt="Algoric"
                   className="object-contain"
                   width={48}
                   height={24}
@@ -1161,7 +1161,7 @@ export default function Navbar() {
                 <div className="p-8">
                   {/* Title */}
                   <h2 className="text-2xl font-bold text-orange-500 text-center mb-6">
-                    Welcome to 100 GAJ
+                    Welcome to ALGORIC
                   </h2>
 
                   {/* Main auth view (login/signup) */}
@@ -1409,7 +1409,7 @@ export default function Navbar() {
                           </button>
 
                           <p className="text-sm text-gray-600 text-center">
-                            By submitting, I accept 100 GAJ&apos;s{" "}
+                            By submitting, I accept ALGORIC&apos;s{" "}
                             <a
                               href="#"
                               className="text-orange-500 hover:text-orange-600"

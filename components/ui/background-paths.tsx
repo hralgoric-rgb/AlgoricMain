@@ -653,7 +653,7 @@ export function BackgroundPaths() {
   const firstPartWords = ["Find", "your"];
   const highlightWord = "Perfect";
   const secondPartWords = ["Home", "with"];
-  const brandNameWords = ["100", "Gaj"];
+  const brandNameWords = ["Algo", "ric"];
 
   // Calculate delays for animations
   const firstPartDelay = 0;
@@ -745,7 +745,7 @@ export function BackgroundPaths() {
             </span>
 
             <span>
-              {/* Brand name - "100 Gaj" with animated gradient */}
+              {/* Brand name - "Algoric" with animated gradient */}
               {brandNameWords.map((word, wordIndex) => (
                 <span
                   key={`brand-word-${wordIndex}`}

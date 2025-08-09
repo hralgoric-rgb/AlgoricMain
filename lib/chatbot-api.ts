@@ -1,6 +1,6 @@
 import { env } from "process";
 
-// API configuration for the 100Gaj Chatbot
+// API configuration for the Algoric Chatbot
 export const CHATBOT_CONFIG = {
   API_BASE_URL: env.NEXT_PUBLIC_CHATBOT_API_URL || 'https://100gaj-chatbot-production.up.railway.app',
   ENDPOINTS: {
@@ -29,7 +29,7 @@ export const checkChatbotHealth = async (): Promise<{ isHealthy: boolean; messag
     if (data.status === 'ok') {
       return {
         isHealthy: true,
-        message: data.message || '100Gaj Chatbot API is running',
+        message: data.message || 'Algoric Chatbot API is running',
       };
     } else {
       return {

@@ -75,7 +75,7 @@ export default function VerificationPage() {
 
         <div className="mb-6 sm:mb-8 text-center relative z-10">
           <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-orange-500">
-            Get Verified on 100Gaj
+            Get Verified on Algoric
           </h1>
           <p className="text-base sm:text-lg text-gray-400 mb-4 sm:mb-6 px-1">
             Become a verified Agent or Builder to enhance your credibility and

@@ -260,7 +260,7 @@ export default function ContactUs() {
               Our Commitment to You
             </motion.h2>
             <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} viewport={{ once: true }} className="text-lg text-gray-600 max-w-2xl mx-auto">
-              At 100gaj, we are dedicated to providing exceptional customer service. Our approach is centered around understanding your unique needs and delivering personalized solutions that exceed your expectations.
+              At Algoric, we are dedicated to providing exceptional customer service. Our approach is centered around understanding your unique needs and delivering personalized solutions that exceed your expectations.
             </motion.p>
           </div>
         </div>

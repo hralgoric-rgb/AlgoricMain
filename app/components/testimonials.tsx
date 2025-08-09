@@ -5,19 +5,19 @@ import Image from "next/image";
 
 const testimonials = [
   {
-    quote: "100Gaj made finding our family home incredibly easy. The virtual tours saved us so much time, and their expert advice helped us negotiate a great deal.",
+    quote: "Algoric made finding our family home incredibly easy. The virtual tours saved us so much time, and their expert advice helped us negotiate a great deal.",
     author: "Rahul Sharma",
     role: "Homeowner",
     image: "https://randomuser.me/api/portraits/men/32.jpg",
   },
   {
-    quote: "As a first-time buyer, I was nervous about the process. The 100Gaj team guided me through every step and found me a perfect apartment within my budget.",
+    quote: "As a first-time buyer, I was nervous about the process. The Algoric team guided me through every step and found me a perfect apartment within my budget.",
     author: "Priya Patel",
     role: "First-time Buyer",
     image: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
-    quote: "I needed to sell my property quickly due to relocation. 100Gaj connected me with serious buyers and handled all the paperwork seamlessly.",
+    quote: "I needed to sell my property quickly due to relocation. Algoric connected me with serious buyers and handled all the paperwork seamlessly.",
     author: "Vikram Malhotra",
     role: "Property Seller",
     image: "https://randomuser.me/api/portraits/men/62.jpg",
@@ -31,7 +31,7 @@ export default function Testimonials() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">What Our Clients Say</h2>
           <p className="text-lg text-stone-light max-w-2xl mx-auto">
-            Hear from people who have found their perfect homes with 100Gaj.
+            Hear from people who have found their perfect homes with Algoric.
           </p>
         </div>
 

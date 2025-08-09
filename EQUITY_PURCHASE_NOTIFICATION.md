@@ -64,7 +64,7 @@ EMAIL_SERVER_HOST=smtp.your-provider.com
 EMAIL_SERVER_PORT=587
 EMAIL_SERVER_USER=your-email@domain.com
 EMAIL_SERVER_PASSWORD=your-email-password
-EMAIL_FROM=no-reply@100gaj.com
+EMAIL_FROM=no-reply@algoric.com
 EMAIL_SERVER_SECURE=false
 
 # Admin Notification Email

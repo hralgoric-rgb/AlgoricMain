@@ -68,7 +68,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
           <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <h2 style="color: #333; margin-bottom: 20px;">You can now post properties!</h2>
             <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
-              Congratulations! Your KYC verification has been approved. You can now post properties on 100Gaj Equity platform.
+              Congratulations! Your KYC verification has been approved. You can now post properties on Algoric Equity platform.
             </p>
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
               <h3 style="color: #333; margin: 0 0 10px 0;">Your Property Posting OTP</h3>
@@ -90,7 +90,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
               </ul>
             </div>
             <p style="color: #666; font-size: 14px; margin-top: 25px; text-align: center;">
-              Thank you for choosing 100Gaj Equity! 🏠
+              Thank you for choosing Algoric Equity! 🏠
             </p>
           </div>
         </div>

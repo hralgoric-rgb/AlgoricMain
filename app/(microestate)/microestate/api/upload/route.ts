@@ -96,7 +96,7 @@ export const POST = requireAuth(
       const uploadConfigs = {
         property: {
           baseFolder: "properties",
-          watermarkText: "100Gaj",
+          watermarkText: "Algoric",
           resize: true,
           allowedTypes: ["image"],
         },
@@ -114,7 +114,7 @@ export const POST = requireAuth(
         },
         verification: {
           baseFolder: "verification",
-          watermarkText: "100Gaj - Verification",
+          watermarkText: "Algoric - Verification",
           resize: true,
           allowedTypes: ["image", "document"],
         },

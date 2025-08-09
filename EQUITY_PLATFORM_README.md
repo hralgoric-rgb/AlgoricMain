@@ -136,7 +136,7 @@ A comprehensive commercial real estate equity investment platform that allows us
 
 ## Integration Notes
 
-- The equity platform is fully integrated with the existing 100Gaj ecosystem
+- The equity platform is fully integrated with the existing Algoric ecosystem
 - Uses the same authentication system and user management
 - Shares the design system and component library
 - Accessible through the main navigation with dedicated routing

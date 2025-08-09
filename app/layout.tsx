@@ -19,13 +19,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "100 Gaj - Premium Real Estate Platform",
-  description: "Housing Services for Everyone - Find your perfect property with 100 Gaj's premium real estate platform",
+  title: "Algoric - Premium Real Estate Platform",
+  description: "Housing Services for Everyone - Find your perfect property with Algoric's premium real estate platform",
   icons: {
     icon: "/favicon.ico",
   },
   robots: 'index, follow',
-  authors: [{ name: '100 Gaj Team' }],
+  authors: [{ name: 'Algoric Team' }],
   keywords: 'real estate, properties, housing, buy, sell, rent, luxury homes',
 };
 

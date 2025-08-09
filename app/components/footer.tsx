@@ -15,8 +15,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           <div className="md:col-span-4">
             <div className="flex items-center mb-6">
-              <Image src="/logo.png" alt="100 Gaj Logo" width={50} height={50} />
-              <h3 className="text-2xl font-bold text-white ml-4">100 GAJ</h3>
+              <Image src="/logoF.png" alt="Algoric Logo" width={50} height={50} />
+              <h3 className="text-2xl font-bold text-white ml-4">ALGORIC</h3>
             </div>
             <p className="mb-6 text-sm leading-relaxed text-gray-300">
               Your trusted partner in finding the perfect property that matches
@@ -250,7 +250,7 @@ export default function Footer() {
                 </span>
               </li>
               <li className="flex items-start group">
-                <a href="mailto:contact@100gaj.com" className="flex items-start group w-full">
+                <a href="mailto:contact@algoric.com" className="flex items-start group w-full">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2 mt-0.5 text-beige-dark group-hover:text-beige transition-all duration-300"
@@ -267,7 +267,7 @@ export default function Footer() {
                 </svg>
 
                 <span className="w-full group-hover:text-beige transition-all duration-300 break-words whitespace-normal">
-                  contact@100gaj.com
+                  contact@algoric.com
                 </span>
                 </a>
               </li>
@@ -320,7 +320,7 @@ export default function Footer() {
         <div className="border-t border-brown/20 mt-16 pt-8 text-center">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-stone/80">
-              &copy; {new Date().getFullYear()} 100 Gaj. All rights reserved.
+              &copy; {new Date().getFullYear()} Algoric. All rights reserved.
             </p>
           </div>
         </div>

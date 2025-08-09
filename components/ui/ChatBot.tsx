@@ -180,7 +180,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ className = '' }) => {
         // Add welcome message when opening for the first time
         const welcomeMessage: ExtendedChatMessage = {
           role: 'assistant',
-          content: 'Hello! I\'m your 100Gaj AI assistant. I can help you find properties, answer questions about our services, and provide real estate guidance. How can I assist you today?',
+          content: 'Hello! I\'m your Algoric AI assistant. I can help you find properties, answer questions about our services, and provide real estate guidance. How can I assist you today?',
           timestamp: new Date(),
         };
         setMessages([welcomeMessage]);
@@ -249,7 +249,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ className = '' }) => {
                 <Bot className="w-3 h-3 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-xs sm:text-sm truncate">100Gaj AI Assistant</h3>
+                <h3 className="font-semibold text-xs sm:text-sm truncate">Algoric AI Assistant</h3>
                 <p className="text-xs opacity-90">
                   {isConnected ? 'Online' : 'Offline'}
                 </p>

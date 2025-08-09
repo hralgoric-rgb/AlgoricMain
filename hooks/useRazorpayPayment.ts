@@ -129,7 +129,7 @@ export const useRazorpayPayment = () => {
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: '100Gaj',
+        name: 'Algoric',
         description: `${options.planName} Subscription`,
         order_id: orderData.orderId,
         handler: async (response: any) => {

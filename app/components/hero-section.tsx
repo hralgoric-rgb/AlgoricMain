@@ -41,7 +41,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-xl md:text-2xl text-stone-light mb-8 max-w-2xl drop-shadow-md">
-              100Gaj helps you discover the perfect property that matches your lifestyle and budget.
+              Algoric helps you discover the perfect property that matches your lifestyle and budget.
             </p>
           </motion.div>
           

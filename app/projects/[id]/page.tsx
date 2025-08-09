@@ -476,7 +476,7 @@ const ProjectDetailPage = () => {
       case "whatsapp":
         console.log("Opening WhatsApp for:", phone);
         const message = encodeURIComponent(
-          `Hi, I'm interested in your project "${project.projectName}" listed on 100Gaj. Can you provide more details?`
+          `Hi, I'm interested in your project "${project.projectName}" listed on Algoric. Can you provide more details?`
         );
         const whatsappUrl = `https://wa.me/91${phone}?text=${message}`;
         console.log("WhatsApp URL:", whatsappUrl);

@@ -550,7 +550,7 @@ export default function BuildersPage() {
                 Are You a Premium Builder?
               </h2>
               <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-                Partner with 100Gaj to showcase your projects to our extensive
+                Partner with Algoric to showcase your projects to our extensive
                 network of property seekers and increase your visibility in the
                 luxury real estate market.
               </p>
