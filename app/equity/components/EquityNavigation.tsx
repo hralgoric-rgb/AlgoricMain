@@ -101,7 +101,6 @@ export default function EquityNavigation() {
 
 		{ href: "/equity", label: "Dashboard", icon: Home },
 		{ href: "/equity/property", label: "Properties", icon: Building2 },
-		{ href: "/equity/portfolio", label: "Portfolio", icon: Target },
 	];
 
 	return (
