@@ -8,8 +8,10 @@ export const GET = requireLandlord(async (request: NextRequest, context: { userI
     await dbConnect();
 
     try {
-        // Find all leases for this landlord and populate tenant and property details
-        const allLeases = await Lease.findByLandlord(userId);
+        // Find all leases for this landlord with explicit population
+        const allLeases = await Lease.find({ landlordId: userId })
+            .populate('tenantId', 'firstName lastName email phone')
+            .populate('propertyId', 'title address rent');
 
         if (!allLeases || allLeases.length === 0) {
             return NextResponse.json({ 
@@ -29,24 +31,30 @@ export const GET = requireLandlord(async (request: NextRequest, context: { userI
         }
 
         // Transform lease data into tenant format for the frontend
-        const tenants = activeLeases.map((lease: any) => ({
-            _id: lease.tenantId._id || lease.tenantId,
-            name: lease.tenantId.name || `${lease.tenantId.firstName || ''} ${lease.tenantId.lastName || ''}`.trim() || 'Unknown',
-            email: lease.tenantId.email || 'N/A',
-            phone: lease.tenantId.phone || 'N/A',
-            property: {
-                _id: lease.propertyId._id || lease.propertyId,
-                title: lease.propertyId.title || 'Unknown Property',
-                address: lease.propertyId.address || 'N/A',
-                rent: lease.propertyId.rent || lease.monthlyRent
-            },
-            rentAmount: lease.monthlyRent,
-            status: lease.status === 'active' ? 'active' : 
-                   lease.isExpired() ? 'overdue' : 'inactive',
-            leaseStart: lease.startDate,
-            leaseEnd: lease.endDate,
-            leaseId: lease._id
-        }));
+        const tenants = activeLeases.map((lease: any) => {
+            const tenantFirstName = lease.tenantId?.firstName || '';
+            const tenantLastName = lease.tenantId?.lastName || '';
+            const tenantFullName = `${tenantFirstName} ${tenantLastName}`.trim();
+            
+            return {
+                _id: lease.tenantId._id || lease.tenantId,
+                name: tenantFullName || 'Unknown',
+                email: lease.tenantId.email || 'N/A',
+                phone: lease.tenantId.phone || 'N/A',
+                property: {
+                    _id: lease.propertyId._id || lease.propertyId,
+                    title: lease.propertyId.title || 'Unknown Property',
+                    address: lease.propertyId.address || 'N/A',
+                    rent: lease.propertyId.rent || lease.monthlyRent
+                },
+                rentAmount: lease.monthlyRent,
+                status: lease.status === 'active' ? 'active' : 
+                       lease.isExpired() ? 'overdue' : 'inactive',
+                leaseStart: lease.startDate,
+                leaseEnd: lease.endDate,
+                leaseId: lease._id
+            };
+        });
 
         return NextResponse.json({
             message: "Tenants fetched successfully",
