@@ -9,19 +9,29 @@ export const GET = requireLandlord(async (request: NextRequest, context: { userI
 
     try {
         // Find all leases for this landlord and populate tenant and property details
-        const leases = await Lease.findByLandlord(userId);
+        const allLeases = await Lease.findByLandlord(userId);
 
-        if (!leases || leases.length === 0) {
+        if (!allLeases || allLeases.length === 0) {
             return NextResponse.json({ 
                 message: "No tenants found for this landlord",
                 tenants: []
             }, { status: 200 });
         }
 
+        // Filter out terminated leases (removed tenants)
+        const activeLeases = allLeases.filter((lease: any) => lease.status !== 'terminated');
+
+        if (activeLeases.length === 0) {
+            return NextResponse.json({ 
+                message: "No active tenants found for this landlord",
+                tenants: []
+            }, { status: 200 });
+        }
+
         // Transform lease data into tenant format for the frontend
-        const tenants = leases.map((lease: any) => ({
+        const tenants = activeLeases.map((lease: any) => ({
             _id: lease.tenantId._id || lease.tenantId,
-            name: lease.tenantId.name || 'Unknown',
+            name: lease.tenantId.name || `${lease.tenantId.firstName || ''} ${lease.tenantId.lastName || ''}`.trim() || 'Unknown',
             email: lease.tenantId.email || 'N/A',
             phone: lease.tenantId.phone || 'N/A',
             property: {
