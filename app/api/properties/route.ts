@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to fetch properties',
-      details: process.env.NODE_ENV === 'development' ? error : undefined
+      details: process.env.NODE_ENV === 'development' ? error : error
     }, { status: 500 });
   }
 }
