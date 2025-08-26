@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "./providers";
 import dynamic from 'next/dynamic';
 import { Toaster } from "sonner";
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from "@vercel/analytics/next"
 
 // Dynamically import the PremiumPopup component with no SSR to avoid hydration issues
 const PremiumPopup = dynamic(() => import('@/components/ui/PremiumPopup'));
@@ -60,6 +62,8 @@ export default function RootLayout({
         <Toaster position="top-center" />
         <AuthProvider>
           {children}
+          <SpeedInsights />
+          <Analytics />
           <PremiumPopup />
           <ChatBotWrapper />
         </AuthProvider>
