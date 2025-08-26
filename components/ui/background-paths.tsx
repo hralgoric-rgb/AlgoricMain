@@ -667,10 +667,10 @@ export function BackgroundPaths() {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-black">
       {/* Background animation paths - behind everything */}
-      <div className="absolute inset-0 z-0">
+      {/* <div className="absolute inset-0 z-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
-      </div>
+      </div> */}
 
       {/* Main content - in front of background */}
       <div className="relative z-20 container mx-auto px-4 md:px-6 text-center py-20 min-h-screen flex flex-col justify-center">
