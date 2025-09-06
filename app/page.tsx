@@ -73,19 +73,19 @@ export default function Home() {
         "Modern apartments with excellent connectivity to the city center and airport",
     },
     {
-      imageUrl: "/canada.jpeg",
+      imageUrl: "/golf.png",
       title: "Golf Course Road",
       description:
         "Luxury high-rise apartments with world-class amenities and golf views",
     },
     {
-      imageUrl: "/image1.jpg",
+      imageUrl: "/south.png",
       title: "South Delhi",
       description:
         "Premium villas and bungalows in Delhi's most prestigious neighborhoods",
     },
     {
-      imageUrl: "/airpirt.jpeg",
+      imageUrl: "/gurgaon.png",
       title: "Gurgaon",
       description:
         "Corporate hubs with modern residential complexes and urban infrastructure",
