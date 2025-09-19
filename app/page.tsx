@@ -1222,6 +1222,71 @@ export default function Home() {
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-zinc-900 to-transparent z-10"></div>
       </section>
 
+      {/* Trusted By Section */}
+      <section className="bg-black py-12 border-t border-zinc-800">
+        <div className="container mx-auto px-4 flex flex-col items-center">
+          <motion.h3
+            className="text-3xl md:text-3xl font-bold text-white mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            Trusted by:
+          </motion.h3>
+          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-40">
+            {/* Startup India */}
+            <motion.div
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Image
+                src="/startupIndia.png"
+                alt="Startup India Logo"
+                width={240}
+                height={120}
+                style={{ borderRadius: '8px', padding: '8px' }}
+              />
+            </motion.div>
+            {/* Nvidia */}
+            <motion.div
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.25 }}
+              viewport={{ once: true }}
+            >
+              <Image
+                src="/Nvidia.png"
+                alt="Nvidia Logo"
+                width={240}
+                height={100}
+                style={{ borderRadius: '8px', padding: '8px' }}
+              />
+            </motion.div>
+            {/* DTU IIF */}
+            <motion.div
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <Image
+                src="/IIF.png"
+                alt="DTU IIF Logo"
+                width={240}
+                height={120}
+                style={{ borderRadius: '8px', padding: '8px' }}
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </main>
   );
